@@ -202,8 +202,8 @@ describe('calculateTDEE', () => {
   });
 
   it('adds nothing extra with zero training days', () => {
-    // 1395.25 * 1.375 + 0 = 1918.984375
-    expect(calculateTDEE(1395.25, 'light', 0)).toBeCloseTo(1918.984375, 5);
+    // 1395.25 * 1.375 + 0 = 1918.46875
+    expect(calculateTDEE(1395.25, 'light', 0)).toBeCloseTo(1918.46875, 5);
   });
 
   it('uses the sedentary multiplier (1.2)', () => {
@@ -333,7 +333,7 @@ export function calculateMacroTargets(targetCalories: number, weightKg: number):
 npx jest src/__tests__/nutrition.test.ts
 ```
 
-Expected: `10 passed`.
+Expected: `11 passed`.
 
 - [ ] **Step 5: Commit**
 
