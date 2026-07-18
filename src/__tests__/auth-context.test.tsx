@@ -31,6 +31,9 @@ describe('AuthProvider', () => {
   });
 
   it('resolves to signed-out when there is no existing session', async () => {
+    // Delay getSession mock resolution to allow loading state to be observable.
+    // RNTL v14's async render() already awaits the initial useEffect setup;
+    // getSession must resolve after this tick, or the loading state never renders.
     (supabase.auth.getSession as jest.Mock).mockImplementation(() =>
       new Promise(resolve => setTimeout(() => resolve({ data: { session: null } }), 0))
     );
