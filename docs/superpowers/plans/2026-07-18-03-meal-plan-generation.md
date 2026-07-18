@@ -1103,7 +1103,7 @@ export async function updatePlanEntry(
 npx jest src/__tests__/mealPlanData.test.ts
 ```
 
-Expected: `9 passed`.
+Expected: `10 passed`.
 
 - [ ] **Step 5: Commit**
 
