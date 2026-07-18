@@ -85,6 +85,7 @@ describe('profile data access', () => {
       weight_kg: 60,
       activity_level: 'light',
       goal: 'maintain',
+      updated_at: expect.any(String),
     });
   });
 
@@ -142,6 +143,7 @@ describe('profile data access', () => {
       days_per_week: 3,
       experience_level: 'beginner',
       equipment: 'bodyweight',
+      updated_at: expect.any(String),
     });
   });
 

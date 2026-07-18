@@ -48,6 +48,7 @@ export async function upsertProfile(userId: string, profile: Profile): Promise<v
     weight_kg: profile.weightKg,
     activity_level: profile.activityLevel,
     goal: profile.goal,
+    updated_at: new Date().toISOString(),
   });
   if (error) throw error;
 }
@@ -75,6 +76,7 @@ export async function upsertTrainingProfile(userId: string, trainingProfile: Tra
     days_per_week: trainingProfile.daysPerWeek,
     experience_level: trainingProfile.experienceLevel,
     equipment: trainingProfile.equipment,
+    updated_at: new Date().toISOString(),
   });
   if (error) throw error;
 }

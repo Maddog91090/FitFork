@@ -3,13 +3,7 @@ import { View, Text, Button, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../lib/profile';
-import {
-  calculateBMR,
-  calculateTDEE,
-  calculateTargetCalories,
-  calculateMacroTargets,
-  type MacroTargets,
-} from '../lib/nutrition';
+import { computeTargetsFromProfile, type MacroTargets } from '../lib/targets';
 
 export default function HomeScreen() {
   const { session, loading, signOut } = useAuth();
@@ -40,10 +34,7 @@ export default function HomeScreen() {
           return;
         }
 
-        const bmr = calculateBMR(profile.sex, profile.weightKg, profile.heightCm, profile.age);
-        const tdee = calculateTDEE(bmr, profile.activityLevel, trainingProfile.daysPerWeek);
-        const targetCalories = calculateTargetCalories(tdee, profile.goal);
-        setMacros(calculateMacroTargets(targetCalories, profile.weightKg));
+        setMacros(computeTargetsFromProfile(profile, trainingProfile));
       } catch (err) {
         if (!cancelled) {
           setLoadError(err instanceof Error ? err.message : 'Erreur de chargement du profil.');
