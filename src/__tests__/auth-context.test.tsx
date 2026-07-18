@@ -31,15 +31,17 @@ describe('AuthProvider', () => {
   });
 
   it('resolves to signed-out when there is no existing session', async () => {
-    (supabase.auth.getSession as jest.Mock).mockResolvedValue({ data: { session: null } });
+    (supabase.auth.getSession as jest.Mock).mockImplementation(() =>
+      new Promise(resolve => setTimeout(() => resolve({ data: { session: null } }), 0))
+    );
 
-    const { getByText } = render(
+    const { getByText } = await render(
       <AuthProvider>
         <TestConsumer />
       </AuthProvider>
     );
 
-    expect(getByText('loading')).toBeTruthy();
+    await waitFor(() => expect(getByText('loading')).toBeTruthy());
     await waitFor(() => expect(getByText('signed-out')).toBeTruthy());
   });
 
@@ -47,7 +49,7 @@ describe('AuthProvider', () => {
     const fakeSession = { user: { id: 'user-123' } } as any;
     (supabase.auth.getSession as jest.Mock).mockResolvedValue({ data: { session: fakeSession } });
 
-    const { getByText } = render(
+    const { getByText } = await render(
       <AuthProvider>
         <TestConsumer />
       </AuthProvider>
