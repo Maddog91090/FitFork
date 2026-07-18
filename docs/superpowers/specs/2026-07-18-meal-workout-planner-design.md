@@ -74,6 +74,14 @@ Level Security so a user can only read/write their own rows.
 
 ## Meal Plan Generation
 
+0. **Select meal slots to generate**: before generating, the user picks which
+   day × meal-type slots the app should actually plan (a 7-day × 4-meal-type
+   grid, e.g. unchecking "Lunch" on weekdays because it's eaten at work).
+   This selection is made fresh at each generation — there is no saved
+   recurring template for V1, though revisiting this is a natural v2
+   candidate if reconfiguring it every week turns out to be tedious.
+   Unselected slots get no `meal_plan_entries` row at all: no recipe, no
+   grocery ingredients, and no calories are allocated for them.
 1. **Compute needs**: BMR via Mifflin-St Jeor (weight, height, age, sex).
    TDEE = BMR × daily-activity multiplier, plus a flat +200 kcal per training
    day — training days come from `training_profile`, so activity is not
@@ -83,17 +91,21 @@ Level Security so a user can only read/write their own rows.
    centralized in one place in the code so they're easy to tune later.
 2. **Distribute across meals**: daily calories split across meal slots using
    fixed default ratios — breakfast 25%, lunch 35%, dinner 30%, snack 10% —
-   giving each slot a calorie target.
-3. **Select recipes**: for each day × meal-type slot, choose a recipe of the
-   matching meal type, avoiding repeating the same recipe more than twice in
-   the week (relaxed automatically if the recipe pool for that meal type is
-   too small), then compute a `portion_multiplier` to scale it to the slot's
-   calorie target (±5–10% tolerance). The multiplier is clamped (e.g.
-   0.5×–2×) to keep portions realistic, even if that means a larger deviation
-   from the exact target.
-4. **Check the week total**: after filling all 7 days, verify the weekly
-   total calories/macros are within tolerance of the target; if not, nudge
-   the portions of the last meal of each day to close the gap.
+   giving each slot a calorie target. For an unselected slot, its ratio is
+   simply not used that day — its calories are **not** redistributed to the
+   day's other slots, since the app assumes the user covers that meal on
+   their own outside the plan.
+3. **Select recipes**: for each *selected* day × meal-type slot, choose a
+   recipe of the matching meal type, avoiding repeating the same recipe more
+   than twice in the week (relaxed automatically if the recipe pool for that
+   meal type is too small), then compute a `portion_multiplier` to scale it
+   to the slot's calorie target (±5–10% tolerance). The multiplier is
+   clamped (e.g. 0.5×–2×) to keep portions realistic, even if that means a
+   larger deviation from the exact target.
+4. **Check the week total**: after filling all selected slots, verify the
+   weekly total calories/macros (summed only over selected slots) are within
+   tolerance of the target for those slots; if not, nudge the portions of
+   the last selected meal of each day to close the gap.
 
 **Meal swap**: replaces a slot's recipe with another of the same meal type,
 recomputes its `portion_multiplier` against the original slot target, and
@@ -148,6 +160,8 @@ persisted) for V1.
   calorie-target deviation instead of an unrealistic portion.
 - Offline → last generated plan remains viewable from local cache;
   generating or modifying a plan requires connectivity.
+- All meal slots of a day unselected → that day simply has no meals in the
+  plan; this is valid and not treated as an error.
 
 ## Testing Strategy
 
@@ -162,9 +176,11 @@ persisted) for V1.
 ## V1 Scope Summary
 
 **In scope**: profile & goal onboarding, automatic TDEE/macro calculation,
-weekly meal plan generation from an in-house curated recipe database, meal
-swapping, auto-generated grocery list, weekly workout program from predefined
-templates, weight logging with calorie-target recalculation for future weeks.
+per-generation meal-slot selection (choosing which day × meal-type slots to
+plan for), weekly meal plan generation from an in-house curated recipe
+database, meal swapping, auto-generated grocery list, weekly workout program
+from predefined templates, weight logging with calorie-target recalculation
+for future weeks.
 
 **Explicitly out of scope for V1**: AI-generated recipes, external nutrition
 APIs, workout session logging (sets/reps/weight performed), automatic workout
