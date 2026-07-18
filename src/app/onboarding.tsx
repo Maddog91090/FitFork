@@ -39,7 +39,7 @@ const EQUIPMENT_OPTIONS: { value: Equipment; label: string }[] = [
 ];
 
 export default function OnboardingScreen() {
-  const { session } = useAuth();
+  const { session, loading } = useAuth();
   const [sex, setSex] = useState<Sex | null>(null);
   const [age, setAge] = useState('');
   const [heightCm, setHeightCm] = useState('');
@@ -53,10 +53,10 @@ export default function OnboardingScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!session) {
+    if (!loading && !session) {
       router.replace('/login');
     }
-  }, [session]);
+  }, [loading, session]);
 
   const handleSubmit = async () => {
     setError(null);
@@ -113,6 +113,10 @@ export default function OnboardingScreen() {
       setSubmitting(false);
     }
   };
+
+  if (loading || !session) {
+    return null;
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
