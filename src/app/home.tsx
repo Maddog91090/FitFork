@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, Button, ActivityIndicator } from 'react-native';
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../lib/targets';
@@ -69,6 +69,10 @@ export default function HomeScreen() {
           <Text>Glucides : {macros.carbsG} g</Text>
         </View>
       )}
+      <View style={{ marginTop: 16, alignItems: 'center', gap: 8 }}>
+        <Link href="/generate-plan">Générer le plan de la semaine</Link>
+        <Link href="/plan">Voir mon plan</Link>
+      </View>
       <View style={{ marginTop: 16 }}>
         <Button title="Se déconnecter" onPress={signOut} />
       </View>
