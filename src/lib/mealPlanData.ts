@@ -29,13 +29,15 @@ export type SavedPlanEntry = {
 
 export type SavedPlan = {
   id: string;
+  targetCalories: number;
   entries: SavedPlanEntry[];
 };
 
 export async function fetchRecipes(): Promise<Recipe[]> {
   const { data, error } = await supabase
     .from('recipes')
-    .select('id, name, meal_type, base_calories, base_protein_g, base_fat_g, base_carbs_g, base_serving_g');
+    .select('id, name, meal_type, base_calories, base_protein_g, base_fat_g, base_carbs_g, base_serving_g')
+    .order('id');
 
   if (error) throw error;
 
@@ -99,7 +101,10 @@ export async function saveWeeklyPlan(
         portion_multiplier: entry.portionMultiplier,
       }))
     );
-    if (entriesError) throw entriesError;
+    if (entriesError) {
+      await supabase.from('weekly_meal_plans').delete().eq('id', planId);
+      throw entriesError;
+    }
   }
 
   return planId;
@@ -108,7 +113,7 @@ export async function saveWeeklyPlan(
 export async function getCurrentPlan(userId: string): Promise<SavedPlan | null> {
   const { data: plan, error: planError } = await supabase
     .from('weekly_meal_plans')
-    .select('id')
+    .select('id, target_calories')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -126,6 +131,7 @@ export async function getCurrentPlan(userId: string): Promise<SavedPlan | null> 
 
   return {
     id: plan.id,
+    targetCalories: plan.target_calories,
     entries: (entries ?? []).map((row: any) => ({
       id: row.id,
       dayIndex: row.day_index,

@@ -17,7 +17,7 @@ beforeEach(() => {
 
 describe('fetchRecipes', () => {
   it('maps rows to the Recipe shape', async () => {
-    const select = jest.fn().mockResolvedValue({
+    const order = jest.fn().mockResolvedValue({
       data: [
         {
           id: 'r1',
@@ -32,6 +32,7 @@ describe('fetchRecipes', () => {
       ],
       error: null,
     });
+    const select = jest.fn().mockReturnValue({ order });
     (supabase.from as jest.Mock).mockReturnValue({ select });
 
     const result = await fetchRecipes();
@@ -48,10 +49,12 @@ describe('fetchRecipes', () => {
         baseServingG: 300,
       },
     ]);
+    expect(order).toHaveBeenCalledWith('id');
   });
 
   it('throws on a Supabase error', async () => {
-    const select = jest.fn().mockResolvedValue({ data: null, error: new Error('boom') });
+    const order = jest.fn().mockResolvedValue({ data: null, error: new Error('boom') });
+    const select = jest.fn().mockReturnValue({ order });
     (supabase.from as jest.Mock).mockReturnValue({ select });
 
     await expect(fetchRecipes()).rejects.toThrow('boom');
@@ -121,6 +124,30 @@ describe('saveWeeklyPlan', () => {
     expect(planId).toBe('plan-1');
     expect(supabase.from).toHaveBeenCalledTimes(1);
   });
+
+  it('cleans up the plan row if the entries insert fails', async () => {
+    const single = jest.fn().mockResolvedValue({ data: { id: 'plan-1' }, error: null });
+    const selectAfterInsert = jest.fn().mockReturnValue({ single });
+    const planInsert = jest.fn().mockReturnValue({ select: selectAfterInsert });
+    const entriesInsert = jest.fn().mockResolvedValue({ error: new Error('boom') });
+    const deleteEq = jest.fn().mockResolvedValue({ error: null });
+    const deleteFn = jest.fn().mockReturnValue({ eq: deleteEq });
+
+    (supabase.from as jest.Mock)
+      .mockReturnValueOnce({ insert: planInsert })
+      .mockReturnValueOnce({ insert: entriesInsert })
+      .mockReturnValueOnce({ delete: deleteFn });
+
+    await expect(
+      saveWeeklyPlan(
+        'user-1',
+        { calories: 2000, proteinG: 150, fatG: 60, carbsG: 200 },
+        [{ dayIndex: 0, mealType: 'breakfast', recipeId: 'r1', portionMultiplier: 1.2 }]
+      )
+    ).rejects.toThrow('boom');
+
+    expect(deleteEq).toHaveBeenCalledWith('id', 'plan-1');
+  });
 });
 
 describe('getCurrentPlan', () => {
@@ -138,7 +165,7 @@ describe('getCurrentPlan', () => {
   });
 
   it('returns the most recent plan with its mapped entries', async () => {
-    const maybeSingle = jest.fn().mockResolvedValue({ data: { id: 'plan-1' }, error: null });
+    const maybeSingle = jest.fn().mockResolvedValue({ data: { id: 'plan-1', target_calories: 2000 }, error: null });
     const limit = jest.fn().mockReturnValue({ maybeSingle });
     const order = jest.fn().mockReturnValue({ limit });
     const planEq = jest.fn().mockReturnValue({ order });
@@ -158,6 +185,7 @@ describe('getCurrentPlan', () => {
 
     expect(result).toEqual({
       id: 'plan-1',
+      targetCalories: 2000,
       entries: [{ id: 'e1', dayIndex: 0, mealType: 'breakfast', recipeId: 'r1', portionMultiplier: 1.2 }],
     });
     expect(order).toHaveBeenCalledWith('created_at', { ascending: false });

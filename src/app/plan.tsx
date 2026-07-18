@@ -62,11 +62,7 @@ export default function PlanScreen() {
         return;
       }
 
-      const currentEntry = plan.entries.find((e) => e.id === entryId);
-      if (!currentEntry) return;
-
-      const dailyTargetCalories = currentTargetCalories(currentEntry, recipeById, mealType);
-      const slotTarget = dailyTargetCalories * MEAL_TYPE_RATIOS[mealType];
+      const slotTarget = plan.targetCalories * MEAL_TYPE_RATIOS[mealType];
       const newMultiplier = clampPortionMultiplier(slotTarget / replacement.baseCalories);
 
       await updatePlanEntry(entryId, replacement.id, newMultiplier);
@@ -129,21 +125,6 @@ export default function PlanScreen() {
       </Link>
     </ScrollView>
   );
-}
-
-// SavedPlan.entries only stores portionMultiplier, not the daily calorie target that
-// produced it. Reconstruct it from the entry being replaced instead of adding a new
-// column: since portionMultiplier = clamp(dailyTarget * mealTypeRatio / baseCalories),
-// un-clamping by re-deriving from the current (already-clamped) values keeps the swap
-// consistent with what's on screen.
-function currentTargetCalories(
-  currentEntry: SavedPlan['entries'][number],
-  recipeById: Map<string, Recipe>,
-  mealType: MealType
-): number {
-  const currentRecipe = recipeById.get(currentEntry.recipeId);
-  if (!currentRecipe) return 0;
-  return (currentRecipe.baseCalories * currentEntry.portionMultiplier) / MEAL_TYPE_RATIOS[mealType];
 }
 
 const styles = StyleSheet.create({
