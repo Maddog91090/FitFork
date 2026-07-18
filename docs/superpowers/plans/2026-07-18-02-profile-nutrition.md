@@ -647,7 +647,7 @@ export async function upsertTrainingProfile(userId: string, trainingProfile: Tra
 npx jest src/__tests__/profile.test.ts
 ```
 
-Expected: `11 passed`.
+Expected: `9 passed`.
 
 - [ ] **Step 5: Commit**
 
