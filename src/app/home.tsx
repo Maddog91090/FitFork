@@ -72,6 +72,7 @@ export default function HomeScreen() {
       <View style={{ marginTop: 16, alignItems: 'center', gap: 8 }}>
         <Link href="/generate-plan">Générer le plan de la semaine</Link>
         <Link href="/plan">Voir mon plan</Link>
+        <Link href="/workout">Mon programme de musculation</Link>
       </View>
       <View style={{ marginTop: 16 }}>
         <Button title="Se déconnecter" onPress={signOut} />
