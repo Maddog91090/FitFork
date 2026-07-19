@@ -22,9 +22,12 @@ describe('selectTemplate', () => {
   });
 
   it('falls back to level match when day-diff ties', () => {
-    // t1 and t5 both have daysPerWeek 3 (diff 0); t5's level (beginner) matches, t1's doesn't
+    // Restrict to full_gym templates only, so t4 (bodyweight) can't preempt this
+    // via the cross-equipment name tiebreak — isolates the level-match step itself.
+    // t1 and t5 both have daysPerWeek 3 (diff 0); t5's level (beginner) matches, t1's doesn't.
+    const fullGymOnly = TEMPLATES.filter((t) => t.equipment === 'full_gym');
     const profile: TrainingProfileInput = { daysPerWeek: 3, experienceLevel: 'beginner', equipment: 'full_gym' };
-    expect(selectTemplate(profile, TEMPLATES)?.id).toBe('t4');
+    expect(selectTemplate(profile, fullGymOnly)?.id).toBe('t5');
   });
 
   it('excludes templates requiring more equipment than the user has', () => {
