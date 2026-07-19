@@ -5,6 +5,8 @@ import { useAuth } from '../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../lib/profile';
 import { computeTargetsFromProfile } from '../lib/targets';
 import { fetchRecipes, saveWeeklyPlan } from '../lib/mealPlanData';
+import { fetchRecentWeightLogs } from '../lib/weightLogData';
+import { computeAdjustedTargets } from '../lib/progressTracking';
 import { generateWeeklyPlan, type MealSlot, type MealType } from '../lib/mealPlan';
 
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
@@ -57,7 +59,9 @@ export default function GeneratePlanScreen() {
         return;
       }
 
-      const targets = computeTargetsFromProfile(profile, trainingProfile);
+      const baseTargets = computeTargetsFromProfile(profile, trainingProfile);
+      const weightLogs = await fetchRecentWeightLogs(session.user.id);
+      const targets = computeAdjustedTargets(baseTargets, profile.goal, profile.weightKg, weightLogs);
       const recipes = await fetchRecipes();
       const recipeOptions = recipes.map((r) => ({ id: r.id, mealType: r.mealType, baseCalories: r.baseCalories }));
 
