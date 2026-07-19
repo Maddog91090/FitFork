@@ -5,7 +5,7 @@ import { useAuth } from '../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../lib/profile';
 import { computeTargetsFromProfile } from '../lib/targets';
 import { fetchRecipes, saveWeeklyPlan } from '../lib/mealPlanData';
-import { fetchRecentWeightLogs } from '../lib/weightLogData';
+import { fetchRecentWeightLogs, type WeightLogEntry } from '../lib/weightLogData';
 import { computeAdjustedTargets } from '../lib/progressTracking';
 import { generateWeeklyPlan, type MealSlot, type MealType } from '../lib/mealPlan';
 
@@ -60,7 +60,14 @@ export default function GeneratePlanScreen() {
       }
 
       const baseTargets = computeTargetsFromProfile(profile, trainingProfile);
-      const weightLogs = await fetchRecentWeightLogs(session.user.id);
+      let weightLogs: WeightLogEntry[] = [];
+      try {
+        weightLogs = await fetchRecentWeightLogs(session.user.id);
+      } catch {
+        // Progress tracking is a strictly additive enhancement — if fetching weight
+        // history fails for any reason, fall back to the base (unadjusted) targets
+        // rather than aborting meal-plan generation entirely.
+      }
       const targets = computeAdjustedTargets(baseTargets, profile.goal, profile.weightKg, weightLogs);
       const recipes = await fetchRecipes();
       const recipeOptions = recipes.map((r) => ({ id: r.id, mealType: r.mealType, baseCalories: r.baseCalories }));
