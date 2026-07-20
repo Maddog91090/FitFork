@@ -52,6 +52,25 @@ describe('generateWorkoutProgram', () => {
     expect(days[1].exerciseIds).toEqual(['chest-1']);
   });
 
+  it('uses every unused exercise in a partially-exhausted pool before repeating any', () => {
+    const smallChestPool: ExercisePoolItem[] = [
+      { id: 'chest-1', muscleGroup: 'chest' },
+      { id: 'chest-2', muscleGroup: 'chest' },
+      { id: 'chest-3', muscleGroup: 'chest' },
+    ];
+    const pushArchetype: DayArchetype[] = [
+      { name: 'Push', slots: [{ muscleGroup: 'chest', count: 2 }] },
+    ];
+
+    // 2 Push days x 2 chest slots = 4 picks from a pool of 3 -> exactly 1 repeat
+    // is unavoidable, but all 3 distinct exercises must appear before any repeat.
+    const days = generateWorkoutProgram(2, pushArchetype, smallChestPool);
+    const allIds = days.flatMap((d) => d.exerciseIds);
+
+    expect(allIds).toHaveLength(4);
+    expect(new Set(allIds).size).toBe(3); // all 3 pool items used at least once
+  });
+
   it('returns an empty exercise list for a slot with no matching exercises in the pool', () => {
     const noMatchArchetypes: DayArchetype[] = [
       { name: 'Push', slots: [{ muscleGroup: 'shoulders', count: 1 }] },
