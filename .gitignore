@@ -33,6 +33,9 @@ yarn-error.*
 # local env files
 .env*.local
 
+# brainstorming visual companion
+.superpowers/
+
 # typescript
 *.tsbuildinfo
 
