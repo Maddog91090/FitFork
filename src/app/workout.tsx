@@ -4,10 +4,14 @@ import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { getTrainingProfile } from '../lib/profile';
 import { selectTemplate } from '../lib/workoutTemplate';
+import { generateWorkoutProgram } from '../lib/workoutProgram';
 import {
   fetchWorkoutTemplates,
   saveWorkoutProgram,
   getAssignedTemplateId,
+  fetchTemplateDaySlots,
+  fetchExercisePool,
+  saveGeneratedProgram,
   fetchProgramDetails,
   type WorkoutProgram,
 } from '../lib/workoutProgramData';
@@ -26,10 +30,11 @@ export default function WorkoutScreen() {
       return;
     }
 
+    const templates = await fetchWorkoutTemplates();
     let templateId = forceRegenerate ? null : await getAssignedTemplateId(userId);
+    let needsGeneration = forceRegenerate;
 
     if (!templateId) {
-      const templates = await fetchWorkoutTemplates();
       const selected = selectTemplate(trainingProfile, templates);
       if (!selected) {
         setError('Aucun programme disponible pour ton profil.');
@@ -37,9 +42,20 @@ export default function WorkoutScreen() {
       }
       await saveWorkoutProgram(userId, selected.id);
       templateId = selected.id;
+      needsGeneration = true;
     }
 
-    const details = await fetchProgramDetails(templateId);
+    if (needsGeneration) {
+      const template = templates.find((t) => t.id === templateId)!;
+      const [archetypes, pool] = await Promise.all([
+        fetchTemplateDaySlots(templateId),
+        fetchExercisePool(template.equipment),
+      ]);
+      const generatedDays = generateWorkoutProgram(template.daysPerWeek, archetypes, pool);
+      await saveGeneratedProgram(userId, generatedDays);
+    }
+
+    const details = await fetchProgramDetails(userId, templateId);
     setProgram(details);
   }, []);
 
