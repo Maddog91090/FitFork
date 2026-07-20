@@ -69,6 +69,10 @@ describe('generateWorkoutProgram', () => {
 
     expect(allIds).toHaveLength(4);
     expect(new Set(allIds).size).toBe(3); // all 3 pool items used at least once
+
+    for (const day of days) {
+      expect(new Set(day.exerciseIds).size).toBe(day.exerciseIds.length);
+    }
   });
 
   it('returns an empty exercise list for a slot with no matching exercises in the pool', () => {

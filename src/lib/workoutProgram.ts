@@ -43,10 +43,11 @@ export function generateWorkoutProgram(
     for (const slot of archetype.slots) {
       const candidates = exercisePool.filter((e) => e.muscleGroup === slot.muscleGroup);
       const unused = candidates.filter((e) => !usedThisWeek.has(e.id));
+      const used = candidates.filter((e) => usedThisWeek.has(e.id));
       const shortfall = slot.count - unused.length;
       const picked = shortfall <= 0
         ? shuffle(unused).slice(0, slot.count)
-        : [...unused, ...shuffle(candidates).slice(0, shortfall)];
+        : [...unused, ...shuffle(used).slice(0, shortfall)];
 
       for (const exercise of picked) {
         usedThisWeek.add(exercise.id);
