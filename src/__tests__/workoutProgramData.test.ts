@@ -200,7 +200,7 @@ describe('saveGeneratedProgram', () => {
 });
 
 describe('fetchProgramDetails', () => {
-  it('assembles the template name and generated days, sorted by day and order_index', async () => {
+  it('assembles the template name and generated days, with instructions sorted by step_number', async () => {
     const templateSingle = jest.fn().mockResolvedValue({ data: { name: 'Full Body' }, error: null });
     const templateEq = jest.fn().mockReturnValue({ single: templateSingle });
     const templateSelect = jest.fn().mockReturnValue({ eq: templateEq });
@@ -210,12 +210,29 @@ describe('fetchProgramDetails', () => {
         {
           day_number: 1,
           day_name: 'Full Body',
-          exercises: { name: 'Squat', muscle_group: 'legs', default_sets: 4, default_reps_min: 8, default_reps_max: 10 },
+          exercises: {
+            name: 'Squat',
+            muscle_group: 'legs',
+            default_sets: 4,
+            default_reps_min: 8,
+            default_reps_max: 10,
+            exercise_instructions: [
+              { step_number: 2, text: 'Descends en pliant les genoux.' },
+              { step_number: 1, text: 'Pieds largeur d\'épaules.' },
+            ],
+          },
         },
         {
           day_number: 1,
           day_name: 'Full Body',
-          exercises: { name: 'Rowing', muscle_group: 'back', default_sets: 3, default_reps_min: 10, default_reps_max: 12 },
+          exercises: {
+            name: 'Rowing',
+            muscle_group: 'back',
+            default_sets: 3,
+            default_reps_min: 10,
+            default_reps_max: 12,
+            exercise_instructions: [{ step_number: 1, text: 'Tire vers le ventre.' }],
+          },
         },
       ],
       error: null,
@@ -238,8 +255,22 @@ describe('fetchProgramDetails', () => {
           dayNumber: 1,
           name: 'Full Body',
           exercises: [
-            { name: 'Squat', muscleGroup: 'legs', sets: 4, repsMin: 8, repsMax: 10 },
-            { name: 'Rowing', muscleGroup: 'back', sets: 3, repsMin: 10, repsMax: 12 },
+            {
+              name: 'Squat',
+              muscleGroup: 'legs',
+              sets: 4,
+              repsMin: 8,
+              repsMax: 10,
+              instructions: ['Pieds largeur d\'épaules.', 'Descends en pliant les genoux.'],
+            },
+            {
+              name: 'Rowing',
+              muscleGroup: 'back',
+              sets: 3,
+              repsMin: 10,
+              repsMax: 12,
+              instructions: ['Tire vers le ventre.'],
+            },
           ],
         },
       ],

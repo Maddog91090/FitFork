@@ -8,6 +8,7 @@ export type ProgramExercise = {
   sets: number;
   repsMin: number;
   repsMax: number;
+  instructions: string[];
 };
 
 export type ProgramDay = {
@@ -122,7 +123,7 @@ export async function fetchProgramDetails(userId: string, templateId: string): P
   const { data: rows, error: rowsError } = await supabase
     .from('user_program_exercises')
     .select(
-      'day_number, day_name, exercises(name, muscle_group, default_sets, default_reps_min, default_reps_max)'
+      'day_number, day_name, exercises(name, muscle_group, default_sets, default_reps_min, default_reps_max, exercise_instructions(step_number, text))'
     )
     .eq('user_id', userId)
     .order('day_number')
@@ -135,12 +136,17 @@ export async function fetchProgramDetails(userId: string, templateId: string): P
     if (!dayMap.has(row.day_number)) {
       dayMap.set(row.day_number, { dayNumber: row.day_number, name: row.day_name, exercises: [] });
     }
+    const instructions = (row.exercises.exercise_instructions ?? [])
+      .slice()
+      .sort((a: any, b: any) => a.step_number - b.step_number)
+      .map((i: any) => i.text);
     dayMap.get(row.day_number)!.exercises.push({
       name: row.exercises.name,
       muscleGroup: row.exercises.muscle_group,
       sets: row.exercises.default_sets,
       repsMin: row.exercises.default_reps_min,
       repsMax: row.exercises.default_reps_max,
+      instructions,
     });
   }
 
