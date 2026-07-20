@@ -45,17 +45,27 @@ export default function WorkoutScreen() {
       needsGeneration = true;
     }
 
-    if (needsGeneration) {
-      const template = templates.find((t) => t.id === templateId)!;
+    const generateAndSaveProgram = async (id: string) => {
+      const template = templates.find((t) => t.id === id)!;
       const [archetypes, pool] = await Promise.all([
-        fetchTemplateDaySlots(templateId),
+        fetchTemplateDaySlots(id),
         fetchExercisePool(template.equipment),
       ]);
       const generatedDays = generateWorkoutProgram(template.daysPerWeek, archetypes, pool);
       await saveGeneratedProgram(userId, generatedDays);
+    };
+
+    if (needsGeneration) {
+      await generateAndSaveProgram(templateId);
     }
 
-    const details = await fetchProgramDetails(userId, templateId);
+    let details = await fetchProgramDetails(userId, templateId);
+
+    if (!needsGeneration && details.days.length === 0) {
+      await generateAndSaveProgram(templateId);
+      details = await fetchProgramDetails(userId, templateId);
+    }
+
     setProgram(details);
   }, []);
 
