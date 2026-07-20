@@ -1,0 +1,348 @@
+# Recipe Preparation Instructions Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Every recipe in a user's meal plan can be tapped to reveal a preparation paragraph, loaded in the same request as the rest of the plan (no extra network round-trip), without disturbing the existing recipe-swap feature.
+
+**Architecture:** A single `preparation text` column is added to the existing `recipes` table (public-read, like the rest of the catalog). `fetchRecipes` is extended to select it, and `Recipe` gains a `preparation: string` field. `plan.tsx`'s meal-entry row is split into two separate tap targets: the row itself now expands/collapses the preparation text (local screen state), and a new explicit "Échanger" element takes over the swap action that the whole row used to trigger.
+
+**Tech Stack:** Expo (React Native, TypeScript), Supabase (Postgres, RLS, PostgREST), Jest (`jest-expo` preset) with mocked Supabase client for `*Data.ts` files.
+
+## Global Constraints
+
+- Migrations are SQL files applied manually via the Supabase SQL Editor (no CLI access). Apply in small numbered pieces with curl verification between each.
+- `src/lib/<name>.ts` files are pure (no Supabase import); `<name>Data.ts` files hold I/O, tested via `jest.mock('../lib/supabase', () => ({ supabase: { from: jest.fn() } }))`.
+- No dedicated UI test for `plan.tsx` — consistent with every other screen in this project, verified manually instead.
+- This plan does not touch `src/lib/mealPlan.ts`'s selection/generation logic (`generateWeeklyPlan`, `pickReplacementRecipe`) — only adds a display-only field and a UI interaction change.
+- The existing swap behavior (`handleSwap`, `pickReplacementRecipe`, `clampPortionMultiplier` usage in `plan.tsx`) must keep working exactly as before, just triggered from a different tap target.
+
+---
+
+### Task 1: Schema migration — preparation column and content
+
+**Files:**
+- Create: `supabase/migrations/0008_recipe_preparation.sql`
+
+**Interfaces:**
+- Produces: `recipes` table gains `preparation text not null`. Task 2's `mealPlanData.ts` selects this exact column name.
+
+- [ ] **Step 1: Write the migration SQL**
+
+Create `supabase/migrations/0008_recipe_preparation.sql`:
+
+```sql
+alter table public.recipes add column if not exists preparation text;
+
+update public.recipes r set preparation = v.preparation
+from (values
+  ('Porridge avoine-banane', 'Fais chauffer le lait dans une casserole, ajoute les flocons d''avoine et laisse mijoter à feu doux pendant 5 minutes en remuant régulièrement. Écrase la banane et incorpore-la en fin de cuisson, puis sers chaud.'),
+  ('Œufs brouillés et pain complet', 'Bats les œufs dans un bol avec une pincée de sel, puis fais-les cuire à feu doux dans une poêle beurrée en remuant constamment jusqu''à obtenir une texture crémeuse. Sers avec les tranches de pain complet légèrement toastées.'),
+  ('Yaourt grec, granola et fruits rouges', 'Verse le yaourt grec dans un bol, ajoute le granola par-dessus pour garder son croquant, puis termine avec les fruits rouges frais ou décongelés.'),
+  ('Pancakes protéinés', 'Mélange la farine, les œufs et la whey protéine jusqu''à obtenir une pâte homogène sans grumeaux. Fais cuire des petites louches de pâte dans une poêle chaude légèrement huilée, 2 minutes de chaque côté jusqu''à ce que des bulles apparaissent en surface.'),
+  ('Poulet grillé, riz et brocolis', 'Fais cuire le riz selon les instructions du paquet. Pendant ce temps, grille le blanc de poulet à la poêle ou au grill 5-6 minutes de chaque côté, et fais cuire les brocolis à la vapeur 8 minutes. Assemble le tout dans une assiette.'),
+  ('Saumon, quinoa et légumes vapeur', 'Rince le quinoa puis fais-le cuire dans deux fois son volume d''eau pendant environ 15 minutes. Cuis le pavé de saumon à la poêle ou au four 12-15 minutes, et fais cuire les légumes à la vapeur en parallèle.'),
+  ('Wrap dinde-avocat', 'Écrase l''avocat à la fourchette et tartine-le sur la tortilla. Ajoute les tranches de dinde par-dessus, roule fermement le wrap et coupe-le en deux.'),
+  ('Buddha bowl pois chiches', 'Fais cuire le riz selon les instructions du paquet. Rince les pois chiches et fais-les revenir quelques minutes à la poêle avec les épinards jusqu''à ce qu''ils soient tendres, puis dresse le tout dans un bol.'),
+  ('Steak haché, patate douce et haricots verts', 'Coupe la patate douce en cubes et fais-la rôtir au four 25 minutes à 200°C. Fais cuire les haricots verts à la vapeur, et saisis le steak haché à la poêle 3-4 minutes de chaque côté selon la cuisson désirée.'),
+  ('Pâtes bolognaise (bœuf 5%)', 'Fais cuire les pâtes dans l''eau bouillante salée selon les instructions du paquet. Pendant ce temps, fais revenir le bœuf haché dans une poêle jusqu''à ce qu''il soit doré, ajoute la sauce tomate et laisse mijoter 10 minutes avant de mélanger aux pâtes égouttées.'),
+  ('Cabillaud, riz basmati et courgettes', 'Fais cuire le riz basmati selon les instructions du paquet. Fais cuire le cabillaud à la vapeur ou au four 12 minutes, et fais revenir les courgettes coupées en rondelles à la poêle avec un filet d''huile d''olive.'),
+  ('Tofu sauté, nouilles et légumes', 'Fais cuire les nouilles selon les instructions du paquet. Coupe le tofu en cubes et fais-le dorer à la poêle avec un peu d''huile, puis ajoute les légumes sautés et mélange le tout avec les nouilles égouttées.'),
+  ('Barre protéinée maison', 'Mélange les flocons d''avoine avec la whey protéine et un peu d''eau ou de lait jusqu''à obtenir une pâte compacte. Étale-la sur une plaque, tasse bien et réfrigère au moins 1 heure avant de découper en barres.'),
+  ('Pomme et beurre de cacahuète', 'Coupe la pomme en quartiers et sers-la accompagnée du beurre de cacahuète pour tremper.'),
+  ('Fromage blanc et miel', 'Verse le fromage blanc dans un bol et arrose-le d''un filet de miel juste avant de servir.'),
+  ('Muesli maison et lait d''amande', 'Verse le muesli dans un bol et ajoute le lait d''amande froid par-dessus juste avant de servir pour garder le croquant.'),
+  ('Omelette au fromage et jambon', 'Bats les œufs dans un bol avec une pincée de sel. Fais chauffer une poêle beurrée, verse les œufs, ajoute le jambon coupé en dés et le fromage râpé, puis replie l''omelette en deux une fois prise.'),
+  ('Smoothie bowl banane-myrtille', 'Mixe la banane, les myrtilles et le yaourt grec ensemble jusqu''à obtenir une texture épaisse et lisse. Verse dans un bol et ajoute des toppings de ton choix si tu veux.'),
+  ('Toast à l''avocat et œuf poché', 'Fais toaster le pain complet. Pendant ce temps, poche les œufs dans une casserole d''eau frémissante additionnée d''un peu de vinaigre pendant 3 minutes. Écrase l''avocat sur le pain toasté et dépose l''œuf poché par-dessus.'),
+  ('Crêpes à la farine complète et miel', 'Mélange la farine complète avec les œufs et un peu de lait pour obtenir une pâte à crêpe fluide. Fais cuire les crêpes dans une poêle chaude légèrement huilée, puis arrose de miel avant de servir.'),
+  ('Bagel au saumon fumé et fromage frais', 'Coupe le bagel en deux et fais-le légèrement toaster. Tartine de fromage frais puis ajoute les tranches de saumon fumé par-dessus.'),
+  ('Porridge protéiné chocolat-noisette', 'Fais chauffer le lait dans une casserole, ajoute les flocons d''avoine et laisse mijoter à feu doux 5 minutes. Incorpore la whey protéine hors du feu en remuant bien pour éviter les grumeaux.'),
+  ('Gaufres maison et fruits', 'Mélange la farine avec les œufs et un peu de lait pour former une pâte à gaufre. Fais cuire dans un gaufrier chaud quelques minutes jusqu''à ce qu''elles soient dorées, puis sers avec les fruits rouges.'),
+  ('Skyr et flocons d''avoine', 'Verse le skyr dans un bol, ajoute les flocons d''avoine et arrose d''un filet de miel avant de servir.'),
+  ('Sandwich œufs-bacon', 'Fais cuire le bacon à la poêle jusqu''à ce qu''il soit croustillant. Fais cuire les œufs au plat ou brouillés, puis assemble le tout entre les tranches de pain complet.'),
+  ('Salade César au poulet', 'Grille le blanc de poulet à la poêle 5-6 minutes de chaque côté puis coupe-le en lamelles. Mélange la salade romaine avec le parmesan râpé et dispose le poulet par-dessus.'),
+  ('Riz sauté au tofu et légumes', 'Fais cuire le riz selon les instructions du paquet puis laisse-le refroidir si possible. Fais dorer le tofu coupé en cubes à la poêle, ajoute les légumes sautés et le riz, et fais sauter le tout à feu vif quelques minutes.'),
+  ('Poke bowl saumon-avocat', 'Fais cuire le riz selon les instructions du paquet et laisse-le tiédir. Coupe le saumon en cubes, tranche l''avocat, et dresse le tout sur le riz.'),
+  ('Sandwich club poulet-bacon', 'Fais cuire le bacon à la poêle jusqu''à ce qu''il soit croustillant et grille le blanc de poulet. Assemble entre les tranches de pain complet en superposant poulet et bacon.'),
+  ('Pâtes au thon et tomates', 'Fais cuire les pâtes dans l''eau bouillante salée selon les instructions du paquet. Fais chauffer la sauce tomate dans une poêle, émiette le thon égoutté et mélange le tout aux pâtes égouttées.'),
+  ('Curry de poulet et riz basmati', 'Fais cuire le riz basmati selon les instructions du paquet. Fais dorer le blanc de poulet coupé en morceaux dans une poêle, ajoute le lait de coco et laisse mijoter 10 minutes à feu doux.'),
+  ('Salade de lentilles et feta', 'Fais cuire les lentilles selon les instructions du paquet puis laisse-les refroidir. Mélange-les avec les légumes coupés en dés et émiette la feta par-dessus.'),
+  ('Burrito bœuf-haricots rouges', 'Fais revenir le bœuf haché à la poêle jusqu''à ce qu''il soit doré, ajoute les haricots rouges égouttés et laisse chauffer quelques minutes. Garnis la tortilla, roule fermement le burrito.'),
+  ('Bol de quinoa aux crevettes', 'Rince le quinoa et fais-le cuire dans deux fois son volume d''eau environ 15 minutes. Fais sauter les crevettes à la poêle 3-4 minutes jusqu''à ce qu''elles soient roses, puis dresse le tout avec les légumes vapeur.'),
+  ('Sandwich thon-crudités', 'Égoutte le thon et mélange-le avec les crudités coupées en petits morceaux. Garnis les tranches de pain complet avec ce mélange.'),
+  ('Poulet rôti et pommes de terre', 'Fais rôtir la cuisse de poulet au four à 200°C pendant 35-40 minutes jusqu''à ce que la peau soit dorée. Fais cuire les pommes de terre coupées en morceaux au four en même temps, et les haricots verts à la vapeur.'),
+  ('Chili con carne et riz', 'Fais cuire le riz selon les instructions du paquet. Fais revenir le bœuf haché à la poêle jusqu''à ce qu''il soit doré, ajoute les haricots rouges égouttés et laisse mijoter 15 minutes à feu doux.'),
+  ('Gratin de saumon et brocolis', 'Fais cuire les brocolis à la vapeur quelques minutes. Dispose le saumon et les brocolis dans un plat à gratin, nappe de crème légère et fais cuire au four à 200°C pendant 20 minutes.'),
+  ('Escalope de dinde et purée', 'Fais cuire l''escalope de dinde à la poêle 4-5 minutes de chaque côté. Fais bouillir les pommes de terre jusqu''à ce qu''elles soient tendres, écrase-les avec le beurre pour former une purée.'),
+  ('Risotto aux champignons et parmesan', 'Fais revenir le riz arborio dans une poêle puis ajoute progressivement du bouillon chaud en remuant régulièrement jusqu''à absorption complète, environ 18 minutes. Incorpore les champignons poêlés et le parmesan râpé en fin de cuisson.'),
+  ('Curry de crevettes et riz', 'Fais cuire le riz selon les instructions du paquet. Fais sauter les crevettes à la poêle 2-3 minutes, ajoute le lait de coco et laisse mijoter 5 minutes à feu doux.'),
+  ('Poêlée de bœuf et légumes asiatiques', 'Fais chauffer un filet d''huile dans un wok ou une grande poêle, fais saisir le bœuf émincé à feu vif quelques minutes. Ajoute les légumes sautés et la sauce soja, puis mélange bien avant de servir.'),
+  ('Lasagnes à la viande', 'Fais revenir le bœuf haché à la poêle avec la sauce tomate pendant 10 minutes. Monte les lasagnes en alternant plaques de pâtes et sauce à la viande, puis fais cuire au four à 200°C pendant 30 minutes.'),
+  ('Filet de poisson blanc et légumes rôtis', 'Coupe les légumes et fais-les rôtir au four à 200°C avec un filet d''huile d''olive pendant 20 minutes. Fais cuire le filet de poisson blanc à la poêle ou au four 10-12 minutes.'),
+  ('Chili végétarien et riz complet', 'Fais cuire le riz complet selon les instructions du paquet. Fais chauffer les haricots rouges égouttés avec la sauce tomate dans une casserole et laisse mijoter 15 minutes à feu doux.'),
+  ('Amandes et fruits secs', 'Mélange simplement les amandes et les fruits secs dans un petit bol, prêt à emporter.'),
+  ('Smoothie protéiné banane', 'Mixe la banane, le lait et la whey protéine ensemble jusqu''à obtenir une texture lisse et mousseuse.'),
+  ('Houmous et bâtonnets de légumes', 'Coupe les carottes et le concombre en bâtonnets, et sers-les accompagnés du houmous pour tremper.'),
+  ('Yaourt et granola', 'Verse le yaourt grec dans un bol et ajoute le granola par-dessus juste avant de servir pour garder son croquant.'),
+  ('Barre de céréales maison', 'Mélange les flocons d''avoine avec le miel et les fruits secs jusqu''à obtenir une pâte collante. Étale sur une plaque, tasse bien et réfrigère au moins 1 heure avant de découper en barres.'),
+  ('Fromage cottage et fruits rouges', 'Verse le fromage cottage dans un bol et ajoute les fruits rouges frais ou décongelés par-dessus.'),
+  ('Toast au beurre de cacahuète et banane', 'Fais toaster la tranche de pain complet. Tartine de beurre de cacahuète puis dispose les rondelles de banane par-dessus.'),
+  ('Œuf dur et fruit', 'Fais cuire les œufs dans l''eau bouillante pendant 9-10 minutes puis passe-les sous l''eau froide avant de les écaler. Sers accompagnés de la pomme.'),
+  ('Shake protéiné chocolat', 'Mixe la whey protéine avec le lait jusqu''à obtenir une texture lisse et mousseuse, sers immédiatement.')
+) as v(name, preparation)
+where r.name = v.name;
+
+alter table public.recipes alter column preparation set not null;
+```
+
+- [ ] **Step 2: Apply the migration (manual — needs Supabase dashboard access)**
+
+Apply in the Supabase SQL Editor in 3 numbered pieces:
+1. `alter table public.recipes add column if not exists preparation text;`
+2. The `update ... from (values ...) ... where r.name = v.name;` statement (54 rows).
+3. `alter table public.recipes alter column preparation set not null;`
+
+Confirm no error banner appears after each piece before pasting the next.
+
+- [ ] **Step 3: Verify via the REST API**
+
+```bash
+curl -s "$EXPO_PUBLIC_SUPABASE_URL/rest/v1/recipes?select=id&preparation=is.null" \
+  -H "apikey: $EXPO_PUBLIC_SUPABASE_ANON_KEY" -H "Authorization: Bearer $EXPO_PUBLIC_SUPABASE_ANON_KEY"
+# Expected: [] (no recipe left without a preparation)
+
+curl -s "$EXPO_PUBLIC_SUPABASE_URL/rest/v1/recipes?select=name,preparation&limit=1" \
+  -H "apikey: $EXPO_PUBLIC_SUPABASE_ANON_KEY" -H "Authorization: Bearer $EXPO_PUBLIC_SUPABASE_ANON_KEY"
+# Expected: 1 row with both name and a non-empty preparation string
+```
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add supabase/migrations/0008_recipe_preparation.sql
+git commit -m "Add recipe preparation text"
+```
+
+---
+
+### Task 2: Data layer — select preparation in fetchRecipes
+
+**Files:**
+- Modify: `src/lib/mealPlanData.ts`
+- Test: `src/__tests__/mealPlanData.test.ts`
+
+**Interfaces:**
+- Consumes: `recipes.preparation` column from Task 1.
+- Produces: `Recipe` type gains `preparation: string`. Task 3's `plan.tsx` reads `recipe.preparation` for the expanded display. No other exported function/type in this file changes.
+
+- [ ] **Step 1: Write the failing test**
+
+In `src/__tests__/mealPlanData.test.ts`, update the `fetchRecipes` describe block's first test (leave the "throws on a Supabase error" test untouched):
+
+```ts
+describe('fetchRecipes', () => {
+  it('maps rows to the Recipe shape', async () => {
+    const order = jest.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'r1',
+          name: 'Porridge',
+          meal_type: 'breakfast',
+          base_calories: 350,
+          base_protein_g: 12,
+          base_fat_g: 8,
+          base_carbs_g: 58,
+          base_serving_g: 300,
+          preparation: 'Fais chauffer le lait et ajoute les flocons.',
+        },
+      ],
+      error: null,
+    });
+    const select = jest.fn().mockReturnValue({ order });
+    (supabase.from as jest.Mock).mockReturnValue({ select });
+
+    const result = await fetchRecipes();
+
+    expect(result).toEqual([
+      {
+        id: 'r1',
+        name: 'Porridge',
+        mealType: 'breakfast',
+        baseCalories: 350,
+        baseProteinG: 12,
+        baseFatG: 8,
+        baseCarbsG: 58,
+        baseServingG: 300,
+        preparation: 'Fais chauffer le lait et ajoute les flocons.',
+      },
+    ]);
+    expect(order).toHaveBeenCalledWith('id');
+  });
+
+  it('throws on a Supabase error', async () => {
+    const order = jest.fn().mockResolvedValue({ data: null, error: new Error('boom') });
+    const select = jest.fn().mockReturnValue({ order });
+    (supabase.from as jest.Mock).mockReturnValue({ select });
+
+    await expect(fetchRecipes()).rejects.toThrow('boom');
+  });
+});
+```
+
+- [ ] **Step 2: Run the test to verify it fails**
+
+Run: `npx jest mealPlanData.test.ts`
+Expected: FAIL — the first `fetchRecipes` test fails because the current implementation doesn't select `preparation` or map it onto the result (actual result is missing the `preparation` field, so `toEqual` fails).
+
+- [ ] **Step 3: Update the implementation**
+
+In `src/lib/mealPlanData.ts`, change the `Recipe` type:
+
+```ts
+export type Recipe = {
+  id: string;
+  name: string;
+  mealType: MealType;
+  baseCalories: number;
+  baseProteinG: number;
+  baseFatG: number;
+  baseCarbsG: number;
+  baseServingG: number;
+  preparation: string;
+};
+```
+
+Then update `fetchRecipes`:
+
+```ts
+export async function fetchRecipes(): Promise<Recipe[]> {
+  const { data, error } = await supabase
+    .from('recipes')
+    .select('id, name, meal_type, base_calories, base_protein_g, base_fat_g, base_carbs_g, base_serving_g, preparation')
+    .order('id');
+
+  if (error) throw error;
+
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    name: row.name,
+    mealType: row.meal_type,
+    baseCalories: row.base_calories,
+    baseProteinG: row.base_protein_g,
+    baseFatG: row.base_fat_g,
+    baseCarbsG: row.base_carbs_g,
+    baseServingG: row.base_serving_g,
+    preparation: row.preparation,
+  }));
+}
+```
+
+- [ ] **Step 4: Run the test to verify it passes**
+
+Run: `npx jest mealPlanData.test.ts`
+Expected: PASS (all tests in the file, including the unmodified `fetchRecipeIngredients`, `saveWeeklyPlan`, `getCurrentPlan`, `updatePlanEntry` suites)
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/lib/mealPlanData.ts src/__tests__/mealPlanData.test.ts
+git commit -m "Select recipe preparation text in fetchRecipes"
+```
+
+---
+
+### Task 3: Tap-to-expand preparation text, with swap moved to its own button
+
+**Files:**
+- Modify: `src/app/plan.tsx`
+
+**Interfaces:**
+- Consumes: `Recipe.preparation: string` from Task 2.
+- Produces: nothing consumed by a later task (final task in this plan).
+
+- [ ] **Step 1: Add expand/collapse state**
+
+In `src/app/plan.tsx`, add a new piece of state right after the existing `swappingId` state declaration:
+
+```ts
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  const toggleEntry = (entryId: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(entryId)) {
+        next.delete(entryId);
+      } else {
+        next.add(entryId);
+      }
+      return next;
+    });
+  };
+```
+
+- [ ] **Step 2: Split the row into an expand-toggle area and a separate swap button**
+
+Replace the per-entry rendering block (currently the single `Pressable` with `key={entry.id}` that calls `handleSwap` on press) with:
+
+```tsx
+              {dayEntries.map((entry) => {
+                const recipe = recipeById.get(entry.recipeId);
+                const isExpanded = expanded.has(entry.id);
+                return (
+                  <View key={entry.id} style={styles.entryContainer}>
+                    <View style={styles.entryRow}>
+                      <Pressable style={styles.entryInfo} onPress={() => toggleEntry(entry.id)}>
+                        <Text style={styles.mealTypeLabel}>{MEAL_TYPE_LABELS[entry.mealType]}</Text>
+                        <Text style={styles.recipeName}>
+                          {recipe ? recipe.name : entry.recipeId} ({Math.round(entry.portionMultiplier * 100)}%)
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => handleSwap(entry.id, entry.mealType, entry.recipeId)}
+                        disabled={swappingId === entry.id}
+                      >
+                        <Text style={styles.swapHint}>{swappingId === entry.id ? '...' : 'Échanger'}</Text>
+                      </Pressable>
+                    </View>
+                    {isExpanded && recipe && <Text style={styles.preparationText}>{recipe.preparation}</Text>}
+                  </View>
+                );
+              })}
+```
+
+Note: this removes the old `const recipe = recipeById.get(entry.recipeId);` line that used to sit just above the return statement inside the `.map()` — it's now declared inside this same block as shown above, so delete the old standalone line if it's still present outside this replacement.
+
+- [ ] **Step 3: Update the styles**
+
+Replace the `entryRow`, `mealTypeLabel`, `recipeName`, and `swapHint` entries in the `StyleSheet.create({...})` block, and add two new ones:
+
+```ts
+  entryContainer: { borderBottomWidth: 1, borderBottomColor: '#eee', paddingVertical: 8 },
+  entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  entryInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  mealTypeLabel: { width: 90, color: '#666' },
+  recipeName: { flex: 1 },
+  swapHint: { color: '#208AEF', marginLeft: 12 },
+  preparationText: { marginTop: 8, color: '#444' },
+```
+
+- [ ] **Step 4: Run the full test suite**
+
+Run: `npx jest`
+Expected: PASS (no dedicated test exists for `plan.tsx` — no other screen file has one either — so this step confirms the change didn't break any `*Data.ts`/`*.ts` test relying on these exports)
+
+- [ ] **Step 5: Manually verify in the running app**
+
+Start the app (`npx expo start --web`), open the meal plan screen, and confirm:
+- Tapping a meal entry (the meal type + recipe name area) reveals the preparation paragraph beneath it, and tapping again collapses it.
+- Tapping the "Échanger" text still swaps the recipe for another of the same meal type, exactly as before.
+- The two tap targets don't interfere with each other (tapping "Échanger" doesn't also toggle the expand state, and vice versa).
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/app/plan.tsx
+git commit -m "Add tap-to-expand recipe preparation, move swap to its own button"
+```
+
+---
