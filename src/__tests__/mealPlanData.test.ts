@@ -28,6 +28,7 @@ describe('fetchRecipes', () => {
           base_fat_g: 8,
           base_carbs_g: 58,
           base_serving_g: 300,
+          preparation: 'Fais chauffer le lait et ajoute les flocons.',
         },
       ],
       error: null,
@@ -47,6 +48,7 @@ describe('fetchRecipes', () => {
         baseFatG: 8,
         baseCarbsG: 58,
         baseServingG: 300,
+        preparation: 'Fais chauffer le lait et ajoute les flocons.',
       },
     ]);
     expect(order).toHaveBeenCalledWith('id');

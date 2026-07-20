@@ -10,6 +10,7 @@ export type Recipe = {
   baseFatG: number;
   baseCarbsG: number;
   baseServingG: number;
+  preparation: string;
 };
 
 export type RecipeIngredient = {
@@ -36,7 +37,7 @@ export type SavedPlan = {
 export async function fetchRecipes(): Promise<Recipe[]> {
   const { data, error } = await supabase
     .from('recipes')
-    .select('id, name, meal_type, base_calories, base_protein_g, base_fat_g, base_carbs_g, base_serving_g')
+    .select('id, name, meal_type, base_calories, base_protein_g, base_fat_g, base_carbs_g, base_serving_g, preparation')
     .order('id');
 
   if (error) throw error;
@@ -50,6 +51,7 @@ export async function fetchRecipes(): Promise<Recipe[]> {
     baseFatG: row.base_fat_g,
     baseCarbsG: row.base_carbs_g,
     baseServingG: row.base_serving_g,
+    preparation: row.preparation,
   }));
 }
 
