@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, Button, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Button, ActivityIndicator, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { getTrainingProfile } from '../lib/profile';
@@ -22,6 +22,20 @@ export default function WorkoutScreen() {
   const [checking, setChecking] = useState(true);
   const [regenerating, setRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  const toggleExercise = (key: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
 
   const assignAndLoad = useCallback(async (userId: string, forceRegenerate: boolean) => {
     const trainingProfile = await getTrainingProfile(userId);
@@ -124,11 +138,26 @@ export default function WorkoutScreen() {
           {program.days.map((day) => (
             <View key={day.dayNumber} style={styles.dayBlock}>
               <Text style={styles.dayLabel}>{day.name}</Text>
-              {day.exercises.map((exercise, index) => (
-                <Text key={index} style={styles.exerciseLine}>
-                  {exercise.name} — {exercise.sets} x {exercise.repsMin}-{exercise.repsMax} ({exercise.muscleGroup})
-                </Text>
-              ))}
+              {day.exercises.map((exercise, index) => {
+                const key = `${day.dayNumber}-${index}`;
+                const isExpanded = expanded.has(key);
+                return (
+                  <Pressable key={index} onPress={() => toggleExercise(key)} style={styles.exerciseRow}>
+                    <Text style={styles.exerciseLine}>
+                      {exercise.name} — {exercise.sets} x {exercise.repsMin}-{exercise.repsMax} ({exercise.muscleGroup})
+                    </Text>
+                    {isExpanded && (
+                      <View style={styles.instructionsBlock}>
+                        {exercise.instructions.map((step, stepIndex) => (
+                          <Text key={stepIndex} style={styles.instructionLine}>
+                            {stepIndex + 1}. {step}
+                          </Text>
+                        ))}
+                      </View>
+                    )}
+                  </Pressable>
+                );
+              })}
             </View>
           ))}
         </>
@@ -150,5 +179,8 @@ const styles = StyleSheet.create({
   dayBlock: { marginBottom: 20 },
   dayLabel: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
   exerciseLine: { marginBottom: 4 },
+  exerciseRow: { marginBottom: 4 },
+  instructionsBlock: { marginTop: 4, marginLeft: 12 },
+  instructionLine: { marginBottom: 2, color: '#444' },
   error: { color: 'red', marginBottom: 16 },
 });
