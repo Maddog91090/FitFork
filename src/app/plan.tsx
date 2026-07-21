@@ -21,20 +21,6 @@ export default function PlanScreen() {
   const [error, setError] = useState<string | null>(null);
   const [swappingId, setSwappingId] = useState<string | null>(null);
 
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
-
-  const toggleEntry = (entryId: string) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(entryId)) {
-        next.delete(entryId);
-      } else {
-        next.add(entryId);
-      }
-      return next;
-    });
-  };
-
   const load = useCallback(async () => {
     if (!session) return;
     setChecking(true);
@@ -116,11 +102,10 @@ export default function PlanScreen() {
             <Text style={styles.dayLabel}>{dayLabel}</Text>
             {dayEntries.map((entry) => {
                 const recipe = recipeById.get(entry.recipeId);
-                const isExpanded = expanded.has(entry.id);
                 return (
                   <View key={entry.id} style={styles.entryContainer}>
                     <View style={styles.entryRow}>
-                      <Pressable style={styles.entryInfo} onPress={() => toggleEntry(entry.id)}>
+                      <Pressable style={styles.entryInfo} onPress={() => router.push(`/recipe/${entry.recipeId}`)}>
                         <Text style={styles.mealTypeLabel}>{MEAL_TYPE_LABELS[entry.mealType]}</Text>
                         <Text style={styles.recipeName}>
                           {recipe ? recipe.name : entry.recipeId} ({Math.round(entry.portionMultiplier * 100)}%)
@@ -133,7 +118,6 @@ export default function PlanScreen() {
                         <Text style={styles.swapHint}>{swappingId === entry.id ? '...' : 'Échanger'}</Text>
                       </Pressable>
                     </View>
-                    {isExpanded && recipe && <Text style={styles.preparationText}>{recipe.preparation}</Text>}
                   </View>
                 );
               })}
@@ -157,7 +141,6 @@ const styles = StyleSheet.create({
   mealTypeLabel: { width: 90, color: '#666' },
   recipeName: { flex: 1 },
   swapHint: { color: '#208AEF', marginLeft: 12 },
-  preparationText: { marginTop: 8, color: '#444' },
   error: { color: 'red', marginBottom: 16 },
   groceryLink: { marginTop: 16, textAlign: 'center' },
 });
