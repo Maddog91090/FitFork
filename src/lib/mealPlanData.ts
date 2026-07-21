@@ -10,7 +10,6 @@ export type Recipe = {
   baseFatG: number;
   baseCarbsG: number;
   baseServingG: number;
-  preparation: string;
 };
 
 export type RecipeIngredient = {
@@ -37,7 +36,7 @@ export type SavedPlan = {
 export async function fetchRecipes(): Promise<Recipe[]> {
   const { data, error } = await supabase
     .from('recipes')
-    .select('id, name, meal_type, base_calories, base_protein_g, base_fat_g, base_carbs_g, base_serving_g, preparation')
+    .select('id, name, meal_type, base_calories, base_protein_g, base_fat_g, base_carbs_g, base_serving_g')
     .order('id');
 
   if (error) throw error;
@@ -51,7 +50,6 @@ export async function fetchRecipes(): Promise<Recipe[]> {
     baseFatG: row.base_fat_g,
     baseCarbsG: row.base_carbs_g,
     baseServingG: row.base_serving_g,
-    preparation: row.preparation,
   }));
 }
 
@@ -71,6 +69,20 @@ export async function fetchRecipeIngredients(recipeIds: string[]): Promise<Recip
     quantity: row.quantity,
     unit: row.unit,
   }));
+}
+
+export async function fetchRecipeInstructions(recipeId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('recipe_instructions')
+    .select('step_number, text')
+    .eq('recipe_id', recipeId)
+    .order('step_number');
+
+  if (error) throw error;
+
+  return (data ?? [])
+    .sort((a: any, b: any) => a.step_number - b.step_number)
+    .map((row: any) => row.text);
 }
 
 export async function saveWeeklyPlan(

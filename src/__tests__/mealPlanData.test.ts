@@ -1,6 +1,7 @@
 import {
   fetchRecipes,
   fetchRecipeIngredients,
+  fetchRecipeInstructions,
   saveWeeklyPlan,
   getCurrentPlan,
   updatePlanEntry,
@@ -28,7 +29,6 @@ describe('fetchRecipes', () => {
           base_fat_g: 8,
           base_carbs_g: 58,
           base_serving_g: 300,
-          preparation: 'Fais chauffer le lait et ajoute les flocons.',
         },
       ],
       error: null,
@@ -48,7 +48,6 @@ describe('fetchRecipes', () => {
         baseFatG: 8,
         baseCarbsG: 58,
         baseServingG: 300,
-        preparation: 'Fais chauffer le lait et ajoute les flocons.',
       },
     ]);
     expect(order).toHaveBeenCalledWith('id');
@@ -82,6 +81,36 @@ describe('fetchRecipeIngredients', () => {
 
     expect(result).toEqual([{ recipeId: 'r1', ingredientName: "Flocons d'avoine", quantity: 80, unit: 'g' }]);
     expect(inFn).toHaveBeenCalledWith('recipe_id', ['r1']);
+  });
+});
+
+describe('fetchRecipeInstructions', () => {
+  it('returns step texts ordered by step_number', async () => {
+    const order = jest.fn().mockResolvedValue({
+      data: [
+        { step_number: 2, text: 'Deuxième étape.' },
+        { step_number: 1, text: 'Première étape.' },
+      ],
+      error: null,
+    });
+    const eq = jest.fn().mockReturnValue({ order });
+    const select = jest.fn().mockReturnValue({ eq });
+    (supabase.from as jest.Mock).mockReturnValue({ select });
+
+    const result = await fetchRecipeInstructions('r1');
+
+    expect(result).toEqual(['Première étape.', 'Deuxième étape.']);
+    expect(eq).toHaveBeenCalledWith('recipe_id', 'r1');
+    expect(order).toHaveBeenCalledWith('step_number');
+  });
+
+  it('throws on a Supabase error', async () => {
+    const order = jest.fn().mockResolvedValue({ data: null, error: new Error('boom') });
+    const eq = jest.fn().mockReturnValue({ order });
+    const select = jest.fn().mockReturnValue({ eq });
+    (supabase.from as jest.Mock).mockReturnValue({ select });
+
+    await expect(fetchRecipeInstructions('r1')).rejects.toThrow('boom');
   });
 });
 
