@@ -7,9 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "mealworkoutplanner",
     "userInterfaceStyle": "automatic",
-    "ios": {
-      "icon": "./assets/expo.icon"
-    },
     "android": {
       "package": "com.maddog91steam.fitpro",
       "adaptiveIcon": {
