@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "meal-workout-planner",
-    "slug": "meal-workout-planner",
+    "slug": "fitpro",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -11,6 +11,7 @@
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "package": "com.maddog91steam.fitpro",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -37,6 +38,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "10737ad1-c744-448a-b40e-a4f664d3409a"
+      }
+    },
+    "owner": "maddog91s-team"
   }
 }

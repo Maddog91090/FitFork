@@ -46,3 +46,9 @@ example
 /android
 
 .env
+
+# unrelated tooling artifacts (not part of this project)
+.agents/
+.claude/
+skills-lock.json
+videos/
