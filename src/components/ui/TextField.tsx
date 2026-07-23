@@ -1,0 +1,73 @@
+import { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, type TextInputProps } from 'react-native';
+import { colors, radius, shadow, spacing } from '../../theme/tokens';
+
+type TextFieldProps = {
+  label?: string;
+  value: string;
+  onChangeText: (value: string) => void;
+  placeholder?: string;
+  keyboardType?: TextInputProps['keyboardType'];
+  secureTextEntry?: boolean;
+  autoCapitalize?: TextInputProps['autoCapitalize'];
+  testID?: string;
+};
+
+export function TextField({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  keyboardType,
+  secureTextEntry,
+  autoCapitalize,
+  testID,
+}: TextFieldProps) {
+  const [focused, setFocused] = useState(false);
+
+  return (
+    <View style={styles.container}>
+      {label && <Text style={styles.label}>{label}</Text>}
+      <TextInput
+        testID={testID}
+        style={[styles.input, focused && styles.inputFocused]}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={colors.textSecondary}
+        keyboardType={keyboardType}
+        secureTextEntry={secureTextEntry}
+        autoCapitalize={autoCapitalize}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: spacing.md,
+  },
+  label: {
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    color: colors.textSecondary,
+    fontWeight: '700',
+    marginBottom: spacing.xs,
+  },
+  input: {
+    backgroundColor: colors.bgSurface,
+    borderRadius: radius.sm,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    fontSize: 14,
+    color: colors.textPrimary,
+    ...shadow.card,
+  },
+  inputFocused: {
+    borderWidth: 2,
+    borderColor: colors.accentRed,
+  },
+});
