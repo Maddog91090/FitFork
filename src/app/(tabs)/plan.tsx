@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
-import { Link, router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getCurrentPlan, updatePlanEntry, fetchRecipes, type Recipe, type SavedPlan } from '../../lib/mealPlanData';
 import { pickReplacementRecipe, MEAL_TYPE_RATIOS, clampPortionMultiplier, type MealType } from '../../lib/mealPlan';
+import { Card } from '../../components/ui/Card';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { colors, spacing } from '../../theme/tokens';
 
 const DAY_LABELS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -76,23 +79,28 @@ export default function PlanScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator />
+      <View style={styles.centered}>
+        <ActivityIndicator color={colors.accentRed} />
       </View>
     );
   }
 
   if (!plan || plan.entries.length === 0) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
-        <Text style={{ marginBottom: 16 }}>Aucun plan pour l'instant.</Text>
-        <Link href="/generate-plan">Générer un plan</Link>
+      <View style={styles.centered}>
+        <EmptyState
+          icon={<Text style={styles.emptyIcon}>📋</Text>}
+          title="Aucun plan pour l'instant"
+          message="Génère ton premier plan de repas de la semaine."
+          actionLabel="Générer un plan"
+          onAction={() => router.push('/generate-plan')}
+        />
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       {error && <Text style={styles.error}>{error}</Text>}
       {DAY_LABELS.map((dayLabel, dayIndex) => {
         const dayEntries = plan.entries.filter((e) => e.dayIndex === dayIndex);
@@ -101,46 +109,57 @@ export default function PlanScreen() {
           <View key={dayLabel} style={styles.dayBlock}>
             <Text style={styles.dayLabel}>{dayLabel}</Text>
             {dayEntries.map((entry) => {
-                const recipe = recipeById.get(entry.recipeId);
-                return (
-                  <View key={entry.id} style={styles.entryContainer}>
-                    <View style={styles.entryRow}>
-                      <Pressable style={styles.entryInfo} onPress={() => router.push(`/recipe/${entry.recipeId}`)}>
-                        <Text style={styles.mealTypeLabel}>{MEAL_TYPE_LABELS[entry.mealType]}</Text>
-                        <Text style={styles.recipeName}>
-                          {recipe ? recipe.name : entry.recipeId} ({Math.round(entry.portionMultiplier * 100)}%)
-                        </Text>
-                      </Pressable>
-                      <Pressable
-                        onPress={() => handleSwap(entry.id, entry.mealType, entry.recipeId)}
-                        disabled={swappingId === entry.id}
-                      >
-                        <Text style={styles.swapHint}>{swappingId === entry.id ? '...' : 'Échanger'}</Text>
-                      </Pressable>
-                    </View>
+              const recipe = recipeById.get(entry.recipeId);
+              return (
+                <Card key={entry.id} style={styles.entryCard}>
+                  <View style={styles.entryRow}>
+                    <Pressable style={styles.entryInfo} onPress={() => router.push(`/recipe/${entry.recipeId}`)}>
+                      <Text style={styles.mealTypeLabel}>{MEAL_TYPE_LABELS[entry.mealType]}</Text>
+                      <Text style={styles.recipeName}>
+                        {recipe ? recipe.name : entry.recipeId} ({Math.round(entry.portionMultiplier * 100)}%)
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => handleSwap(entry.id, entry.mealType, entry.recipeId)}
+                      disabled={swappingId === entry.id}
+                    >
+                      <Text style={styles.swapHint}>{swappingId === entry.id ? '...' : 'Échanger'}</Text>
+                    </Pressable>
                   </View>
-                );
-              })}
+                </Card>
+              );
+            })}
           </View>
         );
       })}
-      <Link href="/grocery-list" style={styles.groceryLink}>
-        Voir la liste de courses
-      </Link>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24 },
-  dayBlock: { marginBottom: 20 },
-  dayLabel: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
-  entryContainer: { borderBottomWidth: 1, borderBottomColor: '#eee', paddingVertical: 8 },
+  screen: { flex: 1, backgroundColor: colors.bgBase },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.bgBase,
+    padding: spacing.lg,
+  },
+  container: { padding: spacing.lg },
+  dayBlock: { marginBottom: spacing.lg },
+  dayLabel: {
+    fontSize: 11,
+    textTransform: 'uppercase',
+    color: colors.textSecondary,
+    fontWeight: '700',
+    marginBottom: spacing.sm,
+  },
+  entryCard: { marginBottom: spacing.sm },
   entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   entryInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  mealTypeLabel: { width: 90, color: '#666' },
-  recipeName: { flex: 1 },
-  swapHint: { color: '#208AEF', marginLeft: 12 },
-  error: { color: 'red', marginBottom: 16 },
-  groceryLink: { marginTop: 16, textAlign: 'center' },
+  mealTypeLabel: { width: 80, color: colors.textSecondary, fontSize: 11 },
+  recipeName: { flex: 1, color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
+  swapHint: { color: colors.accentRed, marginLeft: spacing.md, fontSize: 12, fontWeight: '700' },
+  error: { color: colors.error, marginBottom: spacing.md },
+  emptyIcon: { fontSize: 32 },
 });
