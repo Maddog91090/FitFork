@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, Button, ActivityIndicator, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getTrainingProfile } from '../../lib/profile';
@@ -15,6 +15,9 @@ import {
   fetchProgramDetails,
   type WorkoutProgram,
 } from '../../lib/workoutProgramData';
+import { Card } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
+import { colors, spacing } from '../../theme/tokens';
 
 export default function WorkoutScreen() {
   const { session, loading } = useAuth();
@@ -22,7 +25,6 @@ export default function WorkoutScreen() {
   const [checking, setChecking] = useState(true);
   const [regenerating, setRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const toggleExercise = (key: string) => {
@@ -123,14 +125,14 @@ export default function WorkoutScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator />
+      <View style={styles.centered}>
+        <ActivityIndicator color={colors.accentRed} />
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       {error && <Text style={styles.error}>{error}</Text>}
       {program && (
         <>
@@ -142,19 +144,22 @@ export default function WorkoutScreen() {
                 const key = `${day.dayNumber}-${index}`;
                 const isExpanded = expanded.has(key);
                 return (
-                  <Pressable key={index} onPress={() => toggleExercise(key)} style={styles.exerciseRow}>
-                    <Text style={styles.exerciseLine}>
-                      {exercise.name} — {exercise.sets} x {exercise.repsMin}-{exercise.repsMax} ({exercise.muscleGroup})
-                    </Text>
-                    {isExpanded && (
-                      <View style={styles.instructionsBlock}>
-                        {exercise.instructions.map((step, stepIndex) => (
-                          <Text key={stepIndex} style={styles.instructionLine}>
-                            {stepIndex + 1}. {step}
-                          </Text>
-                        ))}
-                      </View>
-                    )}
+                  <Pressable key={index} onPress={() => toggleExercise(key)}>
+                    <Card style={styles.exerciseCard}>
+                      <Text style={styles.exerciseName}>
+                        {exercise.name} — {exercise.sets} x {exercise.repsMin}-{exercise.repsMax}
+                      </Text>
+                      <Text style={styles.exerciseMeta}>{exercise.muscleGroup}</Text>
+                      {isExpanded && (
+                        <View style={styles.instructionsBlock}>
+                          {exercise.instructions.map((step, stepIndex) => (
+                            <Text key={stepIndex} style={styles.instructionLine}>
+                              {stepIndex + 1}. {step}
+                            </Text>
+                          ))}
+                        </View>
+                      )}
+                    </Card>
                   </Pressable>
                 );
               })}
@@ -162,25 +167,31 @@ export default function WorkoutScreen() {
           ))}
         </>
       )}
-      <View style={{ marginTop: 16 }}>
-        <Button
-          title={regenerating ? 'Régénération...' : 'Régénérer le programme'}
-          onPress={handleRegenerate}
-          disabled={regenerating}
-        />
+      <View style={styles.regenerateWrap}>
+        <Button title="Régénérer le programme" variant="secondary" onPress={handleRegenerate} loading={regenerating} />
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24 },
-  title: { fontSize: 20, fontWeight: '700', marginBottom: 16 },
-  dayBlock: { marginBottom: 20 },
-  dayLabel: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
-  exerciseLine: { marginBottom: 4 },
-  exerciseRow: { marginBottom: 4 },
-  instructionsBlock: { marginTop: 4, marginLeft: 12 },
-  instructionLine: { marginBottom: 2, color: '#444' },
-  error: { color: 'red', marginBottom: 16 },
+  screen: { flex: 1, backgroundColor: colors.bgBase },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+  container: { padding: spacing.lg },
+  title: { fontSize: 18, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+  dayBlock: { marginBottom: spacing.lg },
+  dayLabel: {
+    fontSize: 11,
+    textTransform: 'uppercase',
+    color: colors.textSecondary,
+    fontWeight: '700',
+    marginBottom: spacing.sm,
+  },
+  exerciseCard: { marginBottom: spacing.sm },
+  exerciseName: { fontSize: 13, fontWeight: '700', color: colors.textPrimary },
+  exerciseMeta: { fontSize: 11, color: colors.textSecondary, marginTop: 2 },
+  instructionsBlock: { marginTop: spacing.sm },
+  instructionLine: { fontSize: 12, color: colors.textSecondary, marginBottom: spacing.xs },
+  error: { color: colors.error, marginBottom: spacing.md },
+  regenerateWrap: { marginTop: spacing.md },
 });
