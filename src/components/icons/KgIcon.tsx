@@ -1,7 +1,7 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, type ColorValue } from 'react-native';
 
 type KgIconProps = {
-  color: string;
+  color: ColorValue;
   focused: boolean;
   size?: number;
 };
