@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Button, ActivityIndicator } from 'react-native';
-import { Link, router } from 'expo-router';
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
+import { router } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
+import { Card } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
+import { colors, spacing } from '../../theme/tokens';
 
 export default function HomeScreen() {
   const { session, loading, signOut } = useAuth();
@@ -51,33 +54,82 @@ export default function HomeScreen() {
 
   if (loading || !session || checkingProfile) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator />
+      <View style={styles.centered}>
+        <ActivityIndicator color={colors.accentRed} />
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Connecté : {session.user.email}</Text>
-      {loadError && <Text style={{ color: 'red' }}>{loadError}</Text>}
+    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+      <Text style={styles.greeting}>Bonjour</Text>
+      <Text style={styles.name}>{session.user.email}</Text>
+
+      {loadError && <Text style={styles.error}>{loadError}</Text>}
+
       {macros && (
-        <View style={{ marginTop: 16, alignItems: 'center' }}>
-          <Text>Calories cibles : {macros.calories} kcal</Text>
-          <Text>Protéines : {macros.proteinG} g</Text>
-          <Text>Lipides : {macros.fatG} g</Text>
-          <Text>Glucides : {macros.carbsG} g</Text>
-        </View>
+        <Card style={styles.macroCard}>
+          <Text style={styles.sectionLabel}>Objectifs du jour</Text>
+          <View style={styles.macroRow}>
+            <View style={styles.macroItem}>
+              <Text style={styles.macroValue}>{macros.calories}</Text>
+              <Text style={styles.macroLabel}>kcal</Text>
+            </View>
+            <View style={styles.macroItem}>
+              <Text style={[styles.macroValue, styles.macroValueAccent]}>{macros.proteinG}g</Text>
+              <Text style={styles.macroLabel}>Prot</Text>
+            </View>
+            <View style={styles.macroItem}>
+              <Text style={styles.macroValue}>{macros.fatG}g</Text>
+              <Text style={styles.macroLabel}>Lip</Text>
+            </View>
+            <View style={styles.macroItem}>
+              <Text style={styles.macroValue}>{macros.carbsG}g</Text>
+              <Text style={styles.macroLabel}>Gluc</Text>
+            </View>
+          </View>
+        </Card>
       )}
-      <View style={{ marginTop: 16, alignItems: 'center', gap: 8 }}>
-        <Link href="/generate-plan">Générer le plan de la semaine</Link>
-        <Link href="/plan">Voir mon plan</Link>
-        <Link href="/workout">Mon programme de musculation</Link>
-        <Link href="/weight-log">Suivi de poids</Link>
+
+      <Text style={styles.sectionLabel}>Actions rapides</Text>
+      <View style={styles.actionsRow}>
+        <View style={styles.actionButton}>
+          <Button title="Voir mon plan" variant="secondary" onPress={() => router.push('/plan')} />
+        </View>
+        <View style={styles.actionButton}>
+          <Button title="Générer" onPress={() => router.push('/generate-plan')} />
+        </View>
       </View>
-      <View style={{ marginTop: 16 }}>
-        <Button title="Se déconnecter" onPress={signOut} />
+
+      <View style={styles.signOut}>
+        <Button title="Se déconnecter" variant="secondary" onPress={signOut} />
       </View>
-    </View>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.bgBase },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+  container: { padding: spacing.lg },
+  greeting: { fontSize: 12, color: colors.textSecondary },
+  name: { fontSize: 20, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+  error: { color: colors.error, marginBottom: spacing.md },
+  macroCard: { marginBottom: spacing.lg },
+  sectionLabel: {
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    color: colors.textSecondary,
+    fontWeight: '700',
+    marginBottom: spacing.sm,
+  },
+  macroRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
+  macroItem: { alignItems: 'center', flex: 1 },
+  macroValue: { fontSize: 16, fontWeight: '800', color: colors.textPrimary },
+  macroValueAccent: { color: colors.accentRed },
+  macroLabel: { fontSize: 9, color: colors.textSecondary, textTransform: 'uppercase', marginTop: 2 },
+  actionsRow: { flexDirection: 'row', gap: spacing.sm },
+  actionButton: { flex: 1 },
+  signOut: { marginTop: spacing.xl },
+});
