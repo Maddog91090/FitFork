@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { logWeight, fetchRecentWeightLogs, type WeightLogEntry } from '../../lib/weightLogData';
+import { TextField } from '../../components/ui/TextField';
+import { Button } from '../../components/ui/Button';
+import { Card } from '../../components/ui/Card';
+import { colors, spacing } from '../../theme/tokens';
 
 export default function WeightLogScreen() {
   const { session, loading } = useAuth();
@@ -61,48 +65,59 @@ export default function WeightLogScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator />
+      <View style={styles.centered}>
+        <ActivityIndicator color={colors.accentRed} />
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <Text style={styles.title}>Suivi de poids</Text>
-      <TextInput
-        style={styles.input}
-        keyboardType="numeric"
-        placeholder="Poids (kg)"
-        value={weightInput}
-        onChangeText={setWeightInput}
-      />
+      <TextField label="Poids (kg)" value={weightInput} onChangeText={setWeightInput} keyboardType="numeric" />
       {error && <Text style={styles.error}>{error}</Text>}
-      <Button title={submitting ? 'Enregistrement...' : 'Enregistrer'} onPress={handleSubmit} disabled={submitting} />
+      <Button title="Enregistrer" onPress={handleSubmit} loading={submitting} />
 
       <Text style={styles.historyTitle}>Historique</Text>
-      {logs.length === 0 && <Text>Aucune pesée enregistrée.</Text>}
-      {logs.map((log) => (
-        <View key={log.id} style={styles.row}>
-          <Text>{log.loggedAt}</Text>
-          <Text>{log.weightKg} kg</Text>
-        </View>
-      ))}
+      {logs.length === 0 ? (
+        <Text style={styles.emptyText}>Aucune pesée enregistrée.</Text>
+      ) : (
+        <Card>
+          {logs.map((log, index) => (
+            <View key={log.id} style={[styles.row, index === logs.length - 1 && styles.rowLast]}>
+              <Text style={styles.date}>{log.loggedAt}</Text>
+              <Text style={styles.weight}>{log.weightKg} kg</Text>
+            </View>
+          ))}
+        </Card>
+      )}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24 },
-  title: { fontSize: 18, fontWeight: '600', marginBottom: 16 },
-  input: { borderWidth: 1, borderColor: '#888', borderRadius: 8, padding: 8, marginBottom: 12 },
-  historyTitle: { fontSize: 16, fontWeight: '600', marginTop: 24, marginBottom: 8 },
+  screen: { flex: 1, backgroundColor: colors.bgBase },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+  container: { padding: spacing.lg },
+  title: { fontSize: 17, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+  historyTitle: {
+    fontSize: 11,
+    textTransform: 'uppercase',
+    color: colors.textSecondary,
+    fontWeight: '700',
+    marginTop: spacing.xl,
+    marginBottom: spacing.sm,
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 6,
+    paddingVertical: spacing.sm + 1,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: colors.divider,
   },
-  error: { color: 'red', marginBottom: 12 },
+  rowLast: { borderBottomWidth: 0 },
+  date: { color: colors.textPrimary, fontSize: 12 },
+  weight: { color: colors.textSecondary, fontSize: 12, fontWeight: '600' },
+  error: { color: colors.error, marginBottom: spacing.md },
+  emptyText: { color: colors.textSecondary, fontSize: 12 },
 });
