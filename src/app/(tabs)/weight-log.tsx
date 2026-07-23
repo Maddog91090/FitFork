@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { useAuth } from '../lib/auth-context';
-import { logWeight, fetchRecentWeightLogs, type WeightLogEntry } from '../lib/weightLogData';
+import { useAuth } from '../../lib/auth-context';
+import { logWeight, fetchRecentWeightLogs, type WeightLogEntry } from '../../lib/weightLogData';
 
 export default function WeightLogScreen() {
   const { session, loading } = useAuth();

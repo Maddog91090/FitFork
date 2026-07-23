@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { View, Text, Button, ActivityIndicator } from 'react-native';
 import { Link, router } from 'expo-router';
-import { useAuth } from '../lib/auth-context';
-import { getProfile, getTrainingProfile } from '../lib/profile';
-import { computeTargetsFromProfile, type MacroTargets } from '../lib/targets';
+import { useAuth } from '../../lib/auth-context';
+import { getProfile, getTrainingProfile } from '../../lib/profile';
+import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
 
 export default function HomeScreen() {
   const { session, loading, signOut } = useAuth();

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, Button, ActivityIndicator, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { useAuth } from '../lib/auth-context';
-import { getTrainingProfile } from '../lib/profile';
-import { selectTemplate } from '../lib/workoutTemplate';
-import { generateWorkoutProgram } from '../lib/workoutProgram';
+import { useAuth } from '../../lib/auth-context';
+import { getTrainingProfile } from '../../lib/profile';
+import { selectTemplate } from '../../lib/workoutTemplate';
+import { generateWorkoutProgram } from '../../lib/workoutProgram';
 import {
   fetchWorkoutTemplates,
   saveWorkoutProgram,
@@ -14,7 +14,7 @@ import {
   saveGeneratedProgram,
   fetchProgramDetails,
   type WorkoutProgram,
-} from '../lib/workoutProgramData';
+} from '../../lib/workoutProgramData';
 
 export default function WorkoutScreen() {
   const { session, loading } = useAuth();

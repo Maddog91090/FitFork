@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { Link, router, useFocusEffect } from 'expo-router';
-import { useAuth } from '../lib/auth-context';
-import { getCurrentPlan, updatePlanEntry, fetchRecipes, type Recipe, type SavedPlan } from '../lib/mealPlanData';
-import { pickReplacementRecipe, MEAL_TYPE_RATIOS, clampPortionMultiplier, type MealType } from '../lib/mealPlan';
+import { useAuth } from '../../lib/auth-context';
+import { getCurrentPlan, updatePlanEntry, fetchRecipes, type Recipe, type SavedPlan } from '../../lib/mealPlanData';
+import { pickReplacementRecipe, MEAL_TYPE_RATIOS, clampPortionMultiplier, type MealType } from '../../lib/mealPlan';
 
 const DAY_LABELS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 const MEAL_TYPE_LABELS: Record<MealType, string> = {

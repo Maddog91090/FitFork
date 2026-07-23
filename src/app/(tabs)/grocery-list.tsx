@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { Link, router, useFocusEffect } from 'expo-router';
-import { useAuth } from '../lib/auth-context';
-import { getCurrentPlan, fetchRecipeIngredients } from '../lib/mealPlanData';
+import { useAuth } from '../../lib/auth-context';
+import { getCurrentPlan, fetchRecipeIngredients } from '../../lib/mealPlanData';
 
 type AggregatedIngredient = { name: string; quantity: number; unit: string };
 
