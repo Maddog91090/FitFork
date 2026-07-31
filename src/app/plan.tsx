@@ -55,7 +55,14 @@ export default function PlanScreen() {
     setSwappingId(entryId);
     setError(null);
     try {
-      const recipeOptions = recipes.map((r) => ({ id: r.id, mealType: r.mealType, baseCalories: r.baseCalories }));
+      const recipeOptions = recipes.map((r) => ({
+        id: r.id,
+        mealType: r.mealType,
+        baseCalories: r.baseCalories,
+        baseProteinG: r.baseProteinG,
+        baseFatG: r.baseFatG,
+        baseCarbsG: r.baseCarbsG,
+      }));
       const replacement = pickReplacementRecipe(mealType, currentRecipeId, recipeOptions);
       if (!replacement) {
         setError('Aucune autre recette disponible pour ce repas.');

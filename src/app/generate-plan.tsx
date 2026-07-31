@@ -70,7 +70,14 @@ export default function GeneratePlanScreen() {
       }
       const targets = computeAdjustedTargets(baseTargets, profile.goal, profile.weightKg, weightLogs);
       const recipes = await fetchRecipes();
-      const recipeOptions = recipes.map((r) => ({ id: r.id, mealType: r.mealType, baseCalories: r.baseCalories }));
+      const recipeOptions = recipes.map((r) => ({
+        id: r.id,
+        mealType: r.mealType,
+        baseCalories: r.baseCalories,
+        baseProteinG: r.baseProteinG,
+        baseFatG: r.baseFatG,
+        baseCarbsG: r.baseCarbsG,
+      }));
 
       const slots: MealSlot[] = [];
       selected.forEach((row, dayIndex) => {
@@ -79,7 +86,7 @@ export default function GeneratePlanScreen() {
         });
       });
 
-      const entries = generateWeeklyPlan(targets.calories, slots, recipeOptions);
+      const entries = generateWeeklyPlan(targets, slots, recipeOptions);
       await saveWeeklyPlan(session.user.id, targets, entries);
       router.replace('/plan');
     } catch (err) {
