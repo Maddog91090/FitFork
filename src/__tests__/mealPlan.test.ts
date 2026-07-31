@@ -79,6 +79,53 @@ describe('generateWeeklyPlan', () => {
   });
 });
 
+describe('generateWeeklyPlan day-level calorie nudge', () => {
+  it('nudges the last selected meal of a day to close the gap left by an earlier clamped slot', () => {
+    const recipes: RecipeOption[] = [
+      { id: 'b1', mealType: 'breakfast', baseCalories: 50 },
+      { id: 'l1', mealType: 'lunch', baseCalories: 600 },
+    ];
+    const slots: MealSlot[] = [
+      { dayIndex: 0, mealType: 'breakfast' },
+      { dayIndex: 0, mealType: 'lunch' },
+    ];
+
+    // dailyTarget 2000 -> breakfast target 500, lunch target 700 (day target 1200).
+    // Breakfast needs multiplier 500/50 = 10, clamped to 2 -> delivers only 100 (400 short).
+    // The nudge should push the gap onto lunch (the day's last selected meal):
+    // needed lunch calories = 1200 - 100 = 1100 -> multiplier 1100/600 = 1.8333...
+    const result = generateWeeklyPlan(2000, slots, recipes);
+
+    const breakfast = result.find((e) => e.mealType === 'breakfast')!;
+    const lunch = result.find((e) => e.mealType === 'lunch')!;
+
+    expect(breakfast.portionMultiplier).toBe(2);
+    expect(lunch.portionMultiplier).toBeCloseTo(1100 / 600, 5);
+
+    const dayTotalCalories = 50 * breakfast.portionMultiplier + 600 * lunch.portionMultiplier;
+    expect(dayTotalCalories).toBeCloseTo(1200, 5);
+  });
+
+  it('leaves multipliers unchanged when the day is already within tolerance of its target', () => {
+    const recipes: RecipeOption[] = [
+      { id: 'b1', mealType: 'breakfast', baseCalories: 400 },
+      { id: 'l1', mealType: 'lunch', baseCalories: 600 },
+    ];
+    const slots: MealSlot[] = [
+      { dayIndex: 0, mealType: 'breakfast' },
+      { dayIndex: 0, mealType: 'lunch' },
+    ];
+
+    const result = generateWeeklyPlan(2000, slots, recipes);
+
+    const breakfast = result.find((e) => e.mealType === 'breakfast')!;
+    const lunch = result.find((e) => e.mealType === 'lunch')!;
+
+    expect(breakfast.portionMultiplier).toBeCloseTo(500 / 400, 5);
+    expect(lunch.portionMultiplier).toBeCloseTo(700 / 600, 5);
+  });
+});
+
 describe('pickReplacementRecipe', () => {
   it('returns a different recipe of the same meal type', () => {
     const result = pickReplacementRecipe('breakfast', 'b1', RECIPES);
