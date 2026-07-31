@@ -28,6 +28,7 @@ export const MEAL_TYPE_RATIOS: Record<MealType, number> = {
 const MIN_PORTION_MULTIPLIER = 0.5;
 const MAX_PORTION_MULTIPLIER = 2;
 const MAX_REPEATS_PER_WEEK = 2;
+const DAILY_CALORIE_TOLERANCE = 0.1;
 
 export function clampPortionMultiplier(raw: number): number {
   return Math.max(MIN_PORTION_MULTIPLIER, Math.min(MAX_PORTION_MULTIPLIER, raw));
@@ -46,6 +47,7 @@ export function generateWeeklyPlan(
 ): GeneratedEntry[] {
   const usageCount = new Map<string, number>();
   const entries: GeneratedEntry[] = [];
+  const entryBaseCalories: number[] = [];
 
   for (const slot of selectedSlots) {
     const candidates = recipes.filter((r) => r.mealType === slot.mealType);
@@ -65,9 +67,49 @@ export function generateWeeklyPlan(
       recipeId: recipe.id,
       portionMultiplier,
     });
+    entryBaseCalories.push(recipe.baseCalories);
   }
 
+  nudgeDaysToTarget(entries, entryBaseCalories, dailyTargetCalories);
+
   return entries;
+}
+
+// Per-slot portion multipliers are clamped to keep portions realistic (see
+// clampPortionMultiplier), which can leave a day short of or over its daily
+// calorie target. This closes that gap by adjusting the last selected meal
+// of each day, per the "nudge" step in
+// docs/superpowers/specs/2026-07-18-meal-workout-planner-design.md.
+function nudgeDaysToTarget(
+  entries: GeneratedEntry[],
+  entryBaseCalories: number[],
+  dailyTargetCalories: number
+): void {
+  const dayIndices = new Set(entries.map((entry) => entry.dayIndex));
+
+  for (const dayIndex of dayIndices) {
+    const dayEntryIndices = entries
+      .map((entry, index) => (entry.dayIndex === dayIndex ? index : -1))
+      .filter((index) => index !== -1);
+
+    const dayTargetCalories = dayEntryIndices.reduce(
+      (sum, index) => sum + dailyTargetCalories * MEAL_TYPE_RATIOS[entries[index].mealType],
+      0
+    );
+    const dayActualCalories = dayEntryIndices.reduce(
+      (sum, index) => sum + entryBaseCalories[index] * entries[index].portionMultiplier,
+      0
+    );
+
+    const deviation = Math.abs(dayActualCalories - dayTargetCalories) / dayTargetCalories;
+    if (deviation <= DAILY_CALORIE_TOLERANCE) continue;
+
+    const lastIndex = dayEntryIndices[dayEntryIndices.length - 1];
+    const otherEntriesCalories =
+      dayActualCalories - entryBaseCalories[lastIndex] * entries[lastIndex].portionMultiplier;
+    const neededCalories = dayTargetCalories - otherEntriesCalories;
+    entries[lastIndex].portionMultiplier = clampPortionMultiplier(neededCalories / entryBaseCalories[lastIndex]);
+  }
 }
 
 export function pickReplacementRecipe(
