@@ -105,7 +105,15 @@ export default function PlanScreen() {
                 return (
                   <View key={entry.id} style={styles.entryContainer}>
                     <View style={styles.entryRow}>
-                      <Pressable style={styles.entryInfo} onPress={() => router.push(`/recipe/${entry.recipeId}`)}>
+                      <Pressable
+                        style={styles.entryInfo}
+                        onPress={() =>
+                          router.push({
+                            pathname: '/recipe/[id]',
+                            params: { id: entry.recipeId, portion: String(entry.portionMultiplier) },
+                          })
+                        }
+                      >
                         <Text style={styles.mealTypeLabel}>{MEAL_TYPE_LABELS[entry.mealType]}</Text>
                         <Text style={styles.recipeName}>
                           {recipe ? recipe.name : entry.recipeId} ({Math.round(entry.portionMultiplier * 100)}%)
