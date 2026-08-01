@@ -8,12 +8,13 @@ import {
   type Recipe,
   type RecipeIngredient,
 } from '../../lib/mealPlanData';
-import { scaleIngredientQuantity, scaleMacroValue } from '../../lib/mealPlan';
+import { scaleIngredientQuantity, scaleMacroValue, clampPortionMultiplier } from '../../lib/mealPlan';
 
 export default function RecipeDetailScreen() {
   const { id, portion: portionParam } = useLocalSearchParams<{ id: string; portion?: string }>();
   const parsedPortion = Number(portionParam);
-  const portionMultiplier = Number.isFinite(parsedPortion) && parsedPortion > 0 ? parsedPortion : 1;
+  const portionMultiplier =
+    Number.isFinite(parsedPortion) && parsedPortion > 0 ? clampPortionMultiplier(parsedPortion) : 1;
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [ingredients, setIngredients] = useState<RecipeIngredient[]>([]);
   const [instructions, setInstructions] = useState<string[]>([]);
@@ -68,7 +69,7 @@ export default function RecipeDetailScreen() {
       <Text style={styles.macros}>
         {scaleMacroValue(recipe.baseCalories, portionMultiplier)} kcal — {scaleMacroValue(recipe.baseProteinG, portionMultiplier)}g prot / {scaleMacroValue(recipe.baseFatG, portionMultiplier)}g lip / {scaleMacroValue(recipe.baseCarbsG, portionMultiplier)}g gluc ({scaleMacroValue(recipe.baseServingG, portionMultiplier)}g)
       </Text>
-      {portionMultiplier !== 1 && (
+      {Math.round(portionMultiplier * 100) !== 100 && (
         <Text style={styles.portionBanner}>
           Portion : {Math.round(portionMultiplier * 100)} % de la recette de base
         </Text>
