@@ -80,7 +80,7 @@ describe('generateWeeklyPlan', () => {
 });
 
 describe('generateWeeklyPlan day-level calorie nudge', () => {
-  it('nudges the last selected meal of a day to close the gap left by an earlier clamped slot', () => {
+  it('closes the gap left by an earlier clamped slot when only one other slot has headroom', () => {
     const recipes: RecipeOption[] = [
       { id: 'b1', mealType: 'breakfast', baseCalories: 50 },
       { id: 'l1', mealType: 'lunch', baseCalories: 600 },
@@ -123,6 +123,66 @@ describe('generateWeeklyPlan day-level calorie nudge', () => {
 
     expect(breakfast.portionMultiplier).toBeCloseTo(500 / 400, 5);
     expect(lunch.portionMultiplier).toBeCloseTo(700 / 600, 5);
+  });
+
+  it('spreads the gap across every slot with headroom, not just the last one, when the last slot is already maxed', () => {
+    const recipes: RecipeOption[] = [
+      { id: 'b1', mealType: 'breakfast', baseCalories: 50 },
+      { id: 'l1', mealType: 'lunch', baseCalories: 600 },
+      { id: 'd1', mealType: 'dinner', baseCalories: 600 },
+      { id: 's1', mealType: 'snack', baseCalories: 100 },
+    ];
+    const slots: MealSlot[] = [
+      { dayIndex: 0, mealType: 'breakfast' },
+      { dayIndex: 0, mealType: 'lunch' },
+      { dayIndex: 0, mealType: 'dinner' },
+      { dayIndex: 0, mealType: 'snack' },
+    ];
+
+    // dailyTarget 2000 -> targets: breakfast 500, lunch 700, dinner 600, snack 200 (day target 2000).
+    // Breakfast (50 base) needs x10 -> clamped to 2 (100 delivered, 400 short).
+    // Snack (100 base) needs exactly x2 -> already at the clamp ceiling, zero headroom.
+    // Only lunch and dinner have headroom, so the 400 shortfall must split between them:
+    // 200 each -> lunch 900/600 = 1.5, dinner 800/600 = 1.3333...
+    const result = generateWeeklyPlan(2000, slots, recipes);
+
+    const breakfast = result.find((e) => e.mealType === 'breakfast')!;
+    const lunch = result.find((e) => e.mealType === 'lunch')!;
+    const dinner = result.find((e) => e.mealType === 'dinner')!;
+    const snack = result.find((e) => e.mealType === 'snack')!;
+
+    expect(breakfast.portionMultiplier).toBe(2);
+    expect(snack.portionMultiplier).toBe(2);
+    expect(lunch.portionMultiplier).toBeCloseTo(1.5, 5);
+    expect(dinner.portionMultiplier).toBeCloseTo(800 / 600, 5);
+
+    const dayTotalCalories =
+      50 * breakfast.portionMultiplier +
+      600 * lunch.portionMultiplier +
+      600 * dinner.portionMultiplier +
+      100 * snack.portionMultiplier;
+    expect(dayTotalCalories).toBeCloseTo(2000, 5);
+  });
+
+  it('accepts a residual deviation when every slot is already at its clamp ceiling', () => {
+    const recipes: RecipeOption[] = [
+      { id: 'b1', mealType: 'breakfast', baseCalories: 50 },
+      { id: 'l1', mealType: 'lunch', baseCalories: 50 },
+    ];
+    const slots: MealSlot[] = [
+      { dayIndex: 0, mealType: 'breakfast' },
+      { dayIndex: 0, mealType: 'lunch' },
+    ];
+
+    // Both recipes are tiny relative to the targets, so both clamp to x2 and
+    // there is no slot left with headroom to absorb the remaining shortfall.
+    const result = generateWeeklyPlan(2000, slots, recipes);
+
+    const breakfast = result.find((e) => e.mealType === 'breakfast')!;
+    const lunch = result.find((e) => e.mealType === 'lunch')!;
+
+    expect(breakfast.portionMultiplier).toBe(2);
+    expect(lunch.portionMultiplier).toBe(2);
   });
 });
 
