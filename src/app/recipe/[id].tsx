@@ -8,9 +8,12 @@ import {
   type Recipe,
   type RecipeIngredient,
 } from '../../lib/mealPlanData';
+import { scaleIngredientQuantity, scaleMacroValue } from '../../lib/mealPlan';
 
 export default function RecipeDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, portion: portionParam } = useLocalSearchParams<{ id: string; portion?: string }>();
+  const parsedPortion = Number(portionParam);
+  const portionMultiplier = Number.isFinite(parsedPortion) && parsedPortion > 0 ? parsedPortion : 1;
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [ingredients, setIngredients] = useState<RecipeIngredient[]>([]);
   const [instructions, setInstructions] = useState<string[]>([]);
@@ -63,13 +66,18 @@ export default function RecipeDetailScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{recipe.name}</Text>
       <Text style={styles.macros}>
-        {recipe.baseCalories} kcal — {recipe.baseProteinG}g prot / {recipe.baseFatG}g lip / {recipe.baseCarbsG}g gluc ({recipe.baseServingG}g)
+        {scaleMacroValue(recipe.baseCalories, portionMultiplier)} kcal — {scaleMacroValue(recipe.baseProteinG, portionMultiplier)}g prot / {scaleMacroValue(recipe.baseFatG, portionMultiplier)}g lip / {scaleMacroValue(recipe.baseCarbsG, portionMultiplier)}g gluc ({scaleMacroValue(recipe.baseServingG, portionMultiplier)}g)
       </Text>
+      {portionMultiplier !== 1 && (
+        <Text style={styles.portionBanner}>
+          Portion : {Math.round(portionMultiplier * 100)} % de la recette de base
+        </Text>
+      )}
 
       <Text style={styles.sectionTitle}>Ingrédients</Text>
       {ingredients.map((ing, index) => (
         <Text key={index} style={styles.ingredientLine}>
-          {ing.ingredientName} — {ing.quantity}{ing.unit}
+          {ing.ingredientName} — {scaleIngredientQuantity(ing, portionMultiplier)}{ing.unit}
         </Text>
       ))}
 
@@ -87,6 +95,7 @@ const styles = StyleSheet.create({
   container: { padding: 24 },
   title: { fontSize: 20, fontWeight: '700', marginBottom: 8 },
   macros: { color: '#666', marginBottom: 16 },
+  portionBanner: { color: '#208AEF', fontWeight: '600', marginBottom: 16 },
   sectionTitle: { fontSize: 16, fontWeight: '600', marginTop: 16, marginBottom: 8 },
   ingredientLine: { marginBottom: 4 },
   instructionLine: { marginBottom: 8 },
