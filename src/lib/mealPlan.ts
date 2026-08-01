@@ -34,6 +34,23 @@ export function clampPortionMultiplier(raw: number): number {
   return Math.max(MIN_PORTION_MULTIPLIER, Math.min(MAX_PORTION_MULTIPLIER, raw));
 }
 
+export type ScalableIngredient = {
+  quantity: number;
+  unit: 'g' | 'ml' | 'piece';
+};
+
+export function scaleIngredientQuantity(ingredient: ScalableIngredient, multiplier: number): number {
+  const scaled = ingredient.quantity * multiplier;
+  if (ingredient.unit === 'piece') {
+    return Math.max(1, Math.round(scaled));
+  }
+  return Math.round(scaled * 10) / 10;
+}
+
+export function scaleMacroValue(value: number, multiplier: number): number {
+  return Math.round(value * multiplier);
+}
+
 function leastUsed(candidates: RecipeOption[], usageCount: Map<string, number>): RecipeOption {
   return candidates.reduce((best, candidate) =>
     (usageCount.get(candidate.id) ?? 0) < (usageCount.get(best.id) ?? 0) ? candidate : best
