@@ -8,11 +8,7 @@ import { ChoiceGroup } from '../components/ChoiceGroup';
 import { homeWorkoutProgram, getLevelProgram } from '../lib/homeWorkoutProgram';
 import type { Session } from '../lib/homeWorkoutProgram';
 
-const LEVEL_OPTIONS: { value: ExperienceLevel; label: string }[] = [
-  { value: 'beginner', label: 'Débutant' },
-  { value: 'intermediate', label: 'Intermédiaire' },
-  { value: 'advanced', label: 'Avancé' },
-];
+const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
 
 export default function WorkoutScreen() {
   const { session, loading } = useAuth();
@@ -97,6 +93,7 @@ export default function WorkoutScreen() {
 
       <Text style={styles.title}>{homeWorkoutProgram.title}</Text>
       <Text style={styles.subtitle}>{homeWorkoutProgram.subtitle}</Text>
+      <Text style={styles.blockText}>{homeWorkoutProgram.guidance}</Text>
 
       <ChoiceGroup options={LEVEL_OPTIONS} value={trainingProfile.experienceLevel} onChange={handleLevelChange} />
       {savingLevel && <ActivityIndicator size="small" />}

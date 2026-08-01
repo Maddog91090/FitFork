@@ -4,6 +4,16 @@ export type RecipeOption = {
   id: string;
   mealType: MealType;
   baseCalories: number;
+  baseProteinG: number;
+  baseFatG: number;
+  baseCarbsG: number;
+};
+
+export type DailyMacroTargets = {
+  calories: number;
+  proteinG: number;
+  fatG: number;
+  carbsG: number;
 };
 
 export type MealSlot = {
@@ -57,14 +67,60 @@ function leastUsed(candidates: RecipeOption[], usageCount: Map<string, number>):
   );
 }
 
+type MacroShare = { protein: number; fat: number; carbs: number };
+
+function macroShare(recipe: RecipeOption): MacroShare {
+  if (recipe.baseCalories <= 0) return { protein: 0, fat: 0, carbs: 0 };
+  return {
+    protein: (recipe.baseProteinG * 4) / recipe.baseCalories,
+    fat: (recipe.baseFatG * 9) / recipe.baseCalories,
+    carbs: (recipe.baseCarbsG * 4) / recipe.baseCalories,
+  };
+}
+
+function macroTargetShare(dailyTargets: DailyMacroTargets): MacroShare {
+  if (dailyTargets.calories <= 0) return { protein: 0, fat: 0, carbs: 0 };
+  return {
+    protein: (dailyTargets.proteinG * 4) / dailyTargets.calories,
+    fat: (dailyTargets.fatG * 9) / dailyTargets.calories,
+    carbs: (dailyTargets.carbsG * 4) / dailyTargets.calories,
+  };
+}
+
+function macroDistance(a: MacroShare, b: MacroShare): number {
+  return (a.protein - b.protein) ** 2 + (a.fat - b.fat) ** 2 + (a.carbs - b.carbs) ** 2;
+}
+
+function bestMacroFit(
+  candidates: RecipeOption[],
+  targetShare: MacroShare,
+  usageCount: Map<string, number>
+): RecipeOption {
+  let bestScore = Infinity;
+  let bestCandidates: RecipeOption[] = [];
+
+  for (const candidate of candidates) {
+    const score = macroDistance(macroShare(candidate), targetShare);
+    if (score < bestScore - 1e-9) {
+      bestScore = score;
+      bestCandidates = [candidate];
+    } else if (score <= bestScore + 1e-9) {
+      bestCandidates.push(candidate);
+    }
+  }
+
+  return leastUsed(bestCandidates, usageCount);
+}
+
 export function generateWeeklyPlan(
-  dailyTargetCalories: number,
+  dailyTargets: DailyMacroTargets,
   selectedSlots: MealSlot[],
   recipes: RecipeOption[]
 ): GeneratedEntry[] {
   const usageCount = new Map<string, number>();
   const entries: GeneratedEntry[] = [];
   const entryBaseCalories: number[] = [];
+  const targetShare = macroTargetShare(dailyTargets);
 
   for (const slot of selectedSlots) {
     const candidates = recipes.filter((r) => r.mealType === slot.mealType);
@@ -72,9 +128,9 @@ export function generateWeeklyPlan(
 
     const underLimit = candidates.filter((r) => (usageCount.get(r.id) ?? 0) < MAX_REPEATS_PER_WEEK);
     const pool = underLimit.length > 0 ? underLimit : candidates;
-    const recipe = leastUsed(pool, usageCount);
+    const recipe = bestMacroFit(pool, targetShare, usageCount);
 
-    const slotTargetCalories = dailyTargetCalories * MEAL_TYPE_RATIOS[slot.mealType];
+    const slotTargetCalories = dailyTargets.calories * MEAL_TYPE_RATIOS[slot.mealType];
     const portionMultiplier = clampPortionMultiplier(slotTargetCalories / recipe.baseCalories);
 
     usageCount.set(recipe.id, (usageCount.get(recipe.id) ?? 0) + 1);
@@ -87,7 +143,7 @@ export function generateWeeklyPlan(
     entryBaseCalories.push(recipe.baseCalories);
   }
 
-  nudgeDaysToTarget(entries, entryBaseCalories, dailyTargetCalories);
+  nudgeDaysToTarget(entries, entryBaseCalories, dailyTargets.calories);
 
   return entries;
 }
