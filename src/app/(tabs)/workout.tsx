@@ -8,6 +8,7 @@ import { ChoiceGroup } from '../../components/ChoiceGroup';
 import { homeWorkoutProgram, getLevelProgram } from '../../lib/homeWorkoutProgram';
 import type { Session } from '../../lib/homeWorkoutProgram';
 import { Card } from '../../components/ui/Card';
+import { ExerciseVisualModal } from '../../components/ExerciseVisualModal';
 import { colors, spacing } from '../../theme/tokens';
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
@@ -19,6 +20,7 @@ export default function WorkoutScreen() {
   const [savingLevel, setSavingLevel] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
+  const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
 
   const toggleSession = (index: number) => {
     setExpanded((prev) => {
@@ -118,7 +120,7 @@ export default function WorkoutScreen() {
               <Text style={styles.sessionTitle}>
                 Séance {index + 1} — {sessionItem.name}
               </Text>
-              {isExpanded && <SessionDetail session={sessionItem} />}
+              {isExpanded && <SessionDetail session={sessionItem} onSelectExercise={setSelectedExercise} />}
             </Card>
           </Pressable>
         );
@@ -139,11 +141,23 @@ export default function WorkoutScreen() {
           </Text>
         ))}
       </View>
+
+      <ExerciseVisualModal
+        visible={selectedExercise !== null}
+        exerciseName={selectedExercise}
+        onClose={() => setSelectedExercise(null)}
+      />
     </ScrollView>
   );
 }
 
-function SessionDetail({ session }: { session: Session }) {
+function SessionDetail({
+  session,
+  onSelectExercise,
+}: {
+  session: Session;
+  onSelectExercise: (name: string) => void;
+}) {
   if (session.type === 'circuit') {
     return (
       <View style={styles.sessionDetail}>
@@ -152,9 +166,9 @@ function SessionDetail({ session }: { session: Session }) {
           {session.recoveryLabel}.
         </Text>
         {session.exercises.map((exercise) => (
-          <Text key={exercise} style={styles.exerciseLine}>
-            • {exercise}
-          </Text>
+          <Pressable key={exercise} onPress={() => onSelectExercise(exercise)}>
+            <Text style={styles.exerciseLine}>• {exercise}</Text>
+          </Pressable>
         ))}
       </View>
     );
@@ -164,9 +178,11 @@ function SessionDetail({ session }: { session: Session }) {
     <View style={styles.sessionDetail}>
       <Text style={styles.sessionMeta}>En séries, {session.restLabel}.</Text>
       {session.exercises.map((exercise) => (
-        <Text key={exercise.name} style={styles.exerciseLine}>
-          • {exercise.name} : {exercise.detail}
-        </Text>
+        <Pressable key={exercise.name} onPress={() => onSelectExercise(exercise.name)}>
+          <Text style={styles.exerciseLine}>
+            • {exercise.name} : {exercise.detail}
+          </Text>
+        </Pressable>
       ))}
     </View>
   );
