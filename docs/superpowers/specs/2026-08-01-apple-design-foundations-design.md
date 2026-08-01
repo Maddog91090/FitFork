@@ -35,18 +35,17 @@ Only two presets — no bounce/momentum preset, since nothing in this scope's co
 
 ## Typography tokens — `src/theme/typography.ts`
 
-Named scale, each entry only `fontSize`/`lineHeight`/`letterSpacing` (font weight stays a per-usage choice, matching current call sites):
+Named scale, each entry only `fontSize`/`lineHeight`/`letterSpacing` (font weight stays a per-usage choice, matching current call sites). Scoped to the sizes this PR's components actually use — no unused "display/title" tier invented ahead of need (screens, which do have real headings, keep their existing inline styles per Out of scope, and get a larger tier when they adopt this module):
 
 ```ts
 export const typography = {
-  title:   { fontSize: 20, lineHeight: 26, letterSpacing: -0.2 },
+  label:   { fontSize: 11, lineHeight: 14, letterSpacing: 0.4 }, // uppercase labels
   body:    { fontSize: 14, lineHeight: 20, letterSpacing: 0 },
   caption: { fontSize: 12, lineHeight: 16, letterSpacing: 0.1 },
-  label:   { fontSize: 11, lineHeight: 14, letterSpacing: 0.4 }, // uppercase labels
 } as const;
 ```
 
-Negative tracking on the larger `title` size, positive on the small uppercase `label`, near-zero on `body` — direct application of §15. Wired into `TextField` (label + input), `EmptyState` (title + message), `Card`/`Button` untouched (button label is a control, not prose — stays as-is to avoid scope creep).
+Positive tracking on the small uppercase `label`, near-zero/slightly positive on `body`/`caption` — the small-text half of §15's size-specific tracking rule (this scope has no large text to demonstrate the negative-tracking half). Wired into: `Button` label (`body`), `ChoiceGroup` pill label (`body`), `TextField` label (`label`) and input (`body`), `EmptyState` title (`body`, keeps its existing `fontWeight: '700'`) and message (`caption`).
 
 ## Component changes
 
@@ -56,7 +55,7 @@ Negative tracking on the larger `title` size, positive on the small uppercase `l
 
 **`TextField.tsx`** — two fixes: (1) the focus border is always rendered at `borderWidth: 2`, transparent when unfocused, colored when focused — removes the current 2px layout jump on focus; (2) the border-color transition animates via a `focusProgress` shared value (`motion.spring.settle`) driving `interpolateColor` between transparent and `colors.accentRed`, instead of an instant swap. Label/input text adopt `typography.label`/`typography.body`.
 
-**`EmptyState.tsx`** — typography only (`typography.title`/`typography.body` on the two text nodes). No motion change — it's a static state, not an interaction; adding entrance animation here would be scope creep beyond what brainstorming approved.
+**`EmptyState.tsx`** — typography only (`typography.body` on the title, `typography.caption` on the message — both keep their existing `fontWeight`/color, only size/lineHeight/letterSpacing move onto the shared scale). No motion change — it's a static state, not an interaction; adding entrance animation here would be scope creep beyond what brainstorming approved.
 
 **`Card.tsx`** — adds an optional `variant?: 'solid' | 'glass'` prop, default `'solid'` (current behavior, zero visual change for every existing call site). `'glass'` renders via a new `GlassSurface` wrapper (see below) instead of the flat `bgSurface` + shadow. No existing call site is switched to `'glass'` in this PR — the variant exists so the tab bar's glass treatment (next section) and any future call site can opt in without duplicating the availability-check logic.
 
