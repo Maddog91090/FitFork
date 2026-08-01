@@ -171,7 +171,7 @@ import { springConfig, useReducedMotion } from '../theme/motion';
 describe('useReducedMotion', () => {
   it('reflects the current AccessibilityInfo reduce-motion setting', async () => {
     jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
-    const { result } = renderHook(() => useReducedMotion());
+    const { result } = await renderHook(() => useReducedMotion());
     await waitFor(() => expect(result.current).toBe(true));
   });
 });
