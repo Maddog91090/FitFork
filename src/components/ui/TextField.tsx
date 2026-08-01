@@ -1,6 +1,8 @@
-import { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, type TextInputProps } from 'react-native';
+import Animated, { interpolateColor, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { colors, radius, shadow, spacing } from '../../theme/tokens';
+import { typography } from '../../theme/typography';
+import { motion, useReducedMotion } from '../../theme/motion';
 
 type TextFieldProps = {
   label?: string;
@@ -23,24 +25,39 @@ export function TextField({
   autoCapitalize,
   testID,
 }: TextFieldProps) {
-  const [focused, setFocused] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const focusProgress = useSharedValue(0);
+
+  const handleFocus = () => {
+    focusProgress.value = reduceMotion ? 1 : withSpring(1, motion.spring.settle);
+  };
+
+  const handleBlur = () => {
+    focusProgress.value = reduceMotion ? 0 : withSpring(0, motion.spring.settle);
+  };
+
+  const animatedWrapperStyle = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(focusProgress.value, [0, 1], ['transparent', colors.accentRed]),
+  }));
 
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
-      <TextInput
-        testID={testID}
-        style={[styles.input, focused && styles.inputFocused]}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={colors.textSecondary}
-        keyboardType={keyboardType}
-        secureTextEntry={secureTextEntry}
-        autoCapitalize={autoCapitalize}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-      />
+      <Animated.View style={[styles.inputWrapper, animatedWrapperStyle]}>
+        <TextInput
+          testID={testID}
+          style={styles.input}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={colors.textSecondary}
+          keyboardType={keyboardType}
+          secureTextEntry={secureTextEntry}
+          autoCapitalize={autoCapitalize}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+        />
+      </Animated.View>
     </View>
   );
 }
@@ -50,24 +67,26 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   label: {
-    fontSize: 11,
+    fontSize: typography.label.fontSize,
+    lineHeight: typography.label.lineHeight,
+    letterSpacing: typography.label.letterSpacing,
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
     color: colors.textSecondary,
     fontWeight: '700',
     marginBottom: spacing.xs,
   },
-  input: {
-    backgroundColor: colors.bgSurface,
+  inputWrapper: {
     borderRadius: radius.sm,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    fontSize: 14,
-    color: colors.textPrimary,
+    borderWidth: 2,
+    backgroundColor: colors.bgSurface,
     ...shadow.card,
   },
-  inputFocused: {
-    borderWidth: 2,
-    borderColor: colors.accentRed,
+  input: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    fontSize: typography.body.fontSize,
+    lineHeight: typography.body.lineHeight,
+    letterSpacing: typography.body.letterSpacing,
+    color: colors.textPrimary,
   },
 });
