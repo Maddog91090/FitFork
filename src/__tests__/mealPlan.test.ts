@@ -2,6 +2,8 @@ import {
   generateWeeklyPlan,
   pickReplacementRecipe,
   clampPortionMultiplier,
+  scaleIngredientQuantity,
+  scaleMacroValue,
   type RecipeOption,
   type MealSlot,
 } from '../lib/mealPlan';
@@ -105,5 +107,43 @@ describe('clampPortionMultiplier', () => {
 
   it('clamps below 0.5 up to 0.5', () => {
     expect(clampPortionMultiplier(0.1)).toBe(0.5);
+  });
+});
+
+describe('scaleIngredientQuantity', () => {
+  it('scales a gram quantity and rounds to 1 decimal', () => {
+    const result = scaleIngredientQuantity({ quantity: 100, unit: 'g' }, 1.234);
+    expect(result).toBe(123.4);
+  });
+
+  it('scales a ml quantity and rounds to 1 decimal', () => {
+    const result = scaleIngredientQuantity({ quantity: 250, unit: 'ml' }, 0.5);
+    expect(result).toBe(125);
+  });
+
+  it('is a no-op for multiplier 1 on g/ml units', () => {
+    expect(scaleIngredientQuantity({ quantity: 150, unit: 'g' }, 1)).toBe(150);
+  });
+
+  it('rounds a piece quantity to the nearest whole piece', () => {
+    expect(scaleIngredientQuantity({ quantity: 1, unit: 'piece' }, 1.5)).toBe(2);
+  });
+
+  it('never rounds a piece quantity down to 0', () => {
+    expect(scaleIngredientQuantity({ quantity: 1, unit: 'piece' }, 0.2)).toBe(1);
+  });
+
+  it('is a no-op for multiplier 1 on piece units', () => {
+    expect(scaleIngredientQuantity({ quantity: 3, unit: 'piece' }, 1)).toBe(3);
+  });
+});
+
+describe('scaleMacroValue', () => {
+  it('scales a macro value and rounds to the nearest integer', () => {
+    expect(scaleMacroValue(33, 1.5)).toBe(50);
+  });
+
+  it('is a no-op for multiplier 1', () => {
+    expect(scaleMacroValue(400, 1)).toBe(400);
   });
 });
