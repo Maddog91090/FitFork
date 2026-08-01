@@ -1,6 +1,8 @@
+import { StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { KgIcon } from '../../components/icons/KgIcon';
+import { GlassSurface } from '../../components/ui/GlassSurface';
 import { colors } from '../../theme/tokens';
 
 export default function TabsLayout() {
@@ -10,7 +12,8 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.accentRed,
         tabBarInactiveTintColor: colors.textSecondary,
-        tabBarStyle: { backgroundColor: colors.bgSurface, borderTopColor: colors.divider },
+        tabBarStyle: { borderTopColor: colors.divider },
+        tabBarBackground: () => <GlassSurface style={StyleSheet.absoluteFill} />,
       }}
     >
       <Tabs.Screen
