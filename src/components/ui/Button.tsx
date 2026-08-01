@@ -24,10 +24,14 @@ export function Button({ title, onPress, variant = 'primary', disabled = false, 
   }));
 
   const handlePressIn = () => {
+    // Reanimated's SharedValue.value is an intentional mutable escape hatch (like ref.current);
+    // React Compiler's static analysis doesn't recognize it and flags this as an illegal mutation.
+    // eslint-disable-next-line react-hooks/immutability
     scale.value = reduceMotion ? 0.97 : withSpring(0.97, motion.spring.press);
   };
 
   const handlePressOut = () => {
+    // eslint-disable-next-line react-hooks/immutability
     scale.value = reduceMotion ? 1 : withSpring(1, motion.spring.press);
   };
 

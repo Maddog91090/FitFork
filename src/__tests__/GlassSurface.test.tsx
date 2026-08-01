@@ -1,7 +1,6 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
-import { Text } from 'react-native';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, Text } from 'react-native';
 import * as expoGlassEffect from 'expo-glass-effect';
 import { GlassSurface } from '../components/ui/GlassSurface';
 
