@@ -1,5 +1,8 @@
 import { Pressable, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { colors, radius, shadow, spacing } from '../../theme/tokens';
+import { typography } from '../../theme/typography';
+import { motion, useReducedMotion } from '../../theme/motion';
 
 type ButtonVariant = 'primary' | 'secondary';
 
@@ -13,30 +16,49 @@ type ButtonProps = {
 
 export function Button({ title, onPress, variant = 'primary', disabled = false, loading = false }: ButtonProps) {
   const isDisabled = disabled || loading;
+  const reduceMotion = useReducedMotion();
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = reduceMotion ? 0.97 : withSpring(0.97, motion.spring.press);
+  };
+
+  const handlePressOut = () => {
+    scale.value = reduceMotion ? 1 : withSpring(1, motion.spring.press);
+  };
+
   return (
-    <Pressable
-      onPress={onPress}
-      disabled={isDisabled}
-      style={[
-        styles.base,
-        variant === 'primary' ? styles.primary : styles.secondary,
-        isDisabled && styles.disabled,
-      ]}
-    >
-      {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#FFFFFF' : colors.textPrimary} />
-      ) : (
-        <Text
-          style={[
-            styles.label,
-            variant === 'primary' ? styles.labelPrimary : styles.labelSecondary,
-            isDisabled && styles.labelDisabled,
-          ]}
-        >
-          {title}
-        </Text>
-      )}
-    </Pressable>
+    <Animated.View style={animatedStyle}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={isDisabled}
+        style={[
+          styles.base,
+          variant === 'primary' ? styles.primary : styles.secondary,
+          isDisabled && styles.disabled,
+        ]}
+      >
+        {loading ? (
+          <ActivityIndicator color={variant === 'primary' ? '#FFFFFF' : colors.textPrimary} />
+        ) : (
+          <Text
+            style={[
+              styles.label,
+              variant === 'primary' ? styles.labelPrimary : styles.labelSecondary,
+              isDisabled && styles.labelDisabled,
+            ]}
+          >
+            {title}
+          </Text>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -62,7 +84,9 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   label: {
-    fontSize: 14,
+    fontSize: typography.body.fontSize,
+    lineHeight: typography.body.lineHeight,
+    letterSpacing: typography.body.letterSpacing,
     fontWeight: '700',
   },
   labelPrimary: {
