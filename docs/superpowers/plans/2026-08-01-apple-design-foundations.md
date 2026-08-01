@@ -776,7 +776,7 @@ git commit -m "Adopt typography scale in EmptyState"
 ```tsx
 // src/__tests__/GlassSurface.test.tsx
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, waitFor } from '@testing-library/react-native';
 import { Text } from 'react-native';
 import { AccessibilityInfo } from 'react-native';
 import * as expoGlassEffect from 'expo-glass-effect';
@@ -789,6 +789,9 @@ jest.mock('expo-glass-effect', () => ({
 
 describe('GlassSurface', () => {
   beforeEach(() => {
+    // GlassView's call history is shared across tests in this file (the jest.mock factory
+    // runs once) — clear it each time so one test's calls don't leak into another's assertions.
+    jest.clearAllMocks();
     jest.spyOn(AccessibilityInfo, 'isReduceTransparencyEnabled').mockResolvedValue(false);
   });
 
@@ -811,7 +814,8 @@ describe('GlassSurface', () => {
       </GlassSurface>
     );
     expect(getByText('content')).toBeTruthy();
-    expect(expoGlassEffect.GlassView).toHaveBeenCalled();
+    // Starts on the conservative fallback until the async accessibility check resolves.
+    await waitFor(() => expect(expoGlassEffect.GlassView).toHaveBeenCalled());
   });
 
   it('falls back to the solid View when the glass API is available but reduce-transparency is on', async () => {
@@ -847,7 +851,9 @@ type GlassSurfaceProps = {
 };
 
 function useReduceTransparency(): boolean {
-  const [reduced, setReduced] = useState(false);
+  // Conservative default: treat "unknown" (the async check hasn't resolved yet) the same as
+  // "reduced", so a device with the setting on never briefly flashes real glass before settling.
+  const [reduced, setReduced] = useState(true);
 
   useEffect(() => {
     let mounted = true;
