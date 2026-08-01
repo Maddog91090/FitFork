@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
-import { Link, router, useFocusEffect } from 'expo-router';
-import { useAuth } from '../lib/auth-context';
-import { getCurrentPlan, fetchRecipeIngredients } from '../lib/mealPlanData';
+import { router, useFocusEffect } from 'expo-router';
+import { useAuth } from '../../lib/auth-context';
+import { getCurrentPlan, fetchRecipeIngredients } from '../../lib/mealPlanData';
+import { Card } from '../../components/ui/Card';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { colors, spacing } from '../../theme/tokens';
 
 type AggregatedIngredient = { name: string; quantity: number; unit: string };
 
@@ -66,48 +69,68 @@ export default function GroceryListScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator />
+      <View style={styles.centered}>
+        <ActivityIndicator color={colors.accentRed} />
       </View>
     );
   }
 
   if (!hasPlan) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
-        <Text style={{ marginBottom: 16 }}>Aucun plan pour l'instant.</Text>
-        <Link href="/generate-plan">Générer un plan</Link>
+      <View style={styles.centered}>
+        <EmptyState
+          icon={<Text style={styles.emptyIcon}>🛒</Text>}
+          title="Aucun plan pour l'instant"
+          message="Génère un plan de repas pour obtenir ta liste de courses."
+          actionLabel="Générer un plan"
+          onAction={() => router.push('/generate-plan')}
+        />
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <Text style={styles.title}>Liste de courses</Text>
       {error && <Text style={styles.error}>{error}</Text>}
-      {items.map((item) => (
-        <View key={`${item.name}|${item.unit}`} style={styles.row}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.quantity}>
-            {Math.round(item.quantity * 10) / 10} {item.unit}
-          </Text>
-        </View>
-      ))}
+      <Card>
+        {items.map((item, index) => (
+          <View
+            key={`${item.name}|${item.unit}`}
+            style={[styles.row, index === items.length - 1 && styles.rowLast]}
+          >
+            <Text style={styles.name}>{item.name}</Text>
+            <Text style={styles.quantity}>
+              {Math.round(item.quantity * 10) / 10} {item.unit}
+            </Text>
+          </View>
+        ))}
+      </Card>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24 },
-  title: { fontSize: 18, fontWeight: '600', marginBottom: 16 },
+  screen: { flex: 1, backgroundColor: colors.bgBase },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.bgBase,
+    padding: spacing.lg,
+  },
+  container: { padding: spacing.lg },
+  title: { fontSize: 17, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm + 1,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: colors.divider,
   },
-  name: { flex: 1 },
-  quantity: { color: '#666' },
-  error: { color: 'red', marginBottom: 16 },
+  rowLast: { borderBottomWidth: 0 },
+  name: { flex: 1, color: colors.textPrimary, fontSize: 13 },
+  quantity: { color: colors.textSecondary, fontSize: 12 },
+  error: { color: colors.error, marginBottom: spacing.md },
+  emptyIcon: { fontSize: 32 },
 });

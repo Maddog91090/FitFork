@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { useAuth } from '../lib/auth-context';
-import { getTrainingProfile, upsertTrainingProfile } from '../lib/profile';
-import type { ExperienceLevel, TrainingProfile } from '../lib/profile';
-import { ChoiceGroup } from '../components/ChoiceGroup';
-import { homeWorkoutProgram, getLevelProgram } from '../lib/homeWorkoutProgram';
-import type { Session } from '../lib/homeWorkoutProgram';
+import { useAuth } from '../../lib/auth-context';
+import { getTrainingProfile, upsertTrainingProfile } from '../../lib/profile';
+import type { ExperienceLevel, TrainingProfile } from '../../lib/profile';
+import { ChoiceGroup } from '../../components/ChoiceGroup';
+import { homeWorkoutProgram, getLevelProgram } from '../../lib/homeWorkoutProgram';
+import type { Session } from '../../lib/homeWorkoutProgram';
+import { Card } from '../../components/ui/Card';
+import { colors, spacing } from '../../theme/tokens';
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
 
@@ -79,8 +81,8 @@ export default function WorkoutScreen() {
 
   if (loading || !session || checking || !trainingProfile) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator />
+      <View style={styles.centered}>
+        <ActivityIndicator color={colors.accentRed} />
       </View>
     );
   }
@@ -88,7 +90,7 @@ export default function WorkoutScreen() {
   const levelProgram = getLevelProgram(trainingProfile.experienceLevel);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       {error && <Text style={styles.error}>{error}</Text>}
 
       <Text style={styles.title}>{homeWorkoutProgram.title}</Text>
@@ -96,7 +98,7 @@ export default function WorkoutScreen() {
       <Text style={styles.blockText}>{homeWorkoutProgram.guidance}</Text>
 
       <ChoiceGroup options={LEVEL_OPTIONS} value={trainingProfile.experienceLevel} onChange={handleLevelChange} />
-      {savingLevel && <ActivityIndicator size="small" />}
+      {savingLevel && <ActivityIndicator size="small" color={colors.accentRed} />}
 
       <View style={styles.block}>
         <Text style={styles.blockTitle}>
@@ -111,11 +113,13 @@ export default function WorkoutScreen() {
       {levelProgram.sessions.map((sessionItem, index) => {
         const isExpanded = expanded.has(index);
         return (
-          <Pressable key={sessionItem.name} onPress={() => toggleSession(index)} style={styles.sessionBlock}>
-            <Text style={styles.sessionTitle}>
-              Séance {index + 1} — {sessionItem.name}
-            </Text>
-            {isExpanded && <SessionDetail session={sessionItem} />}
+          <Pressable key={sessionItem.name} onPress={() => toggleSession(index)}>
+            <Card style={styles.sessionCard}>
+              <Text style={styles.sessionTitle}>
+                Séance {index + 1} — {sessionItem.name}
+              </Text>
+              {isExpanded && <SessionDetail session={sessionItem} />}
+            </Card>
           </Pressable>
         );
       })}
@@ -169,19 +173,21 @@ function SessionDetail({ session }: { session: Session }) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24 },
-  title: { fontSize: 20, fontWeight: '700' },
-  subtitle: { fontSize: 14, color: '#666', marginBottom: 16 },
-  block: { marginVertical: 16 },
-  blockTitle: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
-  blockText: { color: '#444' },
-  levelSummary: { marginTop: 8, color: '#444' },
-  levelDuration: { marginBottom: 16, color: '#666', fontStyle: 'italic' },
-  sessionBlock: { marginBottom: 16 },
-  sessionTitle: { fontSize: 16, fontWeight: '600' },
-  sessionDetail: { marginTop: 8, marginLeft: 12 },
-  sessionMeta: { color: '#666', marginBottom: 6 },
-  exerciseLine: { marginBottom: 4 },
-  coachNote: { marginBottom: 6, color: '#444' },
-  error: { color: 'red', marginBottom: 16 },
+  screen: { flex: 1, backgroundColor: colors.bgBase },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+  container: { padding: spacing.lg },
+  title: { fontSize: 18, fontWeight: '800', color: colors.textPrimary },
+  subtitle: { fontSize: 13, color: colors.textSecondary, marginBottom: spacing.lg },
+  block: { marginVertical: spacing.lg },
+  blockTitle: { fontSize: 14, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.xs },
+  blockText: { color: colors.textSecondary, fontSize: 13 },
+  levelSummary: { marginTop: spacing.sm, color: colors.textSecondary, fontSize: 13 },
+  levelDuration: { marginBottom: spacing.lg, color: colors.textSecondary, fontSize: 12, fontStyle: 'italic' },
+  sessionCard: { marginBottom: spacing.sm },
+  sessionTitle: { fontSize: 13, fontWeight: '700', color: colors.textPrimary },
+  sessionDetail: { marginTop: spacing.sm, marginLeft: spacing.md },
+  sessionMeta: { color: colors.textSecondary, fontSize: 12, marginBottom: spacing.xs },
+  exerciseLine: { color: colors.textPrimary, fontSize: 12, marginBottom: spacing.xs },
+  coachNote: { marginBottom: spacing.xs, color: colors.textSecondary, fontSize: 13 },
+  error: { color: colors.error, marginBottom: spacing.md },
 });

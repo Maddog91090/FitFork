@@ -9,6 +9,8 @@ import {
   type RecipeIngredient,
 } from '../../lib/mealPlanData';
 import { scaleIngredientQuantity, scaleMacroValue, clampPortionMultiplier } from '../../lib/mealPlan';
+import { Card } from '../../components/ui/Card';
+import { colors, spacing } from '../../theme/tokens';
 
 export default function RecipeDetailScreen() {
   const { id, portion: portionParam } = useLocalSearchParams<{ id: string; portion?: string }>();
@@ -49,25 +51,26 @@ export default function RecipeDetailScreen() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator />
+      <View style={styles.centered}>
+        <ActivityIndicator color={colors.accentRed} />
       </View>
     );
   }
 
   if (error || !recipe) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+      <View style={styles.centered}>
         <Text style={styles.error}>{error ?? 'Recette introuvable.'}</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <Text style={styles.title}>{recipe.name}</Text>
       <Text style={styles.macros}>
-        {scaleMacroValue(recipe.baseCalories, portionMultiplier)} kcal — {scaleMacroValue(recipe.baseProteinG, portionMultiplier)}g prot / {scaleMacroValue(recipe.baseFatG, portionMultiplier)}g lip / {scaleMacroValue(recipe.baseCarbsG, portionMultiplier)}g gluc ({scaleMacroValue(recipe.baseServingG, portionMultiplier)}g)
+        {scaleMacroValue(recipe.baseCalories, portionMultiplier)} kcal — {scaleMacroValue(recipe.baseProteinG, portionMultiplier)}g prot / {scaleMacroValue(recipe.baseFatG, portionMultiplier)}g lip / {scaleMacroValue(recipe.baseCarbsG, portionMultiplier)}g gluc (
+        {scaleMacroValue(recipe.baseServingG, portionMultiplier)}g)
       </Text>
       {Math.round(portionMultiplier * 100) !== 100 && (
         <Text style={styles.portionBanner}>
@@ -76,29 +79,62 @@ export default function RecipeDetailScreen() {
       )}
 
       <Text style={styles.sectionTitle}>Ingrédients</Text>
-      {ingredients.map((ing, index) => (
-        <Text key={index} style={styles.ingredientLine}>
-          {ing.ingredientName} — {scaleIngredientQuantity(ing, portionMultiplier)}{ing.unit}
-        </Text>
-      ))}
+      <Card style={styles.card}>
+        {ingredients.map((ing, index) => (
+          <Text key={index} style={styles.ingredientLine}>
+            {ing.ingredientName} — {scaleIngredientQuantity(ing, portionMultiplier)}
+            {ing.unit}
+          </Text>
+        ))}
+      </Card>
 
       <Text style={styles.sectionTitle}>Préparation</Text>
       {instructions.map((step, index) => (
-        <Text key={index} style={styles.instructionLine}>
-          {index + 1}. {step}
-        </Text>
+        <View key={index} style={styles.stepRow}>
+          <View style={styles.stepBadge}>
+            <Text style={styles.stepBadgeText}>{index + 1}</Text>
+          </View>
+          <Text style={styles.stepText}>{step}</Text>
+        </View>
       ))}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24 },
-  title: { fontSize: 20, fontWeight: '700', marginBottom: 8 },
-  macros: { color: '#666', marginBottom: 16 },
-  portionBanner: { color: '#208AEF', fontWeight: '600', marginBottom: 16 },
-  sectionTitle: { fontSize: 16, fontWeight: '600', marginTop: 16, marginBottom: 8 },
-  ingredientLine: { marginBottom: 4 },
-  instructionLine: { marginBottom: 8 },
-  error: { color: 'red' },
+  screen: { flex: 1, backgroundColor: colors.bgBase },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.bgBase,
+    padding: spacing.lg,
+  },
+  container: { padding: spacing.lg },
+  title: { fontSize: 19, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.xs },
+  macros: { color: colors.textSecondary, fontSize: 12, marginBottom: spacing.lg },
+  portionBanner: { color: colors.accentRed, fontWeight: '700', fontSize: 12, marginBottom: spacing.lg },
+  sectionTitle: {
+    fontSize: 11,
+    textTransform: 'uppercase',
+    color: colors.textSecondary,
+    fontWeight: '700',
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  card: { marginBottom: spacing.sm },
+  ingredientLine: { color: colors.textPrimary, fontSize: 13, marginBottom: spacing.xs },
+  stepRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm, alignItems: 'flex-start' },
+  stepBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: colors.accentRed,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  stepBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
+  stepText: { flex: 1, color: colors.textPrimary, fontSize: 13 },
+  error: { color: colors.error },
 });

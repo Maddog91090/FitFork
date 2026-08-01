@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable, Button, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../lib/profile';
@@ -8,6 +8,8 @@ import { fetchRecipes, saveWeeklyPlan } from '../lib/mealPlanData';
 import { fetchRecentWeightLogs, type WeightLogEntry } from '../lib/weightLogData';
 import { computeAdjustedTargets } from '../lib/progressTracking';
 import { generateWeeklyPlan, type MealSlot, type MealType } from '../lib/mealPlan';
+import { Button } from '../components/ui/Button';
+import { colors, radius, shadow, spacing } from '../theme/tokens';
 
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
@@ -101,7 +103,7 @@ export default function GeneratePlanScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <Text style={styles.title}>Choisis les repas à générer</Text>
       {DAY_LABELS.map((dayLabel, dayIndex) => (
         <View key={dayLabel} style={styles.dayRow}>
@@ -122,24 +124,33 @@ export default function GeneratePlanScreen() {
         </View>
       ))}
       {error && <Text style={styles.error}>{error}</Text>}
-      <Button
-        title={generating ? 'Génération...' : 'Générer le plan'}
-        onPress={handleGenerate}
-        disabled={generating}
-      />
+      <Button title="Générer le plan" onPress={handleGenerate} loading={generating} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24 },
-  title: { fontSize: 18, fontWeight: '600', marginBottom: 16 },
-  dayRow: { marginBottom: 12 },
-  dayLabel: { fontWeight: '600', marginBottom: 4 },
-  mealRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  cell: { borderWidth: 1, borderColor: '#888', borderRadius: 12, paddingVertical: 6, paddingHorizontal: 10 },
-  cellSelected: { backgroundColor: '#208AEF', borderColor: '#208AEF' },
-  cellLabel: { color: '#333' },
-  cellLabelSelected: { color: '#fff' },
-  error: { color: 'red', marginTop: 16, marginBottom: 8 },
+  screen: { flex: 1, backgroundColor: colors.bgBase },
+  container: { padding: spacing.lg },
+  title: { fontSize: 17, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+  dayRow: { marginBottom: spacing.md },
+  dayLabel: {
+    fontWeight: '700',
+    color: colors.textSecondary,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    marginBottom: spacing.sm,
+  },
+  mealRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  cell: {
+    backgroundColor: colors.bgSurface,
+    borderRadius: radius.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    ...shadow.card,
+  },
+  cellSelected: { backgroundColor: colors.accentRed, shadowColor: colors.accentRed, shadowOpacity: 0.25 },
+  cellLabel: { color: colors.textSecondary, fontSize: 11, fontWeight: '600' },
+  cellLabelSelected: { color: '#FFFFFF', fontSize: 11, fontWeight: '600' },
+  error: { color: colors.error, marginTop: spacing.md, marginBottom: spacing.sm },
 });
