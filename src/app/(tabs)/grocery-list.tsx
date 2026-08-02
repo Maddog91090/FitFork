@@ -4,6 +4,7 @@ import Animated, {
   interpolateColor,
   useAnimatedStyle,
   useSharedValue,
+  withSequence,
   withSpring,
 } from 'react-native-reanimated';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -124,14 +125,13 @@ export default function GroceryListScreen() {
   }
 
   const checkedCount = items.filter((item) => checked.has(itemKey(item))).length;
+  const isComplete = items.length > 0 && checkedCount === items.length;
 
   return (
     <Screen edges={['top']}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
         <Text style={styles.title} accessibilityRole="header">Liste de courses</Text>
-        <Text style={styles.progress}>
-          {checkedCount} sur {items.length} récupérés
-        </Text>
+        <ProgressLine checkedCount={checkedCount} total={items.length} isComplete={isComplete} colors={colors} />
         {error && <Text style={styles.error}>{error}</Text>}
         <Card>
           {items.map((item, index) => {
@@ -149,6 +149,37 @@ export default function GroceryListScreen() {
         </Card>
       </ScrollView>
     </Screen>
+  );
+}
+
+type ProgressLineProps = {
+  checkedCount: number;
+  total: number;
+  isComplete: boolean;
+  colors: ThemeColors;
+};
+
+function ProgressLine({ checkedCount, total, isComplete, colors }: ProgressLineProps) {
+  const reduceMotion = useReducedMotion();
+  const scale = useSharedValue(1);
+  const wasComplete = useRef(false);
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
+  useEffect(() => {
+    // Pulse once, right when the list crosses into "everything's checked" -- not on every
+    // render while it stays complete, and not when a box gets unchecked again.
+    if (isComplete && !wasComplete.current && !reduceMotion) {
+      scale.value = withSequence(withSpring(1.08, motion.spring.press), withSpring(1, motion.spring.settle));
+    }
+    wasComplete.current = isComplete;
+  }, [isComplete, reduceMotion, scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
+  return (
+    <Animated.Text style={[styles.progress, isComplete && styles.progressComplete, animatedStyle]}>
+      {isComplete ? 'Tout est dans le panier 🛒' : `${checkedCount} sur ${total} récupérés`}
+    </Animated.Text>
   );
 }
 
@@ -213,6 +244,7 @@ const makeStyles = (colors: ThemeColors) =>
     container: { padding: spacing.lg },
     title: { ...typography.title, fontWeight: '800', color: colors.textPrimary },
     progress: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
+    progressComplete: { color: colors.accentRed, fontWeight: '700' },
     row: {
       flexDirection: 'row',
       alignItems: 'center',

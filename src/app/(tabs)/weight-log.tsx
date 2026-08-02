@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { Text, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import Animated, { interpolateColor, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { logWeight, fetchRecentWeightLogs, type WeightLogEntry } from '../../lib/weightLogData';
@@ -9,6 +10,7 @@ import { Card } from '../../components/ui/Card';
 import { Screen } from '../../components/ui/Screen';
 import { spacing, type ThemeColors } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
+import { useReducedMotion } from '../../theme/motion';
 import { useColors } from '../../theme/useColors';
 
 export default function WeightLogScreen() {
@@ -18,19 +20,22 @@ export default function WeightLogScreen() {
   const [checking, setChecking] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [justSavedId, setJustSavedId] = useState<string | null>(null);
   const hasLoadedOnce = useRef(false);
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  const load = useCallback(async () => {
-    if (!session) return;
+  const load = useCallback(async (): Promise<WeightLogEntry[]> => {
+    if (!session) return [];
     if (!hasLoadedOnce.current) setChecking(true);
     setError(null);
     try {
       const recent = await fetchRecentWeightLogs(session.user.id);
       setLogs(recent);
+      return recent;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur de chargement.');
+      return [];
     } finally {
       setChecking(false);
       hasLoadedOnce.current = true;
@@ -62,7 +67,16 @@ export default function WeightLogScreen() {
     try {
       await logWeight(session.user.id, weightNum);
       setWeightInput('');
-      await load();
+      const refreshed = await load();
+      // Newest entry is refreshed[0] (fetchRecentWeightLogs orders by logged_at desc) --
+      // a quiet, one-time "recorded" confirmation, not a persistent badge.
+      if (refreshed[0]) {
+        const savedId = refreshed[0].id;
+        setJustSavedId(savedId);
+        setTimeout(() => {
+          setJustSavedId((current) => (current === savedId ? null : current));
+        }, 1400);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur lors de l'enregistrement.");
     } finally {
@@ -101,16 +115,53 @@ export default function WeightLogScreen() {
           ) : (
             <Card>
               {logs.map((log, index) => (
-                <View key={log.id} style={[styles.row, index === logs.length - 1 && styles.rowLast]}>
-                  <Text style={styles.date}>{log.loggedAt}</Text>
-                  <Text style={styles.weight}>{log.weightKg} kg</Text>
-                </View>
+                <HistoryRow
+                  key={log.id}
+                  log={log}
+                  isLast={index === logs.length - 1}
+                  justSaved={log.id === justSavedId}
+                  colors={colors}
+                />
               ))}
             </Card>
           )}
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>
+  );
+}
+
+type HistoryRowProps = {
+  log: WeightLogEntry;
+  isLast: boolean;
+  justSaved: boolean;
+  colors: ThemeColors;
+};
+
+function HistoryRow({ log, isLast, justSaved, colors }: HistoryRowProps) {
+  const reduceMotion = useReducedMotion();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const highlight = useSharedValue(justSaved && !reduceMotion ? 1 : 0);
+
+  useEffect(() => {
+    if (justSaved && !reduceMotion) {
+      highlight.value = 1;
+      highlight.value = withTiming(0, { duration: 1200 });
+    }
+    // Intentionally ignoring `reduceMotion`/`highlight` here -- this should only react to a
+    // fresh `justSaved` becoming true, not to the decay it itself triggers.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [justSaved]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(highlight.value, [0, 1], ['transparent', colors.accentRedTint]),
+  }));
+
+  return (
+    <Animated.View style={[styles.row, isLast && styles.rowLast, animatedStyle]}>
+      <Text style={styles.date}>{log.loggedAt}</Text>
+      <Text style={styles.weight}>{log.weightKg} kg</Text>
+    </Animated.View>
   );
 }
 
@@ -133,6 +184,7 @@ const makeStyles = (colors: ThemeColors) =>
       flexDirection: 'row',
       justifyContent: 'space-between',
       paddingVertical: spacing.sm + 1,
+      paddingHorizontal: spacing.sm,
       borderBottomWidth: 1,
       borderBottomColor: colors.divider,
     },
