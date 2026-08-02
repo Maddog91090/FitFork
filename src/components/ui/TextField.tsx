@@ -56,6 +56,7 @@ export function TextField({
           autoCapitalize={autoCapitalize}
           onFocus={handleFocus}
           onBlur={handleBlur}
+          accessibilityLabel={label}
         />
       </Animated.View>
     </View>

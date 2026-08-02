@@ -20,7 +20,7 @@ type ChoiceGroupProps<T extends string> = {
 
 export function ChoiceGroup<T extends string>({ options, value, onChange }: ChoiceGroupProps<T>) {
   return (
-    <View style={styles.row}>
+    <View style={styles.row} accessibilityRole="radiogroup">
       {options.map((option) => (
         <Pill
           key={option.value}
@@ -78,7 +78,14 @@ function Pill({ label, selected, onPress }: PillProps) {
   }));
 
   return (
-    <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
+    <Pressable
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      accessibilityRole="radio"
+      accessibilityLabel={label}
+      accessibilityState={{ selected }}
+    >
       <Animated.View style={[styles.pill, animatedPillStyle]}>
         <Animated.Text style={[styles.label, animatedLabelStyle]}>{label}</Animated.Text>
       </Animated.View>
