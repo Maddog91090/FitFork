@@ -16,8 +16,9 @@
       "label": { "displayName": "Label", "purpose": "Uppercase small-caps field labels and chrome, e.g. TextField's label." },
       "caption": { "displayName": "Caption", "purpose": "Secondary/supporting copy, e.g. EmptyState message text, list row metadata." },
       "body": { "displayName": "Body", "purpose": "Default readable text: button labels, input text, pill labels, most screen paragraph text." },
-      "subtitle": { "displayName": "Subtitle", "purpose": "Emphasis text between body and title, e.g. home's macro numbers, the brand wordmark." },
-      "title": { "displayName": "Title", "purpose": "Screen and section titles across every screen, negative tracking." }
+      "subtitle": { "displayName": "Subtitle", "purpose": "Emphasis text between body and title, e.g. home's secondary macro numbers (protein/fat/carbs), the brand wordmark." },
+      "title": { "displayName": "Title", "purpose": "Screen and section titles across every screen, negative tracking." },
+      "display": { "displayName": "Display", "purpose": "One hero numeral per screen that should be unmistakable at a glance, e.g. home's calorie target. Not a general-purpose large-text step." }
     },
     "shadows": [
       { "name": "card", "value": "shadowColor: #000000, shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: {0, 2}, elevation: 2", "purpose": "Default resting shadow for every solid surface (cards, buttons, fields, pills)." },

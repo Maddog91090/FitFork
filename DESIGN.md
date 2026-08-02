@@ -39,6 +39,12 @@ typography:
     fontWeight: 400
     lineHeight: "26px"
     letterSpacing: "-0.3px"
+  display:
+    fontFamily: "System (SF Pro on iOS, Roboto on Android)"
+    fontSize: "44px"
+    fontWeight: 400
+    lineHeight: "48px"
+    letterSpacing: "-0.9px"
 rounded:
   sm: "12px"
   md: "14px"

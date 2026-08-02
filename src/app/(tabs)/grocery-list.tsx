@@ -14,6 +14,7 @@ import { getCurrentPlan, fetchRecipeIngredients } from '../../lib/mealPlanData';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Screen } from '../../components/ui/Screen';
+import { StaggerItem } from '../../components/ui/StaggerItem';
 import { spacing, type ThemeColors } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
 import { motion, useReducedMotion } from '../../theme/motion';
@@ -35,8 +36,14 @@ export default function GroceryListScreen() {
   const [checking, setChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const hasLoadedOnce = useRef(false);
+  const hasEnteredRef = useRef(false);
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const shouldAnimateEntrance = !hasEnteredRef.current;
+
+  useEffect(() => {
+    if (items.length > 0) hasEnteredRef.current = true;
+  });
 
   const load = useCallback(async () => {
     if (!session) return;
@@ -137,13 +144,14 @@ export default function GroceryListScreen() {
           {items.map((item, index) => {
             const key = itemKey(item);
             return (
-              <GroceryRow
-                key={key}
-                item={item}
-                isChecked={checked.has(key)}
-                onToggle={() => toggleItem(key)}
-                isLast={index === items.length - 1}
-              />
+              <StaggerItem key={key} index={index} enabled={shouldAnimateEntrance}>
+                <GroceryRow
+                  item={item}
+                  isChecked={checked.has(key)}
+                  onToggle={() => toggleItem(key)}
+                  isLast={index === items.length - 1}
+                />
+              </StaggerItem>
             );
           })}
         </Card>

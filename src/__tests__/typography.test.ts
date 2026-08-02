@@ -23,4 +23,9 @@ describe('typography scale', () => {
     expect(typography.title.letterSpacing).toBeLessThan(0);
     expect(typography.subtitle.letterSpacing).toBeLessThanOrEqual(0);
   });
+
+  it('display continues the scale beyond title, with even tighter tracking', () => {
+    expect(typography.display.fontSize).toBeGreaterThan(typography.title.fontSize);
+    expect(typography.display.letterSpacing).toBeLessThan(typography.title.letterSpacing);
+  });
 });

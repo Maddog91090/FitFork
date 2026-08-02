@@ -7,6 +7,7 @@ import { pickReplacementRecipe, MEAL_TYPE_RATIOS, clampPortionMultiplier, type M
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Screen } from '../../components/ui/Screen';
+import { StaggerItem } from '../../components/ui/StaggerItem';
 import { spacing, type ThemeColors } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
 import { useColors } from '../../theme/useColors';
@@ -29,8 +30,14 @@ export default function PlanScreen() {
   const [swappingId, setSwappingId] = useState<string | null>(null);
   const hasLoadedOnce = useRef(false);
   const scrollRef = useRef<ScrollView>(null);
+  const hasEnteredRef = useRef(false);
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const shouldAnimateEntrance = !hasEnteredRef.current;
+
+  useEffect(() => {
+    if (plan) hasEnteredRef.current = true;
+  });
 
   const load = useCallback(async () => {
     if (!session) return;
@@ -134,7 +141,7 @@ export default function PlanScreen() {
         const dayEntries = plan.entries.filter((e) => e.dayIndex === dayIndex);
         if (dayEntries.length === 0) return null;
         return (
-          <View key={dayLabel} style={styles.dayBlock}>
+          <StaggerItem key={dayLabel} index={dayIndex} enabled={shouldAnimateEntrance} style={styles.dayBlock}>
             <Text style={styles.dayLabel} accessibilityRole="header">{dayLabel}</Text>
             {dayEntries.map((entry) => {
               const recipe = recipeById.get(entry.recipeId);
@@ -178,7 +185,7 @@ export default function PlanScreen() {
                 </Card>
               );
             })}
-          </View>
+          </StaggerItem>
         );
       })}
       </ScrollView>

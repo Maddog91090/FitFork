@@ -11,6 +11,7 @@ import { homeWorkoutProgram, getLevelProgram } from '../../lib/homeWorkoutProgra
 import type { Session } from '../../lib/homeWorkoutProgram';
 import { Card } from '../../components/ui/Card';
 import { Screen } from '../../components/ui/Screen';
+import { StaggerItem } from '../../components/ui/StaggerItem';
 import { spacing, type ThemeColors } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
 import { motion, useReducedMotion } from '../../theme/motion';
@@ -27,8 +28,14 @@ export default function WorkoutScreen() {
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const hasLoadedOnce = useRef(false);
+  const hasEnteredRef = useRef(false);
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const shouldAnimateEntrance = !hasEnteredRef.current;
+
+  useEffect(() => {
+    if (trainingProfile) hasEnteredRef.current = true;
+  });
 
   const toggleSession = (index: number) => {
     setExpanded((prev) => {
@@ -123,14 +130,15 @@ export default function WorkoutScreen() {
       <Text style={styles.levelDuration}>Durée par séance : {levelProgram.sessionDurationLabel}</Text>
 
       {levelProgram.sessions.map((sessionItem, index) => (
-        <SessionCard
-          key={sessionItem.name}
-          index={index}
-          session={sessionItem}
-          isExpanded={expanded.has(index)}
-          onToggle={() => toggleSession(index)}
-          colors={colors}
-        />
+        <StaggerItem key={sessionItem.name} index={index} enabled={shouldAnimateEntrance}>
+          <SessionCard
+            index={index}
+            session={sessionItem}
+            isExpanded={expanded.has(index)}
+            onToggle={() => toggleSession(index)}
+            colors={colors}
+          />
+        </StaggerItem>
       ))}
 
       <View style={styles.block}>
