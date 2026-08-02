@@ -78,7 +78,16 @@ export default function PlanScreen() {
       const newMultiplier = clampPortionMultiplier(slotTarget / replacement.baseCalories);
 
       await updatePlanEntry(entryId, replacement.id, newMultiplier);
-      await load();
+      setPlan((prev) =>
+        prev
+          ? {
+              ...prev,
+              entries: prev.entries.map((e) =>
+                e.id === entryId ? { ...e, recipeId: replacement.id, portionMultiplier: newMultiplier } : e
+              ),
+            }
+          : prev
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur lors de l\'échange.');
     } finally {

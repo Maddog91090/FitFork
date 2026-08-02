@@ -97,8 +97,11 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
   pill: {
     borderRadius: radius.pill,
+    minHeight: 44,
     paddingVertical: spacing.sm + 2,
     paddingHorizontal: spacing.md + 2,
+    alignItems: 'center',
+    justifyContent: 'center',
     elevation: shadow.card.elevation,
     shadowOffset: shadow.card.shadowOffset,
     shadowRadius: shadow.card.shadowRadius,
