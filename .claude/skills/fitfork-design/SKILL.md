@@ -170,9 +170,14 @@ Not built yet, and worth knowing before you plan work:
 
 - **Dark mode.** No dark tokens exist. `app.json` still declares
   `userInterfaceStyle: "automatic"` while the app is light-only.
-- **Onboarding and empty-state illustrations.** Direction is set in
-  `docs/superpowers/specs/2026-07-22-brand-visual-identity-design.md`; the
-  artwork was never produced.
+- **Onboarding and empty-state illustrations.** Direction and the resolved
+  light-ground palette are in
+  `docs/superpowers/specs/2026-08-02-illustrations-soft-neutral-design.md`,
+  which supersedes the dark-background assumptions of the 2026-07-31 hero
+  spec. Candidates are generated; the files are not in the repo yet, and the
+  session container cannot download them (network policy blocks the
+  Higgsfield CDN). Illustrations sit on the color they are placed over —
+  `bgBase` for the onboarding banner, `bgSurface` inside a card.
 - **Charts.** `weight-log` shows a list where it wants a trend line. Read the
   `dataviz` skill before writing the first line of chart code, and take the
   series colors from `colors`.
