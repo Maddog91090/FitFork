@@ -3,6 +3,7 @@ import { View, Text, KeyboardAvoidingView, Platform, StyleSheet } from 'react-na
 import { Image } from 'expo-image';
 import { Link, router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
+import { translateAuthError } from '../lib/authErrors';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
 import { Screen } from '../components/ui/Screen';
@@ -28,7 +29,7 @@ export default function LoginScreen() {
     const { error } = await signIn(email, password);
     setSubmitting(false);
     if (error) {
-      setError(error.message);
+      setError(translateAuthError(error));
     }
   };
 
@@ -56,7 +57,12 @@ export default function LoginScreen() {
 
         <Button title="Se connecter" onPress={handleSubmit} loading={submitting} />
 
-        <Link href="/signup" style={styles.switchLink}>
+        <Link
+          href="/signup"
+          style={styles.switchLink}
+          accessibilityRole="link"
+          accessibilityLabel="Créer un compte"
+        >
           <Text style={styles.switchText}>
             Pas de compte ? <Text style={styles.switchTextAccent}>Créer un compte</Text>
           </Text>

@@ -3,6 +3,7 @@ import { View, Text, KeyboardAvoidingView, Platform, StyleSheet } from 'react-na
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
+import { translateAuthError } from '../lib/authErrors';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
 import { Screen } from '../components/ui/Screen';
@@ -23,7 +24,7 @@ export default function SignupScreen() {
     const { error } = await signUp(email, password);
     setSubmitting(false);
     if (error) {
-      setError(error.message);
+      setError(translateAuthError(error));
       return;
     }
     setConfirmationSent(true);
@@ -35,7 +36,12 @@ export default function SignupScreen() {
         <Text style={styles.confirmText}>
           Compte créé. Vérifie ta boîte mail pour confirmer ton adresse, puis connecte-toi.
         </Text>
-        <Link href="/login" style={styles.switchLink}>
+        <Link
+          href="/login"
+          style={styles.switchLink}
+          accessibilityRole="link"
+          accessibilityLabel="Aller à la connexion"
+        >
           <Text style={styles.switchTextAccent}>Aller à la connexion</Text>
         </Link>
       </Screen>
@@ -66,7 +72,12 @@ export default function SignupScreen() {
 
         <Button title="Créer un compte" onPress={handleSubmit} loading={submitting} />
 
-        <Link href="/login" style={styles.switchLink}>
+        <Link
+          href="/login"
+          style={styles.switchLink}
+          accessibilityRole="link"
+          accessibilityLabel="Se connecter"
+        >
           <Text style={styles.switchText}>
             Déjà un compte ? <Text style={styles.switchTextAccent}>Se connecter</Text>
           </Text>

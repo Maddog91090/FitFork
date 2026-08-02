@@ -1,5 +1,5 @@
 ---
-name: FitFork
+name: FitPro
 description: A weekly meal + workout planner that generates a matched plan from your goals, not a logging tool
 colors:
   vital-red: "#DC2626"
@@ -93,13 +93,13 @@ components:
     padding: "10px 14px"
 ---
 
-# Design System: FitFork
+# Design System: FitPro
 
 ## 1. Overview
 
 **Creative North Star: "Warm Glass"**
 
-FitFork's visual system sits at the tension between two things: the warmth of a coach who's rooting for you, and the restraint of Apple-grade native materials. It borrows its material vocabulary from Apple Fitness and Apple Health — soft ambient shadows at rest, real native glass (Liquid Glass via `expo-glass-effect`) for floating chrome, spring-based motion that responds to touch instead of playing a fixed animation — but it never lets that craft read as cold or clinical. The palette is warm off-whites and a single vital red, not slate grays and blue gradients; type never shouts a calorie count at you.
+FitPro's visual system sits at the tension between two things: the warmth of a coach who's rooting for you, and the restraint of Apple-grade native materials. It borrows its material vocabulary from Apple Fitness and Apple Health — soft ambient shadows at rest, real native glass (Liquid Glass via `expo-glass-effect`) for floating chrome, spring-based motion that responds to touch instead of playing a fixed animation — but it never lets that craft read as cold or clinical. The palette is warm off-whites and a single vital red, not slate grays and blue gradients; type never shouts a calorie count at you.
 
 The system explicitly rejects the loud gamification of free fitness apps — streak badges, aggressive notification chrome, flashy stat walls — and the opposite failure mode of a dense manual-logging tool where every screen is a table to fill in. This app plans for the user; the interface should feel like it's handing you a finished week, not asking you to build one.
 
@@ -144,7 +144,7 @@ The palette is warm-neutral-and-one-accent: a single vital red carries every cal
 
 ## 4. Elevation
 
-FitFork uses a hybrid: soft ambient shadows for flat surfaces at rest, and real native glass material for floating chrome — never a hard 1px border as a substitute for either.
+FitPro uses a hybrid: soft ambient shadows for flat surfaces at rest, and real native glass material for floating chrome — never a hard 1px border as a substitute for either.
 
 ### Shadow Vocabulary
 - **Card** (`shadowColor: #000000, shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: {0, 2}, elevation: 2`): the default resting shadow for every solid surface — cards, buttons, text fields, pills. Deliberately soft; it reads as "this is a surface," not "this is important."
