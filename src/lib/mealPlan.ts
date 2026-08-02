@@ -205,5 +205,5 @@ export function pickReplacementRecipe(
 ): RecipeOption | null {
   const alternatives = recipes.filter((r) => r.mealType === mealType && r.id !== excludeRecipeId);
   if (alternatives.length === 0) return null;
-  return alternatives[0];
+  return alternatives[Math.floor(Math.random() * alternatives.length)];
 }

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { logWeight, fetchRecentWeightLogs, type WeightLogEntry } from '../../lib/weightLogData';
@@ -46,7 +46,7 @@ export default function WeightLogScreen() {
 
   const handleSubmit = async () => {
     setError(null);
-    const weightNum = Number(weightInput);
+    const weightNum = Number(weightInput.trim().replace(',', '.'));
     if (!Number.isFinite(weightNum) || weightNum <= 0) {
       setError('Poids invalide.');
       return;
@@ -75,31 +75,34 @@ export default function WeightLogScreen() {
 
   return (
     <Screen edges={['top']}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Suivi de poids</Text>
-        <TextField label="Poids (kg)" value={weightInput} onChangeText={setWeightInput} keyboardType="numeric" />
-        {error && <Text style={styles.error}>{error}</Text>}
-        <Button title="Enregistrer" onPress={handleSubmit} loading={submitting} />
+      <KeyboardAvoidingView style={styles.avoiding} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+          <Text style={styles.title}>Suivi de poids</Text>
+          <TextField label="Poids (kg)" value={weightInput} onChangeText={setWeightInput} keyboardType="decimal-pad" />
+          {error && <Text style={styles.error}>{error}</Text>}
+          <Button title="Enregistrer" onPress={handleSubmit} loading={submitting} />
 
-        <Text style={styles.historyTitle}>Historique</Text>
-        {logs.length === 0 ? (
-          <Text style={styles.emptyText}>Aucune pesée enregistrée.</Text>
-        ) : (
-          <Card>
-            {logs.map((log, index) => (
-              <View key={log.id} style={[styles.row, index === logs.length - 1 && styles.rowLast]}>
-                <Text style={styles.date}>{log.loggedAt}</Text>
-                <Text style={styles.weight}>{log.weightKg} kg</Text>
-              </View>
-            ))}
-          </Card>
-        )}
-      </ScrollView>
+          <Text style={styles.historyTitle}>Historique</Text>
+          {logs.length === 0 ? (
+            <Text style={styles.emptyText}>Aucune pesée enregistrée.</Text>
+          ) : (
+            <Card>
+              {logs.map((log, index) => (
+                <View key={log.id} style={[styles.row, index === logs.length - 1 && styles.rowLast]}>
+                  <Text style={styles.date}>{log.loggedAt}</Text>
+                  <Text style={styles.weight}>{log.weightKg} kg</Text>
+                </View>
+              ))}
+            </Card>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  avoiding: { flex: 1 },
   scroll: { flex: 1 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   container: { padding: spacing.lg },
