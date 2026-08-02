@@ -11,6 +11,8 @@ import { typography } from '../theme/typography';
 import { motion, useReducedMotion } from '../theme/motion';
 import { useColors } from '../theme/useColors';
 
+const isAndroid = Platform.OS === 'android';
+
 export type ChoiceOption<T extends string> = { value: T; label: string };
 
 type ChoiceGroupProps<T extends string> = {
@@ -59,21 +61,27 @@ function Pill({ label, selected, onPress }: PillProps) {
     scale.value = reduceMotion ? 1 : withSpring(1, motion.spring.press);
   };
 
-  const animatedPillStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    backgroundColor: interpolateColor(
+  const animatedPillStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
       selectedProgress.value,
       [0, 1],
-      [colors.bgSurface, colors.accentRed]
-    ),
-    shadowColor: interpolateColor(
-      selectedProgress.value,
-      [0, 1],
-      [shadow.card.shadowColor, colors.accentRed]
-    ),
-    shadowOpacity:
-      shadow.card.shadowOpacity + (0.25 - shadow.card.shadowOpacity) * selectedProgress.value,
-  }));
+      [isAndroid ? colors.surfaceVariant : colors.bgSurface, colors.accentRed]
+    );
+    if (isAndroid) {
+      // M3 chip: flat at rest, a hairline border instead of an iOS-style ambient shadow.
+      return {
+        transform: [{ scale: scale.value }],
+        backgroundColor,
+        borderColor: interpolateColor(selectedProgress.value, [0, 1], [colors.outline, colors.accentRed]),
+      };
+    }
+    return {
+      transform: [{ scale: scale.value }],
+      backgroundColor,
+      shadowColor: interpolateColor(selectedProgress.value, [0, 1], [shadow.card.shadowColor, colors.accentRed]),
+      shadowOpacity: shadow.card.shadowOpacity + (0.25 - shadow.card.shadowOpacity) * selectedProgress.value,
+    };
+  });
 
   const animatedLabelStyle = useAnimatedStyle(() => ({
     color: interpolateColor(selectedProgress.value, [0, 1], [colors.textPrimary, colors.onAccent]),
@@ -87,7 +95,7 @@ function Pill({ label, selected, onPress }: PillProps) {
       accessibilityRole="radio"
       accessibilityLabel={label}
       accessibilityState={{ selected }}
-      android_ripple={{ color: colors.divider }}
+      android_ripple={{ color: colors.accentRedTint }}
       style={styles.pillTouchable}
     >
       <Animated.View style={[styles.pill, animatedPillStyle]}>
@@ -110,9 +118,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md + 2,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: shadow.card.elevation,
-    shadowOffset: shadow.card.shadowOffset,
-    shadowRadius: shadow.card.shadowRadius,
+    ...(isAndroid
+      ? { borderWidth: 1 }
+      : { elevation: shadow.card.elevation, shadowOffset: shadow.card.shadowOffset, shadowRadius: shadow.card.shadowRadius }),
   },
   label: {
     fontSize: typography.body.fontSize,

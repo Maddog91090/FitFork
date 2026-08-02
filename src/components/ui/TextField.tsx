@@ -1,10 +1,12 @@
 import { useMemo } from 'react';
-import { View, Text, TextInput, StyleSheet, type TextInputProps } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Platform, type TextInputProps } from 'react-native';
 import Animated, { interpolateColor, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { radius, shadow, spacing, type ThemeColors } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
 import { motion, useReducedMotion } from '../../theme/motion';
 import { useColors } from '../../theme/useColors';
+
+const isAndroid = Platform.OS === 'android';
 
 type TextFieldProps = {
   label?: string;
@@ -40,9 +42,13 @@ export function TextField({
     focusProgress.value = reduceMotion ? 0 : withSpring(0, motion.spring.settle);
   };
 
-  const animatedWrapperStyle = useAnimatedStyle(() => ({
-    borderColor: interpolateColor(focusProgress.value, [0, 1], ['transparent', colors.accentRed]),
-  }));
+  // M3 filled field: a permanent bottom indicator line (outline -> accent on focus).
+  // iOS: the established pattern -- a full border that's invisible at rest, colored on focus.
+  const animatedWrapperStyle = useAnimatedStyle(() =>
+    isAndroid
+      ? { borderBottomColor: interpolateColor(focusProgress.value, [0, 1], [colors.outline, colors.accentRed]) }
+      : { borderColor: interpolateColor(focusProgress.value, [0, 1], ['transparent', colors.accentRed]) }
+  );
 
   return (
     <View style={styles.container}>
@@ -81,12 +87,19 @@ const makeStyles = (colors: ThemeColors) =>
       fontWeight: '700',
       marginBottom: spacing.xs,
     },
-    inputWrapper: {
-      borderRadius: radius.sm,
-      borderWidth: 2,
-      backgroundColor: colors.bgSurface,
-      ...shadow.card,
-    },
+    inputWrapper: isAndroid
+      ? {
+          borderTopLeftRadius: radius.sm,
+          borderTopRightRadius: radius.sm,
+          borderBottomWidth: 2,
+          backgroundColor: colors.surfaceVariant,
+        }
+      : {
+          borderRadius: radius.sm,
+          borderWidth: 2,
+          backgroundColor: colors.bgSurface,
+          ...shadow.card,
+        },
     input: {
       paddingVertical: spacing.md,
       paddingHorizontal: spacing.md,

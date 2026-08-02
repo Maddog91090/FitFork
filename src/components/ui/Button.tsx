@@ -6,6 +6,11 @@ import { typography } from '../../theme/typography';
 import { motion, useReducedMotion } from '../../theme/motion';
 import { useColors } from '../../theme/useColors';
 
+const isAndroid = Platform.OS === 'android';
+// M3 filled/outlined buttons are fully rounded ("pill") at their natural height, not the
+// iOS-style rounded-rect radius.md; 24 matches this component's ~48pt computed height.
+const ANDROID_BUTTON_RADIUS = 24;
+
 type ButtonVariant = 'primary' | 'secondary';
 
 type ButtonProps = {
@@ -49,7 +54,9 @@ export function Button({ title, onPress, variant = 'primary', disabled = false, 
         accessibilityRole="button"
         accessibilityLabel={title}
         accessibilityState={{ disabled: isDisabled, busy: loading }}
-        android_ripple={{ color: variant === 'primary' ? 'rgba(255,255,255,0.25)' : colors.divider }}
+        android_ripple={{
+          color: variant === 'primary' ? 'rgba(255,255,255,0.25)' : colors.accentRedTint,
+        }}
         style={[
           styles.base,
           variant === 'primary' ? styles.primary : styles.secondary,
@@ -57,7 +64,9 @@ export function Button({ title, onPress, variant = 'primary', disabled = false, 
         ]}
       >
         {loading ? (
-          <ActivityIndicator color={variant === 'primary' ? colors.onAccent : colors.textPrimary} />
+          <ActivityIndicator
+            color={variant === 'primary' ? colors.onAccent : isAndroid ? colors.accentRed : colors.textPrimary}
+          />
         ) : (
           <Text
             style={[
@@ -77,24 +86,34 @@ export function Button({ title, onPress, variant = 'primary', disabled = false, 
 const makeStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     base: {
-      borderRadius: radius.md,
+      borderRadius: isAndroid ? ANDROID_BUTTON_RADIUS : radius.md,
       minHeight: 44,
       paddingVertical: spacing.md + 2,
       paddingHorizontal: spacing.lg,
       alignItems: 'center',
       justifyContent: 'center',
-      overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
+      overflow: isAndroid ? 'hidden' : 'visible',
     },
     primary: {
       backgroundColor: colors.accentRed,
-      ...shadow.button,
+      // M3 filled buttons carry almost no shadow -- emphasis comes from the fill color,
+      // not an iOS-style ambient glow.
+      ...(isAndroid ? { elevation: 1 } : shadow.button),
     },
-    secondary: {
-      backgroundColor: colors.bgSurface,
-      ...shadow.card,
-    },
+    secondary: isAndroid
+      ? {
+          // M3 outlined button: transparent fill, a hairline border, accent-colored label.
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          borderColor: colors.outline,
+        }
+      : {
+          backgroundColor: colors.bgSurface,
+          ...shadow.card,
+        },
     disabled: {
-      backgroundColor: colors.bgSurface,
+      backgroundColor: isAndroid ? 'transparent' : colors.bgSurface,
+      borderColor: isAndroid ? colors.divider : undefined,
       shadowOpacity: 0.04,
       elevation: 0,
     },
@@ -108,7 +127,7 @@ const makeStyles = (colors: ThemeColors) =>
       color: colors.onAccent,
     },
     labelSecondary: {
-      color: colors.textPrimary,
+      color: isAndroid ? colors.accentRed : colors.textPrimary,
     },
     labelDisabled: {
       color: colors.textSecondary,

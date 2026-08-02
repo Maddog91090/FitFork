@@ -21,6 +21,7 @@ import { typography } from '../theme/typography';
 import { motion, useReducedMotion } from '../theme/motion';
 import { useColors } from '../theme/useColors';
 
+const isAndroid = Platform.OS === 'android';
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -171,12 +172,26 @@ function MealCell({ label, checked, onPress, accessibilityLabel }: MealCellProps
     scale.value = reduceMotion ? 1 : withSpring(1, motion.spring.press);
   };
 
-  const animatedCellStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    backgroundColor: interpolateColor(checkedProgress.value, [0, 1], [colors.bgSurface, colors.accentRed]),
-    shadowColor: interpolateColor(checkedProgress.value, [0, 1], [shadow.card.shadowColor, colors.accentRed]),
-    shadowOpacity: shadow.card.shadowOpacity + (0.25 - shadow.card.shadowOpacity) * checkedProgress.value,
-  }));
+  const animatedCellStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      checkedProgress.value,
+      [0, 1],
+      [isAndroid ? colors.surfaceVariant : colors.bgSurface, colors.accentRed]
+    );
+    if (isAndroid) {
+      return {
+        transform: [{ scale: scale.value }],
+        backgroundColor,
+        borderColor: interpolateColor(checkedProgress.value, [0, 1], [colors.outline, colors.accentRed]),
+      };
+    }
+    return {
+      transform: [{ scale: scale.value }],
+      backgroundColor,
+      shadowColor: interpolateColor(checkedProgress.value, [0, 1], [shadow.card.shadowColor, colors.accentRed]),
+      shadowOpacity: shadow.card.shadowOpacity + (0.25 - shadow.card.shadowOpacity) * checkedProgress.value,
+    };
+  });
 
   const animatedLabelStyle = useAnimatedStyle(() => ({
     color: interpolateColor(checkedProgress.value, [0, 1], [colors.textSecondary, colors.onAccent]),
@@ -190,7 +205,7 @@ function MealCell({ label, checked, onPress, accessibilityLabel }: MealCellProps
       accessibilityRole="checkbox"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ checked }}
-      android_ripple={{ color: colors.divider }}
+      android_ripple={{ color: colors.accentRedTint }}
       style={styles.cellTouchable}
     >
       <Animated.View style={[styles.cell, animatedCellStyle]}>
@@ -216,7 +231,7 @@ const makeStyles = (colors: ThemeColors) =>
     mealRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
     cellTouchable: {
       borderRadius: radius.pill,
-      overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
+      overflow: isAndroid ? 'hidden' : 'visible',
     },
     cell: {
       borderRadius: radius.pill,
@@ -225,9 +240,9 @@ const makeStyles = (colors: ThemeColors) =>
       paddingHorizontal: spacing.md + 2,
       alignItems: 'center',
       justifyContent: 'center',
-      elevation: shadow.card.elevation,
-      shadowOffset: shadow.card.shadowOffset,
-      shadowRadius: shadow.card.shadowRadius,
+      ...(isAndroid
+        ? { borderWidth: 1 }
+        : { elevation: shadow.card.elevation, shadowOffset: shadow.card.shadowOffset, shadowRadius: shadow.card.shadowRadius }),
     },
     cellLabel: { ...typography.label, fontWeight: '600' },
     error: { color: colors.error, marginTop: spacing.md, marginBottom: spacing.sm },

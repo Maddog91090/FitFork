@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Text, Pressable, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { Text, Pressable, ActivityIndicator, ScrollView, StyleSheet, Platform } from 'react-native';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -17,6 +17,8 @@ import { spacing, type ThemeColors } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
 import { motion, useReducedMotion } from '../../theme/motion';
 import { useColors } from '../../theme/useColors';
+
+const isAndroid = Platform.OS === 'android';
 
 type AggregatedIngredient = { name: string; quantity: number; unit: string };
 
@@ -183,7 +185,7 @@ function GroceryRow({ item, isChecked, onToggle, isLast }: GroceryRowProps) {
       accessibilityRole="checkbox"
       accessibilityLabel={`${item.name}, ${Math.round(item.quantity * 10) / 10} ${item.unit}`}
       accessibilityState={{ checked: isChecked }}
-      android_ripple={{ color: colors.divider }}
+      android_ripple={{ color: colors.accentRedTint }}
       style={[styles.row, isLast && styles.rowLast]}
     >
       <Animated.View style={[styles.checkbox, animatedCheckStyle]}>
@@ -223,7 +225,8 @@ const makeStyles = (colors: ThemeColors) =>
     checkbox: {
       width: 22,
       height: 22,
-      borderRadius: 11,
+      // M3 checkboxes are a rounded square (2dp corner radius), not a circle.
+      borderRadius: isAndroid ? 4 : 11,
       borderWidth: 2,
       alignItems: 'center',
       justifyContent: 'center',

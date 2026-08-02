@@ -11,6 +11,12 @@ const light = {
   divider: '#F0ECE3',
   error: '#DC2626',
   onAccent: '#FFFFFF',
+  // Android/Material 3 only: a tonal neutral surface (M3 "surface variant") for filled
+  // text fields, filled cards, and unselected chips -- distinct from bgSurface (pure white),
+  // which stays the iOS default. Not used on iOS.
+  surfaceVariant: '#EFEAE2',
+  // Android/Material 3 only: border color for outlined buttons/fields.
+  outline: '#D8D2C7',
 } as const;
 
 const dark = {
@@ -26,6 +32,8 @@ const dark = {
   divider: '#332E26',
   error: '#FF453A',
   onAccent: '#FFFFFF',
+  surfaceVariant: '#2A2520',
+  outline: '#4A443B',
 } as const;
 
 export const palettes = { light, dark } as const;
