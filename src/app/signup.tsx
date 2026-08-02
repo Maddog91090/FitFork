@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { TextField } from '../components/ui/TextField';
@@ -41,36 +41,42 @@ export default function SignupScreen() {
   }
 
   return (
-    <Screen style={styles.screen}>
-      <View style={styles.logoWrap}>
-        <Image source={require('../../assets/images/icon.png')} style={styles.logo} />
-      </View>
-      <Text style={styles.brand}>FitPro</Text>
+    <Screen>
+      <KeyboardAvoidingView
+        style={styles.avoiding}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <View style={styles.logoWrap}>
+          <Image source={require('../../assets/images/icon.png')} style={styles.logo} />
+        </View>
+        <Text style={styles.brand}>FitPro</Text>
 
-      <TextField
-        label="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      <TextField label="Mot de passe" value={password} onChangeText={setPassword} secureTextEntry />
+        <TextField
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+        <TextField label="Mot de passe" value={password} onChangeText={setPassword} secureTextEntry />
 
-      {error && <Text style={styles.error}>{error}</Text>}
+        {error && <Text style={styles.error}>{error}</Text>}
 
-      <Button title="Créer un compte" onPress={handleSubmit} loading={submitting} />
+        <Button title="Créer un compte" onPress={handleSubmit} loading={submitting} />
 
-      <Link href="/login" style={styles.switchLink}>
-        <Text style={styles.switchText}>
-          Déjà un compte ? <Text style={styles.switchTextAccent}>Se connecter</Text>
-        </Text>
-      </Link>
+        <Link href="/login" style={styles.switchLink}>
+          <Text style={styles.switchText}>
+            Déjà un compte ? <Text style={styles.switchTextAccent}>Se connecter</Text>
+          </Text>
+        </Link>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { justifyContent: 'center', padding: spacing.xl },
+  avoiding: { flex: 1, justifyContent: 'center', padding: spacing.xl },
   logoWrap: {
     width: 64,
     height: 64,

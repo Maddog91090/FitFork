@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
-import { useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { Stack, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import {
   fetchRecipes,
   fetchRecipeIngredients,
@@ -50,9 +50,18 @@ export default function RecipeDetailScreen() {
     }, [load])
   );
 
+  const headerOptions = {
+    headerShown: true as const,
+    title: recipe?.name ?? 'Recette',
+    headerTintColor: colors.accentRed,
+    headerStyle: { backgroundColor: colors.bgBase },
+    headerTitleStyle: { color: colors.textPrimary },
+  };
+
   if (loading) {
     return (
-      <Screen style={styles.centered}>
+      <Screen edges={['bottom']} style={styles.centered}>
+        <Stack.Screen options={headerOptions} />
         <ActivityIndicator color={colors.accentRed} />
       </Screen>
     );
@@ -60,14 +69,16 @@ export default function RecipeDetailScreen() {
 
   if (error || !recipe) {
     return (
-      <Screen style={styles.centered}>
+      <Screen edges={['bottom']} style={styles.centered}>
+        <Stack.Screen options={headerOptions} />
         <Text style={styles.error}>{error ?? 'Recette introuvable.'}</Text>
       </Screen>
     );
   }
 
   return (
-    <Screen>
+    <Screen edges={['bottom']}>
+      <Stack.Screen options={headerOptions} />
       <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
         <Text style={styles.title}>{recipe.name}</Text>
       <Text style={styles.macros}>

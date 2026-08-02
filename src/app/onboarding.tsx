@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { upsertProfile, upsertTrainingProfile } from '../lib/profile';
@@ -169,6 +169,7 @@ export default function OnboardingScreen() {
 
   return (
     <Screen>
+      <KeyboardAvoidingView style={styles.avoiding} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={styles.header}>
         <View style={styles.progressRow}>
           {Array.from({ length: TOTAL_STEPS }).map((_, index) => (
@@ -278,6 +279,7 @@ export default function OnboardingScreen() {
           <Button title="Valider" onPress={handleSubmit} loading={submitting} />
         )}
       </View>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }
@@ -292,6 +294,7 @@ function RecapRow({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
+  avoiding: { flex: 1 },
   header: { padding: spacing.lg, paddingBottom: spacing.sm },
   progressRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
   segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.divider },
