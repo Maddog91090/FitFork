@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { Text, Pressable, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import Animated, {
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getCurrentPlan, fetchRecipeIngredients } from '../../lib/mealPlanData';
@@ -8,12 +15,18 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { Screen } from '../../components/ui/Screen';
 import { colors, spacing } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
+import { motion, useReducedMotion } from '../../theme/motion';
 
 type AggregatedIngredient = { name: string; quantity: number; unit: string };
+
+function itemKey(item: Pick<AggregatedIngredient, 'name' | 'unit'>): string {
+  return `${item.name}|${item.unit}`;
+}
 
 export default function GroceryListScreen() {
   const { session, loading } = useAuth();
   const [items, setItems] = useState<AggregatedIngredient[]>([]);
+  const [checked, setChecked] = useState<Set<string>>(new Set());
   const [hasPlan, setHasPlan] = useState(true);
   const [checking, setChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +82,18 @@ export default function GroceryListScreen() {
     }, [load])
   );
 
+  const toggleItem = (key: string) => {
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
   if (loading || !session || checking) {
     return (
       <Screen edges={['top']} style={styles.centered}>
@@ -91,26 +116,78 @@ export default function GroceryListScreen() {
     );
   }
 
+  const checkedCount = items.filter((item) => checked.has(itemKey(item))).length;
+
   return (
     <Screen edges={['top']}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
         <Text style={styles.title}>Liste de courses</Text>
+        <Text style={styles.progress}>
+          {checkedCount} sur {items.length} récupérés
+        </Text>
         {error && <Text style={styles.error}>{error}</Text>}
         <Card>
-          {items.map((item, index) => (
-            <View
-              key={`${item.name}|${item.unit}`}
-              style={[styles.row, index === items.length - 1 && styles.rowLast]}
-            >
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.quantity}>
-                {Math.round(item.quantity * 10) / 10} {item.unit}
-              </Text>
-            </View>
-          ))}
+          {items.map((item, index) => {
+            const key = itemKey(item);
+            return (
+              <GroceryRow
+                key={key}
+                item={item}
+                isChecked={checked.has(key)}
+                onToggle={() => toggleItem(key)}
+                isLast={index === items.length - 1}
+              />
+            );
+          })}
         </Card>
       </ScrollView>
     </Screen>
+  );
+}
+
+type GroceryRowProps = {
+  item: AggregatedIngredient;
+  isChecked: boolean;
+  onToggle: () => void;
+  isLast: boolean;
+};
+
+function GroceryRow({ item, isChecked, onToggle, isLast }: GroceryRowProps) {
+  const reduceMotion = useReducedMotion();
+  const checkedProgress = useSharedValue(isChecked ? 1 : 0);
+
+  useEffect(() => {
+    const target = isChecked ? 1 : 0;
+    checkedProgress.value = reduceMotion ? target : withSpring(target, motion.spring.settle);
+  }, [isChecked, reduceMotion, checkedProgress]);
+
+  const animatedCheckStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(checkedProgress.value, [0, 1], ['transparent', colors.accentRed]),
+    borderColor: interpolateColor(checkedProgress.value, [0, 1], [colors.divider, colors.accentRed]),
+  }));
+
+  const animatedNameStyle = useAnimatedStyle(() => ({
+    color: interpolateColor(checkedProgress.value, [0, 1], [colors.textPrimary, colors.textSecondary]),
+  }));
+
+  return (
+    <Pressable
+      onPress={onToggle}
+      accessibilityRole="checkbox"
+      accessibilityLabel={`${item.name}, ${Math.round(item.quantity * 10) / 10} ${item.unit}`}
+      accessibilityState={{ checked: isChecked }}
+      style={[styles.row, isLast && styles.rowLast]}
+    >
+      <Animated.View style={[styles.checkbox, animatedCheckStyle]}>
+        {isChecked && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+      </Animated.View>
+      <Animated.Text style={[styles.name, animatedNameStyle, isChecked && styles.nameChecked]}>
+        {item.name}
+      </Animated.Text>
+      <Text style={styles.quantity}>
+        {Math.round(item.quantity * 10) / 10} {item.unit}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -123,16 +200,27 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   container: { padding: spacing.lg },
-  title: { ...typography.title, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+  title: { ...typography.title, fontWeight: '800', color: colors.textPrimary },
+  progress: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: spacing.sm + 1,
     borderBottomWidth: 1,
     borderBottomColor: colors.divider,
   },
   rowLast: { borderBottomWidth: 0 },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+  },
   name: { ...typography.body, flex: 1, color: colors.textPrimary },
+  nameChecked: { textDecorationLine: 'line-through' },
   quantity: { ...typography.caption, color: colors.textSecondary },
   error: { color: colors.error, marginBottom: spacing.md },
   emptyIcon: { fontSize: 32 },
