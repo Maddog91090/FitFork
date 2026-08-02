@@ -49,6 +49,9 @@ example
 
 # unrelated tooling artifacts (not part of this project)
 .agents/
-.claude/
+# Local agent settings stay out of the repo, but .claude/skills/ holds project
+# knowledge (the design system) that every contributor and agent needs.
+.claude/*
+!.claude/skills/
 skills-lock.json
 videos/
