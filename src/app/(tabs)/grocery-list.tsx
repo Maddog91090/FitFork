@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Text, Pressable, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import Animated, {
   interpolateColor,
@@ -13,9 +13,10 @@ import { getCurrentPlan, fetchRecipeIngredients } from '../../lib/mealPlanData';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Screen } from '../../components/ui/Screen';
-import { colors, spacing } from '../../theme/tokens';
+import { spacing, type ThemeColors } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
 import { motion, useReducedMotion } from '../../theme/motion';
+import { useColors } from '../../theme/useColors';
 
 type AggregatedIngredient = { name: string; quantity: number; unit: string };
 
@@ -30,10 +31,13 @@ export default function GroceryListScreen() {
   const [hasPlan, setHasPlan] = useState(true);
   const [checking, setChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasLoadedOnce = useRef(false);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const load = useCallback(async () => {
     if (!session) return;
-    setChecking(true);
+    if (!hasLoadedOnce.current) setChecking(true);
     setError(null);
     try {
       const plan = await getCurrentPlan(session.user.id);
@@ -67,6 +71,7 @@ export default function GroceryListScreen() {
       setError(err instanceof Error ? err.message : 'Erreur de chargement de la liste de courses.');
     } finally {
       setChecking(false);
+      hasLoadedOnce.current = true;
     }
   }, [session]);
 
@@ -121,7 +126,7 @@ export default function GroceryListScreen() {
   return (
     <Screen edges={['top']}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Liste de courses</Text>
+        <Text style={styles.title} accessibilityRole="header">Liste de courses</Text>
         <Text style={styles.progress}>
           {checkedCount} sur {items.length} récupérés
         </Text>
@@ -155,6 +160,8 @@ type GroceryRowProps = {
 function GroceryRow({ item, isChecked, onToggle, isLast }: GroceryRowProps) {
   const reduceMotion = useReducedMotion();
   const checkedProgress = useSharedValue(isChecked ? 1 : 0);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   useEffect(() => {
     const target = isChecked ? 1 : 0;
@@ -176,10 +183,11 @@ function GroceryRow({ item, isChecked, onToggle, isLast }: GroceryRowProps) {
       accessibilityRole="checkbox"
       accessibilityLabel={`${item.name}, ${Math.round(item.quantity * 10) / 10} ${item.unit}`}
       accessibilityState={{ checked: isChecked }}
+      android_ripple={{ color: colors.divider }}
       style={[styles.row, isLast && styles.rowLast]}
     >
       <Animated.View style={[styles.checkbox, animatedCheckStyle]}>
-        {isChecked && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+        {isChecked && <Ionicons name="checkmark" size={14} color={colors.onAccent} />}
       </Animated.View>
       <Animated.Text style={[styles.name, animatedNameStyle, isChecked && styles.nameChecked]}>
         {item.name}
@@ -191,37 +199,39 @@ function GroceryRow({ item, isChecked, onToggle, isLast }: GroceryRowProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  scroll: { flex: 1 },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.lg,
-  },
-  container: { padding: spacing.lg },
-  title: { ...typography.title, fontWeight: '800', color: colors.textPrimary },
-  progress: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sm + 1,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
-  },
-  rowLast: { borderBottomWidth: 0 },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.sm,
-  },
-  name: { ...typography.body, flex: 1, color: colors.textPrimary },
-  nameChecked: { textDecorationLine: 'line-through' },
-  quantity: { ...typography.caption, color: colors.textSecondary },
-  error: { color: colors.error, marginBottom: spacing.md },
-  emptyIcon: { fontSize: 32 },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    scroll: { flex: 1 },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: spacing.lg,
+    },
+    container: { padding: spacing.lg },
+    title: { ...typography.title, fontWeight: '800', color: colors.textPrimary },
+    progress: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      minHeight: 44,
+      paddingVertical: spacing.sm + 1,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.divider,
+    },
+    rowLast: { borderBottomWidth: 0 },
+    checkbox: {
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      borderWidth: 2,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: spacing.sm,
+    },
+    name: { ...typography.body, flex: 1, color: colors.textPrimary },
+    nameChecked: { textDecorationLine: 'line-through' },
+    quantity: { ...typography.caption, color: colors.textSecondary },
+    error: { color: colors.error, marginBottom: spacing.md },
+    emptyIcon: { fontSize: 32 },
+  });

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, Text, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
@@ -7,8 +7,9 @@ import { translateAuthError } from '../lib/authErrors';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
 import { Screen } from '../components/ui/Screen';
-import { colors, spacing, radius, shadow } from '../theme/tokens';
+import { spacing, radius, shadow, type ThemeColors } from '../theme/tokens';
 import { typography } from '../theme/typography';
+import { useColors } from '../theme/useColors';
 
 export default function SignupScreen() {
   const { signUp } = useAuth();
@@ -17,6 +18,8 @@ export default function SignupScreen() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [confirmationSent, setConfirmationSent] = useState(false);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const handleSubmit = async () => {
     setError(null);
@@ -87,32 +90,39 @@ export default function SignupScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { justifyContent: 'center', padding: spacing.xl },
-  avoiding: { flex: 1, justifyContent: 'center', padding: spacing.xl },
-  logoWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: radius.lg,
-    backgroundColor: colors.bgSurface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    marginBottom: spacing.sm,
-    overflow: 'hidden',
-    ...shadow.card,
-  },
-  logo: { width: '100%', height: '100%' },
-  brand: {
-    ...typography.subtitle,
-    textAlign: 'center',
-    fontWeight: '800',
-    color: colors.textPrimary,
-    marginBottom: spacing.xl,
-  },
-  error: { color: colors.error, marginBottom: spacing.md, textAlign: 'center' },
-  switchLink: { marginTop: spacing.lg, textAlign: 'center' },
-  switchText: { ...typography.caption, textAlign: 'center', color: colors.textSecondary },
-  switchTextAccent: { color: colors.accentRed, fontWeight: '700' },
-  confirmText: { ...typography.body, textAlign: 'center', color: colors.textPrimary, marginBottom: spacing.lg },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    screen: { justifyContent: 'center', padding: spacing.xl },
+    avoiding: { flex: 1, justifyContent: 'center', padding: spacing.xl },
+    logoWrap: {
+      width: 64,
+      height: 64,
+      borderRadius: radius.lg,
+      backgroundColor: colors.bgSurface,
+      alignItems: 'center',
+      justifyContent: 'center',
+      alignSelf: 'center',
+      marginBottom: spacing.sm,
+      overflow: 'hidden',
+      ...shadow.card,
+    },
+    logo: { width: '100%', height: '100%' },
+    brand: {
+      ...typography.subtitle,
+      textAlign: 'center',
+      fontWeight: '800',
+      color: colors.textPrimary,
+      marginBottom: spacing.xl,
+    },
+    error: { color: colors.error, marginBottom: spacing.md, textAlign: 'center' },
+    switchLink: {
+      marginTop: spacing.xs,
+      textAlign: 'center',
+      alignSelf: 'center',
+      paddingVertical: spacing.md + 2,
+      paddingHorizontal: spacing.md,
+    },
+    switchText: { ...typography.caption, textAlign: 'center', color: colors.textSecondary },
+    switchTextAccent: { color: colors.accentRed, fontWeight: '700' },
+    confirmText: { ...typography.body, textAlign: 'center', color: colors.textPrimary, marginBottom: spacing.lg },
+  });

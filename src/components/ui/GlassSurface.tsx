@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AccessibilityInfo, View, StyleSheet, type ViewStyle, type StyleProp } from 'react-native';
 import { GlassView, isGlassEffectAPIAvailable } from 'expo-glass-effect';
-import { colors, shadow } from '../../theme/tokens';
+import { shadow, type ThemeColors } from '../../theme/tokens';
+import { useColors } from '../../theme/useColors';
 
 type GlassSurfaceProps = {
   children?: React.ReactNode;
@@ -34,6 +35,8 @@ function useReduceTransparency(): boolean {
 
 export function GlassSurface({ children, style, tintColor }: GlassSurfaceProps) {
   const reduceTransparency = useReduceTransparency();
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   if (!isGlassEffectAPIAvailable() || reduceTransparency) {
     return <View style={[styles.fallback, style]}>{children}</View>;
@@ -46,9 +49,10 @@ export function GlassSurface({ children, style, tintColor }: GlassSurfaceProps) 
   );
 }
 
-const styles = StyleSheet.create({
-  fallback: {
-    backgroundColor: colors.bgSurface,
-    ...shadow.card,
-  },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    fallback: {
+      backgroundColor: colors.bgSurface,
+      ...shadow.card,
+    },
+  });

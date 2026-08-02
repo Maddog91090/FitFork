@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
@@ -8,8 +8,9 @@ import { ChoiceGroup } from '../components/ChoiceGroup';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
 import { Screen } from '../components/ui/Screen';
-import { colors, spacing } from '../theme/tokens';
+import { spacing, type ThemeColors } from '../theme/tokens';
 import { typography } from '../theme/typography';
+import { useColors } from '../theme/useColors';
 import type { Sex, ActivityLevel, Goal } from '../lib/nutrition';
 
 const SEX_OPTIONS: { value: Sex; label: string }[] = [
@@ -100,6 +101,8 @@ export default function OnboardingScreen() {
   const [equipment, setEquipment] = useState<Equipment | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   useEffect(() => {
     if (!loading && !session) {
@@ -180,7 +183,7 @@ export default function OnboardingScreen() {
         <Text style={styles.stepCounter}>
           {step < TOTAL_STEPS - 1 ? `ÉTAPE ${step + 1}/${TOTAL_STEPS}` : 'RÉCAPITULATIF'}
         </Text>
-        <Text style={styles.title}>{STEP_TITLES[step]}</Text>
+        <Text style={styles.title} accessibilityRole="header">{STEP_TITLES[step]}</Text>
       </View>
 
       <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
@@ -268,6 +271,7 @@ export default function OnboardingScreen() {
             onPress={handleBack}
             style={styles.backLink}
             hitSlop={8}
+            android_ripple={{ color: colors.divider }}
             accessibilityRole="button"
             accessibilityLabel="Retour à l'étape précédente"
           >
@@ -286,6 +290,8 @@ export default function OnboardingScreen() {
 }
 
 function RecapRow({ label, value }: { label: string; value: string }) {
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.recapRow}>
       <Text style={styles.recapLabel}>{label}</Text>
@@ -294,43 +300,44 @@ function RecapRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  avoiding: { flex: 1 },
-  header: { padding: spacing.lg, paddingBottom: spacing.sm },
-  progressRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
-  segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.divider },
-  segmentDone: { backgroundColor: colors.accentRed },
-  stepCounter: { ...typography.label, color: colors.textSecondary, fontWeight: '700', marginBottom: spacing.xs },
-  title: { ...typography.title, fontWeight: '800', color: colors.textPrimary },
-  body: { flex: 1 },
-  bodyContent: { padding: spacing.lg, paddingTop: spacing.sm },
-  label: {
-    ...typography.label,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    fontWeight: '700',
-    marginBottom: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  error: { color: colors.error, marginTop: spacing.md },
-  footer: { padding: spacing.lg },
-  backLink: { alignSelf: 'flex-start', marginBottom: spacing.md },
-  backLinkText: { ...typography.body, color: colors.textSecondary, fontWeight: '600' },
-  recapGroup: {
-    ...typography.label,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    fontWeight: '700',
-    marginTop: spacing.md,
-    marginBottom: spacing.xs,
-  },
-  recapRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
-  },
-  recapLabel: { ...typography.caption, color: colors.textSecondary },
-  recapValue: { ...typography.caption, color: colors.textPrimary, fontWeight: '600' },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    avoiding: { flex: 1 },
+    header: { padding: spacing.lg, paddingBottom: spacing.sm },
+    progressRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
+    segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.divider },
+    segmentDone: { backgroundColor: colors.accentRed },
+    stepCounter: { ...typography.label, color: colors.textSecondary, fontWeight: '700', marginBottom: spacing.xs },
+    title: { ...typography.title, fontWeight: '800', color: colors.textPrimary },
+    body: { flex: 1 },
+    bodyContent: { padding: spacing.lg, paddingTop: spacing.sm },
+    label: {
+      ...typography.label,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+      fontWeight: '700',
+      marginBottom: spacing.sm,
+      marginTop: spacing.sm,
+    },
+    error: { color: colors.error, marginTop: spacing.md },
+    footer: { padding: spacing.lg },
+    backLink: { alignSelf: 'flex-start', marginBottom: spacing.md },
+    backLinkText: { ...typography.body, color: colors.textSecondary, fontWeight: '600' },
+    recapGroup: {
+      ...typography.label,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+      fontWeight: '700',
+      marginTop: spacing.md,
+      marginBottom: spacing.xs,
+    },
+    recapRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.divider,
+    },
+    recapLabel: { ...typography.caption, color: colors.textSecondary },
+    recapValue: { ...typography.caption, color: colors.textPrimary, fontWeight: '600' },
+  });

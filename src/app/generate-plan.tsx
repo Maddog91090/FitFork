@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { View, Text, Pressable, ScrollView, StyleSheet, Platform } from 'react-native';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -16,9 +16,10 @@ import { computeAdjustedTargets } from '../lib/progressTracking';
 import { generateWeeklyPlan, type MealSlot, type MealType } from '../lib/mealPlan';
 import { Button } from '../components/ui/Button';
 import { Screen } from '../components/ui/Screen';
-import { colors, radius, shadow, spacing } from '../theme/tokens';
+import { radius, shadow, spacing, type ThemeColors } from '../theme/tokens';
 import { typography } from '../theme/typography';
 import { motion, useReducedMotion } from '../theme/motion';
+import { useColors } from '../theme/useColors';
 
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
@@ -38,6 +39,8 @@ export default function GeneratePlanScreen() {
   const [selected, setSelected] = useState<boolean[][]>(defaultSelection());
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   useEffect(() => {
     if (!loading && !session) {
@@ -114,7 +117,7 @@ export default function GeneratePlanScreen() {
   return (
     <Screen>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Choisis les repas à générer</Text>
+        <Text style={styles.title} accessibilityRole="header">Choisis les repas à générer</Text>
       {DAY_LABELS.map((dayLabel, dayIndex) => (
         <View key={dayLabel} style={styles.dayRow}>
           <Text style={styles.dayLabel}>{dayLabel}</Text>
@@ -152,6 +155,8 @@ function MealCell({ label, checked, onPress, accessibilityLabel }: MealCellProps
   const reduceMotion = useReducedMotion();
   const scale = useSharedValue(1);
   const checkedProgress = useSharedValue(checked ? 1 : 0);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   useEffect(() => {
     const target = checked ? 1 : 0;
@@ -174,7 +179,7 @@ function MealCell({ label, checked, onPress, accessibilityLabel }: MealCellProps
   }));
 
   const animatedLabelStyle = useAnimatedStyle(() => ({
-    color: interpolateColor(checkedProgress.value, [0, 1], [colors.textSecondary, '#FFFFFF']),
+    color: interpolateColor(checkedProgress.value, [0, 1], [colors.textSecondary, colors.onAccent]),
   }));
 
   return (
@@ -185,6 +190,8 @@ function MealCell({ label, checked, onPress, accessibilityLabel }: MealCellProps
       accessibilityRole="checkbox"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ checked }}
+      android_ripple={{ color: colors.divider }}
+      style={styles.cellTouchable}
     >
       <Animated.View style={[styles.cell, animatedCellStyle]}>
         <Animated.Text style={[styles.cellLabel, animatedLabelStyle]}>{label}</Animated.Text>
@@ -193,30 +200,35 @@ function MealCell({ label, checked, onPress, accessibilityLabel }: MealCellProps
   );
 }
 
-const styles = StyleSheet.create({
-  scroll: { flex: 1 },
-  container: { padding: spacing.lg },
-  title: { ...typography.title, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
-  dayRow: { marginBottom: spacing.md },
-  dayLabel: {
-    ...typography.label,
-    fontWeight: '700',
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    marginBottom: spacing.sm,
-  },
-  mealRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  cell: {
-    borderRadius: radius.pill,
-    minHeight: 44,
-    paddingVertical: spacing.sm + 2,
-    paddingHorizontal: spacing.md + 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: shadow.card.elevation,
-    shadowOffset: shadow.card.shadowOffset,
-    shadowRadius: shadow.card.shadowRadius,
-  },
-  cellLabel: { ...typography.label, fontWeight: '600' },
-  error: { color: colors.error, marginTop: spacing.md, marginBottom: spacing.sm },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    scroll: { flex: 1 },
+    container: { padding: spacing.lg },
+    title: { ...typography.title, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+    dayRow: { marginBottom: spacing.md },
+    dayLabel: {
+      ...typography.label,
+      fontWeight: '700',
+      color: colors.textSecondary,
+      textTransform: 'uppercase',
+      marginBottom: spacing.sm,
+    },
+    mealRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+    cellTouchable: {
+      borderRadius: radius.pill,
+      overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
+    },
+    cell: {
+      borderRadius: radius.pill,
+      minHeight: 44,
+      paddingVertical: spacing.sm + 2,
+      paddingHorizontal: spacing.md + 2,
+      alignItems: 'center',
+      justifyContent: 'center',
+      elevation: shadow.card.elevation,
+      shadowOffset: shadow.card.shadowOffset,
+      shadowRadius: shadow.card.shadowRadius,
+    },
+    cellLabel: { ...typography.label, fontWeight: '600' },
+    error: { color: colors.error, marginTop: spacing.md, marginBottom: spacing.sm },
+  });

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
@@ -7,14 +7,17 @@ import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets'
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Screen } from '../../components/ui/Screen';
-import { colors, spacing } from '../../theme/tokens';
+import { spacing, type ThemeColors } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
+import { useColors } from '../../theme/useColors';
 
 export default function HomeScreen() {
   const { session, loading, signOut } = useAuth();
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [macros, setMacros] = useState<MacroTargets | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   useEffect(() => {
     if (!loading && !session) {
@@ -66,7 +69,7 @@ export default function HomeScreen() {
     <Screen edges={['top']}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
         <Text style={styles.greeting}>Bonjour</Text>
-      <Text style={styles.name}>{session.user.email}</Text>
+      <Text style={styles.name} accessibilityRole="header">{session.user.email}</Text>
 
       {loadError && <Text style={styles.error}>{loadError}</Text>}
 
@@ -112,27 +115,28 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  scroll: { flex: 1 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  container: { padding: spacing.lg },
-  greeting: { ...typography.caption, color: colors.textSecondary },
-  name: { ...typography.title, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
-  error: { color: colors.error, marginBottom: spacing.md },
-  macroCard: { marginBottom: spacing.lg },
-  sectionLabel: {
-    ...typography.label,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    fontWeight: '700',
-    marginBottom: spacing.sm,
-  },
-  macroRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
-  macroItem: { alignItems: 'center', flex: 1 },
-  macroValue: { ...typography.subtitle, fontWeight: '800', color: colors.textPrimary },
-  macroValueAccent: { color: colors.accentRed },
-  macroLabel: { ...typography.label, color: colors.textSecondary, textTransform: 'uppercase', marginTop: 2 },
-  actionsRow: { flexDirection: 'row', gap: spacing.sm },
-  actionButton: { flex: 1 },
-  signOut: { marginTop: spacing.xl },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    scroll: { flex: 1 },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    container: { padding: spacing.lg },
+    greeting: { ...typography.caption, color: colors.textSecondary },
+    name: { ...typography.title, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+    error: { color: colors.error, marginBottom: spacing.md },
+    macroCard: { marginBottom: spacing.lg },
+    sectionLabel: {
+      ...typography.label,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+      fontWeight: '700',
+      marginBottom: spacing.sm,
+    },
+    macroRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
+    macroItem: { alignItems: 'center', flex: 1 },
+    macroValue: { ...typography.subtitle, fontWeight: '800', color: colors.textPrimary },
+    macroValueAccent: { color: colors.accentRed },
+    macroLabel: { ...typography.label, color: colors.textSecondary, textTransform: 'uppercase', marginTop: 2 },
+    actionsRow: { flexDirection: 'row', gap: spacing.sm },
+    actionButton: { flex: 1 },
+    signOut: { marginTop: spacing.xl },
+  });

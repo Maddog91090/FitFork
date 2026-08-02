@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, Pressable, ActivityIndicator, ScrollView, Platform, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getCurrentPlan, updatePlanEntry, fetchRecipes, type Recipe, type SavedPlan } from '../../lib/mealPlanData';
@@ -7,8 +7,9 @@ import { pickReplacementRecipe, MEAL_TYPE_RATIOS, clampPortionMultiplier, type M
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Screen } from '../../components/ui/Screen';
-import { colors, spacing } from '../../theme/tokens';
+import { spacing, type ThemeColors } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
+import { useColors } from '../../theme/useColors';
 
 const DAY_LABELS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -25,10 +26,13 @@ export default function PlanScreen() {
   const [checking, setChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [swappingId, setSwappingId] = useState<string | null>(null);
+  const hasLoadedOnce = useRef(false);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const load = useCallback(async () => {
     if (!session) return;
-    setChecking(true);
+    if (!hasLoadedOnce.current) setChecking(true);
     setError(null);
     try {
       const [currentPlan, allRecipes] = await Promise.all([getCurrentPlan(session.user.id), fetchRecipes()]);
@@ -38,6 +42,7 @@ export default function PlanScreen() {
       setError(err instanceof Error ? err.message : 'Erreur de chargement du plan.');
     } finally {
       setChecking(false);
+      hasLoadedOnce.current = true;
     }
   }, [session]);
 
@@ -89,7 +94,7 @@ export default function PlanScreen() {
           : prev
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de l\'échange.');
+      setError(err instanceof Error ? err.message : "Erreur lors de l'échange.");
     } finally {
       setSwappingId(null);
     }
@@ -126,7 +131,7 @@ export default function PlanScreen() {
         if (dayEntries.length === 0) return null;
         return (
           <View key={dayLabel} style={styles.dayBlock}>
-            <Text style={styles.dayLabel}>{dayLabel}</Text>
+            <Text style={styles.dayLabel} accessibilityRole="header">{dayLabel}</Text>
             {dayEntries.map((entry) => {
               const recipe = recipeById.get(entry.recipeId);
               return (
@@ -136,6 +141,7 @@ export default function PlanScreen() {
                       style={styles.entryInfo}
                       accessibilityRole="button"
                       accessibilityLabel={`${MEAL_TYPE_LABELS[entry.mealType]} : ${recipe ? recipe.name : entry.recipeId}, voir la recette`}
+                      android_ripple={{ color: colors.divider }}
                       onPress={() =>
                         router.push({
                           pathname: '/recipe/[id]',
@@ -151,6 +157,7 @@ export default function PlanScreen() {
                     <Pressable
                       style={styles.swapButton}
                       hitSlop={8}
+                      android_ripple={{ color: colors.divider }}
                       onPress={() => handleSwap(entry.id, entry.mealType, entry.recipeId)}
                       disabled={swappingId === entry.id}
                       accessibilityRole="button"
@@ -171,34 +178,40 @@ export default function PlanScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  scroll: { flex: 1 },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.lg,
-  },
-  container: { padding: spacing.lg },
-  dayBlock: { marginBottom: spacing.lg },
-  dayLabel: {
-    ...typography.label,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    fontWeight: '700',
-    marginBottom: spacing.sm,
-  },
-  entryCard: { marginBottom: spacing.sm },
-  entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  entryInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  mealTypeLabel: { ...typography.label, width: 80, color: colors.textSecondary },
-  recipeName: { ...typography.body, flex: 1, color: colors.textPrimary, fontWeight: '600' },
-  swapButton: {
-    marginLeft: spacing.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
-  },
-  swapHint: { ...typography.caption, color: colors.accentRed, fontWeight: '700' },
-  error: { color: colors.error, marginBottom: spacing.md },
-  emptyIcon: { fontSize: 32 },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    scroll: { flex: 1 },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: spacing.lg,
+    },
+    container: { padding: spacing.lg },
+    dayBlock: { marginBottom: spacing.lg },
+    dayLabel: {
+      ...typography.label,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+      fontWeight: '700',
+      marginBottom: spacing.sm,
+    },
+    entryCard: { marginBottom: spacing.sm, overflow: Platform.OS === 'android' ? 'hidden' : 'visible' },
+    entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    entryInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+      minHeight: 44,
+    },
+    mealTypeLabel: { ...typography.label, width: 80, color: colors.textSecondary },
+    recipeName: { ...typography.body, flex: 1, color: colors.textPrimary, fontWeight: '600' },
+    swapButton: {
+      marginLeft: spacing.md,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.sm,
+    },
+    swapHint: { ...typography.caption, color: colors.accentRed, fontWeight: '700' },
+    error: { color: colors.error, marginBottom: spacing.md },
+    emptyIcon: { fontSize: 32 },
+  });

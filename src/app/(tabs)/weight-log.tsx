@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
@@ -7,8 +7,9 @@ import { TextField } from '../../components/ui/TextField';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Screen } from '../../components/ui/Screen';
-import { colors, spacing } from '../../theme/tokens';
+import { spacing, type ThemeColors } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
+import { useColors } from '../../theme/useColors';
 
 export default function WeightLogScreen() {
   const { session, loading } = useAuth();
@@ -17,10 +18,13 @@ export default function WeightLogScreen() {
   const [checking, setChecking] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hasLoadedOnce = useRef(false);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const load = useCallback(async () => {
     if (!session) return;
-    setChecking(true);
+    if (!hasLoadedOnce.current) setChecking(true);
     setError(null);
     try {
       const recent = await fetchRecentWeightLogs(session.user.id);
@@ -29,6 +33,7 @@ export default function WeightLogScreen() {
       setError(err instanceof Error ? err.message : 'Erreur de chargement.');
     } finally {
       setChecking(false);
+      hasLoadedOnce.current = true;
     }
   }, [session]);
 
@@ -77,7 +82,7 @@ export default function WeightLogScreen() {
     <Screen edges={['top']}>
       <KeyboardAvoidingView style={styles.avoiding} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
-          <Text style={styles.title}>Suivi de poids</Text>
+          <Text style={styles.title} accessibilityRole="header">Suivi de poids</Text>
           <TextField label="Poids (kg)" value={weightInput} onChangeText={setWeightInput} keyboardType="decimal-pad" />
           {error && <Text style={styles.error}>{error}</Text>}
           <Button title="Enregistrer" onPress={handleSubmit} loading={submitting} />
@@ -101,30 +106,31 @@ export default function WeightLogScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  avoiding: { flex: 1 },
-  scroll: { flex: 1 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  container: { padding: spacing.lg },
-  title: { ...typography.title, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
-  historyTitle: {
-    ...typography.label,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    fontWeight: '700',
-    marginTop: spacing.xl,
-    marginBottom: spacing.sm,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm + 1,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
-  },
-  rowLast: { borderBottomWidth: 0 },
-  date: { ...typography.caption, color: colors.textPrimary },
-  weight: { ...typography.caption, color: colors.textSecondary, fontWeight: '600' },
-  error: { color: colors.error, marginBottom: spacing.md },
-  emptyText: { ...typography.caption, color: colors.textSecondary },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    avoiding: { flex: 1 },
+    scroll: { flex: 1 },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    container: { padding: spacing.lg },
+    title: { ...typography.title, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+    historyTitle: {
+      ...typography.label,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+      fontWeight: '700',
+      marginTop: spacing.xl,
+      marginBottom: spacing.sm,
+    },
+    row: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.sm + 1,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.divider,
+    },
+    rowLast: { borderBottomWidth: 0 },
+    date: { ...typography.caption, color: colors.textPrimary },
+    weight: { ...typography.caption, color: colors.textSecondary, fontWeight: '600' },
+    error: { color: colors.error, marginBottom: spacing.md },
+    emptyText: { ...typography.caption, color: colors.textSecondary },
+  });

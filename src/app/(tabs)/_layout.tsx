@@ -2,9 +2,10 @@ import { StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { GlassSurface } from '../../components/ui/GlassSurface';
-import { colors } from '../../theme/tokens';
+import { useColors } from '../../theme/useColors';
 
 export default function TabsLayout() {
+  const colors = useColors();
   return (
     <Tabs
       screenOptions={{

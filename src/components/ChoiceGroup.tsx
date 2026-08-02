@@ -1,14 +1,15 @@
 import { useEffect } from 'react';
-import { View, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable, StyleSheet, Platform } from 'react-native';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import { colors, radius, shadow, spacing } from '../theme/tokens';
+import { radius, shadow, spacing } from '../theme/tokens';
 import { typography } from '../theme/typography';
 import { motion, useReducedMotion } from '../theme/motion';
+import { useColors } from '../theme/useColors';
 
 export type ChoiceOption<T extends string> = { value: T; label: string };
 
@@ -43,6 +44,7 @@ function Pill({ label, selected, onPress }: PillProps) {
   const reduceMotion = useReducedMotion();
   const scale = useSharedValue(1);
   const selectedProgress = useSharedValue(selected ? 1 : 0);
+  const colors = useColors();
 
   useEffect(() => {
     const target = selected ? 1 : 0;
@@ -74,7 +76,7 @@ function Pill({ label, selected, onPress }: PillProps) {
   }));
 
   const animatedLabelStyle = useAnimatedStyle(() => ({
-    color: interpolateColor(selectedProgress.value, [0, 1], [colors.textPrimary, '#FFFFFF']),
+    color: interpolateColor(selectedProgress.value, [0, 1], [colors.textPrimary, colors.onAccent]),
   }));
 
   return (
@@ -85,6 +87,8 @@ function Pill({ label, selected, onPress }: PillProps) {
       accessibilityRole="radio"
       accessibilityLabel={label}
       accessibilityState={{ selected }}
+      android_ripple={{ color: colors.divider }}
+      style={styles.pillTouchable}
     >
       <Animated.View style={[styles.pill, animatedPillStyle]}>
         <Animated.Text style={[styles.label, animatedLabelStyle]}>{label}</Animated.Text>
@@ -95,6 +99,10 @@ function Pill({ label, selected, onPress }: PillProps) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
+  pillTouchable: {
+    borderRadius: radius.pill,
+    overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
+  },
   pill: {
     borderRadius: radius.pill,
     minHeight: 44,

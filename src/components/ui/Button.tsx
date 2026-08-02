@@ -1,8 +1,10 @@
-import { Pressable, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { useMemo } from 'react';
+import { Pressable, Text, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { colors, radius, shadow, spacing } from '../../theme/tokens';
+import { radius, shadow, spacing, type ThemeColors } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
 import { motion, useReducedMotion } from '../../theme/motion';
+import { useColors } from '../../theme/useColors';
 
 type ButtonVariant = 'primary' | 'secondary';
 
@@ -18,6 +20,8 @@ export function Button({ title, onPress, variant = 'primary', disabled = false, 
   const isDisabled = disabled || loading;
   const reduceMotion = useReducedMotion();
   const scale = useSharedValue(1);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -45,6 +49,7 @@ export function Button({ title, onPress, variant = 'primary', disabled = false, 
         accessibilityRole="button"
         accessibilityLabel={title}
         accessibilityState={{ disabled: isDisabled, busy: loading }}
+        android_ripple={{ color: variant === 'primary' ? 'rgba(255,255,255,0.25)' : colors.divider }}
         style={[
           styles.base,
           variant === 'primary' ? styles.primary : styles.secondary,
@@ -52,7 +57,7 @@ export function Button({ title, onPress, variant = 'primary', disabled = false, 
         ]}
       >
         {loading ? (
-          <ActivityIndicator color={variant === 'primary' ? '#FFFFFF' : colors.textPrimary} />
+          <ActivityIndicator color={variant === 'primary' ? colors.onAccent : colors.textPrimary} />
         ) : (
           <Text
             style={[
@@ -69,40 +74,43 @@ export function Button({ title, onPress, variant = 'primary', disabled = false, 
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    borderRadius: radius.md,
-    paddingVertical: spacing.md + 2,
-    paddingHorizontal: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primary: {
-    backgroundColor: colors.accentRed,
-    ...shadow.button,
-  },
-  secondary: {
-    backgroundColor: colors.bgSurface,
-    ...shadow.card,
-  },
-  disabled: {
-    backgroundColor: colors.bgSurface,
-    shadowOpacity: 0.04,
-    elevation: 0,
-  },
-  label: {
-    fontSize: typography.body.fontSize,
-    lineHeight: typography.body.lineHeight,
-    letterSpacing: typography.body.letterSpacing,
-    fontWeight: '700',
-  },
-  labelPrimary: {
-    color: '#FFFFFF',
-  },
-  labelSecondary: {
-    color: colors.textPrimary,
-  },
-  labelDisabled: {
-    color: colors.textSecondary,
-  },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    base: {
+      borderRadius: radius.md,
+      minHeight: 44,
+      paddingVertical: spacing.md + 2,
+      paddingHorizontal: spacing.lg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
+    },
+    primary: {
+      backgroundColor: colors.accentRed,
+      ...shadow.button,
+    },
+    secondary: {
+      backgroundColor: colors.bgSurface,
+      ...shadow.card,
+    },
+    disabled: {
+      backgroundColor: colors.bgSurface,
+      shadowOpacity: 0.04,
+      elevation: 0,
+    },
+    label: {
+      fontSize: typography.body.fontSize,
+      lineHeight: typography.body.lineHeight,
+      letterSpacing: typography.body.letterSpacing,
+      fontWeight: '700',
+    },
+    labelPrimary: {
+      color: colors.onAccent,
+    },
+    labelSecondary: {
+      color: colors.textPrimary,
+    },
+    labelDisabled: {
+      color: colors.textSecondary,
+    },
+  });

@@ -1,8 +1,10 @@
+import { useMemo } from 'react';
 import { View, Text, TextInput, StyleSheet, type TextInputProps } from 'react-native';
 import Animated, { interpolateColor, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { colors, radius, shadow, spacing } from '../../theme/tokens';
+import { radius, shadow, spacing, type ThemeColors } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
 import { motion, useReducedMotion } from '../../theme/motion';
+import { useColors } from '../../theme/useColors';
 
 type TextFieldProps = {
   label?: string;
@@ -27,6 +29,8 @@ export function TextField({
 }: TextFieldProps) {
   const reduceMotion = useReducedMotion();
   const focusProgress = useSharedValue(0);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const handleFocus = () => {
     focusProgress.value = reduceMotion ? 1 : withSpring(1, motion.spring.settle);
@@ -63,34 +67,35 @@ export function TextField({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: spacing.md,
-  },
-  label: {
-    fontSize: typography.label.fontSize,
-    lineHeight: typography.label.lineHeight,
-    letterSpacing: typography.label.letterSpacing,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    fontWeight: '700',
-    marginBottom: spacing.xs,
-  },
-  inputWrapper: {
-    borderRadius: radius.sm,
-    borderWidth: 2,
-    backgroundColor: colors.bgSurface,
-    ...shadow.card,
-  },
-  input: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    fontSize: typography.body.fontSize,
-    lineHeight: typography.body.lineHeight,
-    letterSpacing: typography.body.letterSpacing,
-    color: colors.textPrimary,
-    // react-native-web only: suppress the browser's default focus outline, which otherwise
-    // stacks on top of the animated red border above and reads as a stray black ring.
-    outlineWidth: 0,
-  },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      marginBottom: spacing.md,
+    },
+    label: {
+      fontSize: typography.label.fontSize,
+      lineHeight: typography.label.lineHeight,
+      letterSpacing: typography.label.letterSpacing,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+      fontWeight: '700',
+      marginBottom: spacing.xs,
+    },
+    inputWrapper: {
+      borderRadius: radius.sm,
+      borderWidth: 2,
+      backgroundColor: colors.bgSurface,
+      ...shadow.card,
+    },
+    input: {
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.md,
+      fontSize: typography.body.fontSize,
+      lineHeight: typography.body.lineHeight,
+      letterSpacing: typography.body.letterSpacing,
+      color: colors.textPrimary,
+      // react-native-web only: suppress the browser's default focus outline, which otherwise
+      // stacks on top of the animated red border above and reads as a stray black ring.
+      outlineWidth: 0,
+    },
+  });

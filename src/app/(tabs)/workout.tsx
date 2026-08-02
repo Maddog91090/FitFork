@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Pressable, Platform } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getTrainingProfile, upsertTrainingProfile } from '../../lib/profile';
@@ -9,8 +9,9 @@ import { homeWorkoutProgram, getLevelProgram } from '../../lib/homeWorkoutProgra
 import type { Session } from '../../lib/homeWorkoutProgram';
 import { Card } from '../../components/ui/Card';
 import { Screen } from '../../components/ui/Screen';
-import { colors, spacing } from '../../theme/tokens';
+import { spacing, type ThemeColors } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
+import { useColors } from '../../theme/useColors';
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
 
@@ -21,6 +22,9 @@ export default function WorkoutScreen() {
   const [savingLevel, setSavingLevel] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
+  const hasLoadedOnce = useRef(false);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const toggleSession = (index: number) => {
     setExpanded((prev) => {
@@ -36,7 +40,7 @@ export default function WorkoutScreen() {
 
   const load = useCallback(async () => {
     if (!session) return;
-    setChecking(true);
+    if (!hasLoadedOnce.current) setChecking(true);
     setError(null);
     try {
       const profile = await getTrainingProfile(session.user.id);
@@ -49,6 +53,7 @@ export default function WorkoutScreen() {
       setError(err instanceof Error ? err.message : 'Erreur de chargement du profil.');
     } finally {
       setChecking(false);
+      hasLoadedOnce.current = true;
     }
   }, [session]);
 
@@ -96,7 +101,7 @@ export default function WorkoutScreen() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
         {error && <Text style={styles.error}>{error}</Text>}
 
-      <Text style={styles.title}>{homeWorkoutProgram.title}</Text>
+      <Text style={styles.title} accessibilityRole="header">{homeWorkoutProgram.title}</Text>
       <Text style={styles.subtitle}>{homeWorkoutProgram.subtitle}</Text>
       <Text style={styles.blockText}>{homeWorkoutProgram.guidance}</Text>
 
@@ -122,12 +127,14 @@ export default function WorkoutScreen() {
             accessibilityRole="button"
             accessibilityLabel={`Séance ${index + 1}, ${sessionItem.name}`}
             accessibilityState={{ expanded: isExpanded }}
+            android_ripple={{ color: colors.divider }}
+            style={styles.sessionTouchable}
           >
             <Card style={styles.sessionCard}>
               <Text style={styles.sessionTitle}>
                 Séance {index + 1} — {sessionItem.name}
               </Text>
-              {isExpanded && <SessionDetail session={sessionItem} />}
+              {isExpanded && <SessionDetail session={sessionItem} colors={colors} />}
             </Card>
           </Pressable>
         );
@@ -153,7 +160,9 @@ export default function WorkoutScreen() {
   );
 }
 
-function SessionDetail({ session }: { session: Session }) {
+function SessionDetail({ session, colors }: { session: Session; colors: ThemeColors }) {
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   if (session.type === 'circuit') {
     return (
       <View style={styles.sessionDetail}>
@@ -182,22 +191,27 @@ function SessionDetail({ session }: { session: Session }) {
   );
 }
 
-const styles = StyleSheet.create({
-  scroll: { flex: 1 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  container: { padding: spacing.lg },
-  title: { ...typography.title, fontWeight: '800', color: colors.textPrimary },
-  subtitle: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
-  block: { marginVertical: spacing.lg },
-  blockTitle: { ...typography.body, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.xs },
-  blockText: { ...typography.body, color: colors.textSecondary },
-  levelSummary: { ...typography.body, marginTop: spacing.sm, color: colors.textSecondary },
-  levelDuration: { ...typography.caption, marginBottom: spacing.lg, color: colors.textSecondary, fontStyle: 'italic' },
-  sessionCard: { marginBottom: spacing.sm },
-  sessionTitle: { ...typography.body, fontWeight: '700', color: colors.textPrimary },
-  sessionDetail: { marginTop: spacing.sm, marginLeft: spacing.md },
-  sessionMeta: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.xs },
-  exerciseLine: { ...typography.caption, color: colors.textPrimary, marginBottom: spacing.xs },
-  coachNote: { ...typography.body, marginBottom: spacing.xs, color: colors.textSecondary },
-  error: { color: colors.error, marginBottom: spacing.md },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    scroll: { flex: 1 },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    container: { padding: spacing.lg },
+    title: { ...typography.title, fontWeight: '800', color: colors.textPrimary },
+    subtitle: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
+    block: { marginVertical: spacing.lg },
+    blockTitle: { ...typography.body, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.xs },
+    blockText: { ...typography.body, color: colors.textSecondary },
+    levelSummary: { ...typography.body, marginTop: spacing.sm, color: colors.textSecondary },
+    levelDuration: { ...typography.caption, marginBottom: spacing.lg, color: colors.textSecondary, fontStyle: 'italic' },
+    sessionTouchable: {
+      borderRadius: 16,
+      overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
+    },
+    sessionCard: { marginBottom: spacing.sm },
+    sessionTitle: { ...typography.body, fontWeight: '700', color: colors.textPrimary },
+    sessionDetail: { marginTop: spacing.sm, marginLeft: spacing.md },
+    sessionMeta: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.xs },
+    exerciseLine: { ...typography.caption, color: colors.textPrimary, marginBottom: spacing.xs },
+    coachNote: { ...typography.body, marginBottom: spacing.xs, color: colors.textSecondary },
+    error: { color: colors.error, marginBottom: spacing.md },
+  });
