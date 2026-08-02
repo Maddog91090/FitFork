@@ -10,7 +10,7 @@ import {
 } from '../../lib/mealPlanData';
 import { scaleIngredientQuantity, scaleMacroValue, clampPortionMultiplier } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
-import { colors, spacing } from '../../theme/tokens';
+import { colors, spacing, typography } from '../../theme/tokens';
 
 export default function RecipeDetailScreen() {
   const { id, portion: portionParam } = useLocalSearchParams<{ id: string; portion?: string }>();
@@ -111,19 +111,17 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   container: { padding: spacing.lg },
-  title: { fontSize: 19, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.xs },
-  macros: { color: colors.textSecondary, fontSize: 12, marginBottom: spacing.lg },
-  portionBanner: { color: colors.accentRed, fontWeight: '700', fontSize: 12, marginBottom: spacing.lg },
+  title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.xs },
+  macros: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
+  portionBanner: { ...typography.captionStrong, color: colors.accentRedDeep, marginBottom: spacing.lg },
   sectionTitle: {
-    fontSize: 11,
-    textTransform: 'uppercase',
+    ...typography.overline,
     color: colors.textSecondary,
-    fontWeight: '700',
     marginTop: spacing.md,
     marginBottom: spacing.sm,
   },
   card: { marginBottom: spacing.sm },
-  ingredientLine: { color: colors.textPrimary, fontSize: 13, marginBottom: spacing.xs },
+  ingredientLine: { ...typography.body, color: colors.textPrimary, marginBottom: spacing.xs },
   stepRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm, alignItems: 'flex-start' },
   stepBadge: {
     width: 20,
@@ -134,7 +132,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 1,
   },
-  stepBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
-  stepText: { flex: 1, color: colors.textPrimary, fontSize: 13 },
-  error: { color: colors.error },
+  stepBadgeText: { ...typography.overline, color: colors.textOnAccent, letterSpacing: 0 },
+  stepText: { ...typography.body, flex: 1, color: colors.textPrimary },
+  error: { ...typography.body, color: colors.error },
 });

@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { Card } from './Card';
 import { Button } from './Button';
-import { colors, spacing } from '../../theme/tokens';
+import { colors, spacing, typography } from '../../theme/tokens';
 
 type EmptyStateProps = {
   icon: React.ReactNode;
@@ -31,14 +31,13 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   title: {
-    fontSize: 15,
-    fontWeight: '700',
+    ...typography.title,
     color: colors.textPrimary,
     marginBottom: spacing.xs,
     textAlign: 'center',
   },
   message: {
-    fontSize: 12,
+    ...typography.body,
     color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.lg,

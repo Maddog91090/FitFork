@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, type TextInputProps } from 'react-native';
-import { colors, radius, shadow, spacing } from '../../theme/tokens';
+import { colors, radius, shadow, spacing, typography } from '../../theme/tokens';
 
 type TextFieldProps = {
   label?: string;
@@ -50,24 +50,26 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   label: {
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    ...typography.overline,
     color: colors.textSecondary,
-    fontWeight: '700',
     marginBottom: spacing.xs,
   },
   input: {
+    ...typography.body,
     backgroundColor: colors.bgSurface,
     borderRadius: radius.sm,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
-    fontSize: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
     color: colors.textPrimary,
     ...shadow.card,
   },
   inputFocused: {
     borderWidth: 2,
     borderColor: colors.accentRed,
+    // Keep the box the same size when the focus ring thickens.
+    paddingVertical: spacing.md - 1,
+    paddingHorizontal: spacing.md - 1,
   },
 });

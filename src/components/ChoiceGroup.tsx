@@ -1,5 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors, radius, shadow, spacing } from '../theme/tokens';
+import { colors, radius, shadow, spacing, state, typography } from '../theme/tokens';
 
 export type ChoiceOption<T extends string> = { value: T; label: string };
 
@@ -16,7 +16,13 @@ export function ChoiceGroup<T extends string>({ options, value, onChange }: Choi
         <Pressable
           key={option.value}
           onPress={() => onChange(option.value)}
-          style={[styles.pill, value === option.value && styles.pillSelected]}
+          accessibilityRole="radio"
+          accessibilityState={{ selected: value === option.value }}
+          style={({ pressed }) => [
+            styles.pill,
+            value === option.value && styles.pillSelected,
+            pressed && styles.pillPressed,
+          ]}
         >
           <Text style={value === option.value ? styles.labelSelected : styles.label}>
             {option.label}
@@ -33,6 +39,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     paddingVertical: spacing.sm + 2,
     paddingHorizontal: spacing.md + 2,
+    minHeight: state.minTouchSize,
+    justifyContent: 'center',
     backgroundColor: colors.bgSurface,
     ...shadow.card,
   },
@@ -41,6 +49,10 @@ const styles = StyleSheet.create({
     shadowColor: colors.accentRed,
     shadowOpacity: 0.25,
   },
-  label: { color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
-  labelSelected: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
+  pillPressed: {
+    opacity: state.pressedOpacity,
+    transform: [{ scale: state.pressedScale }],
+  },
+  label: { ...typography.subheading, color: colors.textPrimary },
+  labelSelected: { ...typography.subheading, color: colors.textOnAccent },
 });

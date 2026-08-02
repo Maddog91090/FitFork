@@ -6,7 +6,7 @@ import { getCurrentPlan, updatePlanEntry, fetchRecipes, type Recipe, type SavedP
 import { pickReplacementRecipe, MEAL_TYPE_RATIOS, clampPortionMultiplier, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { colors, spacing } from '../../theme/tokens';
+import { colors, spacing, typography } from '../../theme/tokens';
 
 const DAY_LABELS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -163,18 +163,16 @@ const styles = StyleSheet.create({
   container: { padding: spacing.lg },
   dayBlock: { marginBottom: spacing.lg },
   dayLabel: {
-    fontSize: 11,
-    textTransform: 'uppercase',
+    ...typography.overline,
     color: colors.textSecondary,
-    fontWeight: '700',
     marginBottom: spacing.sm,
   },
   entryCard: { marginBottom: spacing.sm },
   entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   entryInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  mealTypeLabel: { width: 80, color: colors.textSecondary, fontSize: 11 },
-  recipeName: { flex: 1, color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
-  swapHint: { color: colors.accentRed, marginLeft: spacing.md, fontSize: 12, fontWeight: '700' },
-  error: { color: colors.error, marginBottom: spacing.md },
+  mealTypeLabel: { ...typography.caption, width: 80, color: colors.textSecondary },
+  recipeName: { ...typography.bodyStrong, flex: 1, color: colors.textPrimary },
+  swapHint: { ...typography.captionStrong, color: colors.accentRedDeep, marginLeft: spacing.md },
+  error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
   emptyIcon: { fontSize: 32 },
 });

@@ -6,7 +6,7 @@ import { logWeight, fetchRecentWeightLogs, type WeightLogEntry } from '../../lib
 import { TextField } from '../../components/ui/TextField';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { colors, spacing } from '../../theme/tokens';
+import { colors, fontFamily, spacing, typography } from '../../theme/tokens';
 
 export default function WeightLogScreen() {
   const { session, loading } = useAuth();
@@ -99,12 +99,10 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bgBase },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
   container: { padding: spacing.lg },
-  title: { fontSize: 17, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+  title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
   historyTitle: {
-    fontSize: 11,
-    textTransform: 'uppercase',
+    ...typography.overline,
     color: colors.textSecondary,
-    fontWeight: '700',
     marginTop: spacing.xl,
     marginBottom: spacing.sm,
   },
@@ -116,8 +114,9 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.divider,
   },
   rowLast: { borderBottomWidth: 0 },
-  date: { color: colors.textPrimary, fontSize: 12 },
-  weight: { color: colors.textSecondary, fontSize: 12, fontWeight: '600' },
-  error: { color: colors.error, marginBottom: spacing.md },
-  emptyText: { color: colors.textSecondary, fontSize: 12 },
+  date: { ...typography.caption, color: colors.textPrimary },
+  // The number is the point of this screen — serif, and darker than its date.
+  weight: { ...typography.bodyStrong, color: colors.textPrimary, fontFamily: fontFamily.displayBold },
+  error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
+  emptyText: { ...typography.body, color: colors.textSecondary },
 });

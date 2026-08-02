@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { KgIcon } from '../../components/icons/KgIcon';
-import { colors } from '../../theme/tokens';
+import { colors, typography } from '../../theme/tokens';
 
 export default function TabsLayout() {
   return (
@@ -10,7 +10,8 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.accentRed,
         tabBarInactiveTintColor: colors.textSecondary,
-        tabBarStyle: { backgroundColor: colors.bgSurface, borderTopColor: colors.divider },
+        tabBarStyle: { backgroundColor: colors.bgSurface, borderTopColor: colors.border },
+        tabBarLabelStyle: { ...typography.caption, fontSize: 11 },
       }}
     >
       <Tabs.Screen

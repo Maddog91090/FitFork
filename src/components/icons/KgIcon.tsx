@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, type ColorValue } from 'react-native';
+import { colors, fontFamily } from '../../theme/tokens';
 
 type KgIconProps = {
   color: ColorValue;
@@ -20,7 +21,9 @@ export function KgIcon({ color, focused, size = 22 }: KgIconProps) {
         },
       ]}
     >
-      <Text style={[styles.label, { color: focused ? '#FFFFFF' : color, fontSize: size * 0.4 }]}>kg</Text>
+      <Text style={[styles.label, { color: focused ? colors.textOnAccent : color, fontSize: size * 0.4 }]}>
+        kg
+      </Text>
     </View>
   );
 }
@@ -32,6 +35,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    fontWeight: '700',
+    fontFamily: fontFamily.bodyBold,
   },
 });

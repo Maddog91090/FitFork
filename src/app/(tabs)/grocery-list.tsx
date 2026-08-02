@@ -5,7 +5,7 @@ import { useAuth } from '../../lib/auth-context';
 import { getCurrentPlan, fetchRecipeIngredients } from '../../lib/mealPlanData';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { colors, spacing } from '../../theme/tokens';
+import { colors, spacing, typography } from '../../theme/tokens';
 
 type AggregatedIngredient = { name: string; quantity: number; unit: string };
 
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   container: { padding: spacing.lg },
-  title: { fontSize: 17, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+  title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -129,8 +129,8 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.divider,
   },
   rowLast: { borderBottomWidth: 0 },
-  name: { flex: 1, color: colors.textPrimary, fontSize: 13 },
-  quantity: { color: colors.textSecondary, fontSize: 12 },
-  error: { color: colors.error, marginBottom: spacing.md },
+  name: { ...typography.body, flex: 1, color: colors.textPrimary },
+  quantity: { ...typography.captionStrong, color: colors.textSecondary },
+  error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
   emptyIcon: { fontSize: 32 },
 });

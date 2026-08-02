@@ -6,7 +6,7 @@ import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { colors, spacing } from '../../theme/tokens';
+import { colors, spacing, typography } from '../../theme/tokens';
 
 export default function HomeScreen() {
   const { session, loading, signOut } = useAuth();
@@ -76,15 +76,15 @@ export default function HomeScreen() {
               <Text style={styles.macroLabel}>kcal</Text>
             </View>
             <View style={styles.macroItem}>
-              <Text style={[styles.macroValue, styles.macroValueAccent]}>{macros.proteinG}g</Text>
+              <Text style={[styles.macroValue, styles.macroProtein]}>{macros.proteinG}g</Text>
               <Text style={styles.macroLabel}>Prot</Text>
             </View>
             <View style={styles.macroItem}>
-              <Text style={styles.macroValue}>{macros.fatG}g</Text>
+              <Text style={[styles.macroValue, styles.macroFat]}>{macros.fatG}g</Text>
               <Text style={styles.macroLabel}>Lip</Text>
             </View>
             <View style={styles.macroItem}>
-              <Text style={styles.macroValue}>{macros.carbsG}g</Text>
+              <Text style={[styles.macroValue, styles.macroCarbs]}>{macros.carbsG}g</Text>
               <Text style={styles.macroLabel}>Gluc</Text>
             </View>
           </View>
@@ -112,23 +112,26 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bgBase },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
   container: { padding: spacing.lg },
-  greeting: { fontSize: 12, color: colors.textSecondary },
-  name: { fontSize: 20, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
-  error: { color: colors.error, marginBottom: spacing.md },
+  greeting: { ...typography.caption, color: colors.textSecondary },
+  name: { ...typography.hero, color: colors.textPrimary, marginBottom: spacing.lg },
+  error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
   macroCard: { marginBottom: spacing.lg },
   sectionLabel: {
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    ...typography.overline,
     color: colors.textSecondary,
-    fontWeight: '700',
     marginBottom: spacing.sm,
   },
   macroRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
   macroItem: { alignItems: 'center', flex: 1 },
-  macroValue: { fontSize: 16, fontWeight: '800', color: colors.textPrimary },
-  macroValueAccent: { color: colors.accentRed },
-  macroLabel: { fontSize: 9, color: colors.textSecondary, textTransform: 'uppercase', marginTop: 2 },
+  // Calories stay neutral; each macro carries its own hue so the numbers are
+  // scannable at a glance and match the colors used elsewhere for the same macro.
+  // typography.title rather than typography.metric: four values share this row,
+  // and metric's 28px would wrap a 4-digit calorie target on narrow phones.
+  macroValue: { ...typography.title, color: colors.textPrimary },
+  macroProtein: { color: colors.macroProtein },
+  macroFat: { color: colors.macroFat },
+  macroCarbs: { color: colors.macroCarbs },
+  macroLabel: { ...typography.overline, color: colors.textSecondary, marginTop: spacing.xs },
   actionsRow: { flexDirection: 'row', gap: spacing.sm },
   actionButton: { flex: 1 },
   signOut: { marginTop: spacing.xl },

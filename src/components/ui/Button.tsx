@@ -1,5 +1,5 @@
 import { Pressable, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { colors, radius, shadow, spacing } from '../../theme/tokens';
+import { colors, radius, shadow, spacing, state, typography } from '../../theme/tokens';
 
 type ButtonVariant = 'primary' | 'secondary';
 
@@ -17,14 +17,17 @@ export function Button({ title, onPress, variant = 'primary', disabled = false, 
     <Pressable
       onPress={onPress}
       disabled={isDisabled}
-      style={[
+      accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
+      style={({ pressed }) => [
         styles.base,
         variant === 'primary' ? styles.primary : styles.secondary,
+        pressed && !isDisabled && (variant === 'primary' ? styles.primaryPressed : styles.secondaryPressed),
         isDisabled && styles.disabled,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#FFFFFF' : colors.textPrimary} />
+        <ActivityIndicator color={variant === 'primary' ? colors.textOnAccent : colors.textPrimary} />
       ) : (
         <Text
           style={[
@@ -45,6 +48,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     paddingVertical: spacing.md + 2,
     paddingHorizontal: spacing.lg,
+    minHeight: state.minTouchSize,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -52,9 +56,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accentRed,
     ...shadow.button,
   },
+  // Pressed states darken rather than fade: the shadow stays put, so the
+  // button reads as pushed in instead of half-disabled.
+  primaryPressed: {
+    backgroundColor: colors.accentRedDeep,
+  },
   secondary: {
     backgroundColor: colors.bgSurface,
     ...shadow.card,
+  },
+  secondaryPressed: {
+    backgroundColor: colors.bgSunken,
   },
   disabled: {
     backgroundColor: colors.bgSurface,
@@ -62,11 +74,10 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '700',
+    ...typography.label,
   },
   labelPrimary: {
-    color: '#FFFFFF',
+    color: colors.textOnAccent,
   },
   labelSecondary: {
     color: colors.textPrimary,

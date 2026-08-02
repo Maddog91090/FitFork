@@ -7,7 +7,7 @@ import type { ExperienceLevel, Equipment } from '../lib/profile';
 import { ChoiceGroup } from '../components/ChoiceGroup';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
-import { colors, spacing } from '../theme/tokens';
+import { colors, spacing, typography } from '../theme/tokens';
 import type { Sex, ActivityLevel, Goal } from '../lib/nutrition';
 
 const SEX_OPTIONS: { value: Sex; label: string }[] = [
@@ -290,27 +290,23 @@ const styles = StyleSheet.create({
   progressRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
   segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.divider },
   segmentDone: { backgroundColor: colors.accentRed },
-  stepCounter: { fontSize: 10, color: colors.textSecondary, fontWeight: '700', marginBottom: spacing.xs },
-  title: { fontSize: 18, fontWeight: '800', color: colors.textPrimary },
+  stepCounter: { ...typography.overline, color: colors.textSecondary, marginBottom: spacing.xs },
+  title: { ...typography.title, color: colors.textPrimary },
   body: { flex: 1 },
   bodyContent: { padding: spacing.lg, paddingTop: spacing.sm },
   label: {
-    fontSize: 11,
-    textTransform: 'uppercase',
+    ...typography.overline,
     color: colors.textSecondary,
-    fontWeight: '700',
     marginBottom: spacing.sm,
     marginTop: spacing.sm,
   },
-  error: { color: colors.error, marginTop: spacing.md },
+  error: { ...typography.body, color: colors.error, marginTop: spacing.md },
   footer: { padding: spacing.lg },
   backLink: { alignSelf: 'flex-start', marginBottom: spacing.md },
-  backLinkText: { color: colors.textSecondary, fontSize: 13, fontWeight: '600' },
+  backLinkText: { ...typography.subheading, color: colors.textSecondary },
   recapGroup: {
-    fontSize: 11,
-    textTransform: 'uppercase',
+    ...typography.overline,
     color: colors.textSecondary,
-    fontWeight: '700',
     marginTop: spacing.md,
     marginBottom: spacing.xs,
   },
@@ -321,6 +317,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.divider,
   },
-  recapLabel: { color: colors.textSecondary, fontSize: 12 },
-  recapValue: { color: colors.textPrimary, fontSize: 12, fontWeight: '600' },
+  recapLabel: { ...typography.caption, color: colors.textSecondary },
+  recapValue: { ...typography.captionStrong, color: colors.textPrimary },
 });

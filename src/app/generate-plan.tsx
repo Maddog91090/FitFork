@@ -9,7 +9,7 @@ import { fetchRecentWeightLogs, type WeightLogEntry } from '../lib/weightLogData
 import { computeAdjustedTargets } from '../lib/progressTracking';
 import { generateWeeklyPlan, type MealSlot, type MealType } from '../lib/mealPlan';
 import { Button } from '../components/ui/Button';
-import { colors, radius, shadow, spacing } from '../theme/tokens';
+import { colors, radius, shadow, spacing, state, typography } from '../theme/tokens';
 
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
@@ -113,7 +113,13 @@ export default function GeneratePlanScreen() {
               <Pressable
                 key={mealType}
                 onPress={() => toggle(dayIndex, mealIndex)}
-                style={[styles.cell, selected[dayIndex][mealIndex] && styles.cellSelected]}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: selected[dayIndex][mealIndex] }}
+                style={({ pressed }) => [
+                  styles.cell,
+                  selected[dayIndex][mealIndex] && styles.cellSelected,
+                  pressed && styles.cellPressed,
+                ]}
               >
                 <Text style={selected[dayIndex][mealIndex] ? styles.cellLabelSelected : styles.cellLabel}>
                   {MEAL_TYPE_LABELS[mealType]}
@@ -132,13 +138,11 @@ export default function GeneratePlanScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bgBase },
   container: { padding: spacing.lg },
-  title: { fontSize: 17, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+  title: { ...typography.title, color: colors.textPrimary, marginBottom: spacing.lg },
   dayRow: { marginBottom: spacing.md },
   dayLabel: {
-    fontWeight: '700',
+    ...typography.overline,
     color: colors.textSecondary,
-    fontSize: 11,
-    textTransform: 'uppercase',
     marginBottom: spacing.sm,
   },
   mealRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
@@ -147,10 +151,13 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
+    minHeight: state.minTouchSize,
+    justifyContent: 'center',
     ...shadow.card,
   },
   cellSelected: { backgroundColor: colors.accentRed, shadowColor: colors.accentRed, shadowOpacity: 0.25 },
-  cellLabel: { color: colors.textSecondary, fontSize: 11, fontWeight: '600' },
-  cellLabelSelected: { color: '#FFFFFF', fontSize: 11, fontWeight: '600' },
-  error: { color: colors.error, marginTop: spacing.md, marginBottom: spacing.sm },
+  cellPressed: { opacity: state.pressedOpacity, transform: [{ scale: state.pressedScale }] },
+  cellLabel: { ...typography.caption, color: colors.textSecondary },
+  cellLabelSelected: { ...typography.captionStrong, color: colors.textOnAccent },
+  error: { ...typography.body, color: colors.error, marginTop: spacing.md, marginBottom: spacing.sm },
 });
