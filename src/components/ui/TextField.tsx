@@ -89,5 +89,8 @@ const styles = StyleSheet.create({
     lineHeight: typography.body.lineHeight,
     letterSpacing: typography.body.letterSpacing,
     color: colors.textPrimary,
+    // react-native-web only: suppress the browser's default focus outline, which otherwise
+    // stacks on top of the animated red border above and reads as a stray black ring.
+    outlineWidth: 0,
   },
 });

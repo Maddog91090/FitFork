@@ -208,7 +208,7 @@ export default function OnboardingScreen() {
 
         {step === 1 && (
           <>
-            <Text style={styles.label}>Niveau d'activité quotidienne</Text>
+            <Text style={styles.label}>Niveau d&apos;activité quotidienne</Text>
             <ChoiceGroup options={ACTIVITY_OPTIONS} value={activityLevel} onChange={setActivityLevel} />
             <Text style={styles.label}>Objectif</Text>
             <ChoiceGroup options={GOAL_OPTIONS} value={goal} onChange={setGoal} />

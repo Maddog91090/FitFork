@@ -158,7 +158,7 @@ function SessionDetail({ session }: { session: Session }) {
     return (
       <View style={styles.sessionDetail}>
         <Text style={styles.sessionMeta}>
-          Circuit : {session.workSeconds} s d'effort / {session.restSeconds} s de repos. {session.rounds} tours,{' '}
+          Circuit : {session.workSeconds} s d&apos;effort / {session.restSeconds} s de repos. {session.rounds} tours,{' '}
           {session.recoveryLabel}.
         </Text>
         {session.exercises.map((exercise) => (
