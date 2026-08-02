@@ -11,4 +11,16 @@ describe('typography scale', () => {
     expect(typography.body.lineHeight).toBeGreaterThan(typography.caption.lineHeight);
     expect(typography.caption.lineHeight).toBeGreaterThan(typography.label.lineHeight);
   });
+
+  it('orders font size across all five steps (title > subtitle > body > caption > label)', () => {
+    expect(typography.title.fontSize).toBeGreaterThan(typography.subtitle.fontSize);
+    expect(typography.subtitle.fontSize).toBeGreaterThan(typography.body.fontSize);
+    expect(typography.body.fontSize).toBeGreaterThan(typography.caption.fontSize);
+    expect(typography.caption.fontSize).toBeGreaterThan(typography.label.fontSize);
+  });
+
+  it('uses negative tracking on the large title, matching the size-specific tracking rule', () => {
+    expect(typography.title.letterSpacing).toBeLessThan(0);
+    expect(typography.subtitle.letterSpacing).toBeLessThanOrEqual(0);
+  });
 });
