@@ -1,7 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { KgIcon } from '../../components/icons/KgIcon';
 import { GlassSurface } from '../../components/ui/GlassSurface';
 import { colors } from '../../theme/tokens';
 
@@ -56,7 +55,9 @@ export default function TabsLayout() {
         name="weight-log"
         options={{
           title: 'Poids',
-          tabBarIcon: ({ color, focused }) => <KgIcon color={color} focused={focused} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'scale' : 'scale-outline'} size={22} color={color} />
+          ),
         }}
       />
     </Tabs>

@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import Animated, {
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../lib/profile';
@@ -12,6 +18,7 @@ import { Button } from '../components/ui/Button';
 import { Screen } from '../components/ui/Screen';
 import { colors, radius, shadow, spacing } from '../theme/tokens';
 import { typography } from '../theme/typography';
+import { motion, useReducedMotion } from '../theme/motion';
 
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
@@ -113,18 +120,13 @@ export default function GeneratePlanScreen() {
           <Text style={styles.dayLabel}>{dayLabel}</Text>
           <View style={styles.mealRow}>
             {MEAL_TYPES.map((mealType, mealIndex) => (
-              <Pressable
+              <MealCell
                 key={mealType}
+                label={MEAL_TYPE_LABELS[mealType]}
+                checked={selected[dayIndex][mealIndex]}
                 onPress={() => toggle(dayIndex, mealIndex)}
-                style={[styles.cell, selected[dayIndex][mealIndex] && styles.cellSelected]}
-                accessibilityRole="checkbox"
                 accessibilityLabel={`${MEAL_TYPE_LABELS[mealType]}, ${dayLabel}`}
-                accessibilityState={{ checked: selected[dayIndex][mealIndex] }}
-              >
-                <Text style={selected[dayIndex][mealIndex] ? styles.cellLabelSelected : styles.cellLabel}>
-                  {MEAL_TYPE_LABELS[mealType]}
-                </Text>
-              </Pressable>
+              />
             ))}
           </View>
         </View>
@@ -133,6 +135,61 @@ export default function GeneratePlanScreen() {
         <Button title="Générer le plan" onPress={handleGenerate} loading={generating} />
       </ScrollView>
     </Screen>
+  );
+}
+
+type MealCellProps = {
+  label: string;
+  checked: boolean;
+  onPress: () => void;
+  accessibilityLabel: string;
+};
+
+// Matches ChoiceGroup's Pill vocabulary (shape, colors, press/selection springs) rather than
+// reusing ChoiceGroup itself: this is a multi-select checkbox grid, not a single-select radiogroup,
+// so the accessibility semantics genuinely differ even though the visual language shouldn't.
+function MealCell({ label, checked, onPress, accessibilityLabel }: MealCellProps) {
+  const reduceMotion = useReducedMotion();
+  const scale = useSharedValue(1);
+  const checkedProgress = useSharedValue(checked ? 1 : 0);
+
+  useEffect(() => {
+    const target = checked ? 1 : 0;
+    checkedProgress.value = reduceMotion ? target : withSpring(target, motion.spring.settle);
+  }, [checked, reduceMotion, checkedProgress]);
+
+  const handlePressIn = () => {
+    scale.value = reduceMotion ? 0.97 : withSpring(0.97, motion.spring.press);
+  };
+
+  const handlePressOut = () => {
+    scale.value = reduceMotion ? 1 : withSpring(1, motion.spring.press);
+  };
+
+  const animatedCellStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    backgroundColor: interpolateColor(checkedProgress.value, [0, 1], [colors.bgSurface, colors.accentRed]),
+    shadowColor: interpolateColor(checkedProgress.value, [0, 1], [shadow.card.shadowColor, colors.accentRed]),
+    shadowOpacity: shadow.card.shadowOpacity + (0.25 - shadow.card.shadowOpacity) * checkedProgress.value,
+  }));
+
+  const animatedLabelStyle = useAnimatedStyle(() => ({
+    color: interpolateColor(checkedProgress.value, [0, 1], [colors.textSecondary, '#FFFFFF']),
+  }));
+
+  return (
+    <Pressable
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      accessibilityRole="checkbox"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ checked }}
+    >
+      <Animated.View style={[styles.cell, animatedCellStyle]}>
+        <Animated.Text style={[styles.cellLabel, animatedLabelStyle]}>{label}</Animated.Text>
+      </Animated.View>
+    </Pressable>
   );
 }
 
@@ -150,14 +207,13 @@ const styles = StyleSheet.create({
   },
   mealRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   cell: {
-    backgroundColor: colors.bgSurface,
-    borderRadius: radius.sm,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    ...shadow.card,
+    borderRadius: radius.pill,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.md + 2,
+    elevation: shadow.card.elevation,
+    shadowOffset: shadow.card.shadowOffset,
+    shadowRadius: shadow.card.shadowRadius,
   },
-  cellSelected: { backgroundColor: colors.accentRed, shadowColor: colors.accentRed, shadowOpacity: 0.25 },
-  cellLabel: { ...typography.label, color: colors.textSecondary, fontWeight: '600' },
-  cellLabelSelected: { ...typography.label, color: '#FFFFFF', fontWeight: '600' },
+  cellLabel: { ...typography.label, fontWeight: '600' },
   error: { color: colors.error, marginTop: spacing.md, marginBottom: spacing.sm },
 });
