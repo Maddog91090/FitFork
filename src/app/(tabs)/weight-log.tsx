@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Screen } from '../../components/ui/Screen';
 import { colors, spacing } from '../../theme/tokens';
+import { typography } from '../../theme/typography';
 
 export default function WeightLogScreen() {
   const { session, loading } = useAuth();
@@ -102,9 +103,9 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   container: { padding: spacing.lg },
-  title: { fontSize: 17, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+  title: { ...typography.title, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
   historyTitle: {
-    fontSize: 11,
+    ...typography.label,
     textTransform: 'uppercase',
     color: colors.textSecondary,
     fontWeight: '700',
@@ -119,8 +120,8 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.divider,
   },
   rowLast: { borderBottomWidth: 0 },
-  date: { color: colors.textPrimary, fontSize: 12 },
-  weight: { color: colors.textSecondary, fontSize: 12, fontWeight: '600' },
+  date: { ...typography.caption, color: colors.textPrimary },
+  weight: { ...typography.caption, color: colors.textSecondary, fontWeight: '600' },
   error: { color: colors.error, marginBottom: spacing.md },
-  emptyText: { color: colors.textSecondary, fontSize: 12 },
+  emptyText: { ...typography.caption, color: colors.textSecondary },
 });

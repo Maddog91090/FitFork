@@ -27,6 +27,18 @@ typography:
     fontWeight: 400
     lineHeight: "16px"
     letterSpacing: "0.1px"
+  subtitle:
+    fontFamily: "System (SF Pro on iOS, Roboto on Android)"
+    fontSize: "16px"
+    fontWeight: 400
+    lineHeight: "22px"
+    letterSpacing: "-0.1px"
+  title:
+    fontFamily: "System (SF Pro on iOS, Roboto on Android)"
+    fontSize: "20px"
+    fontWeight: 400
+    lineHeight: "26px"
+    letterSpacing: "-0.3px"
 rounded:
   sm: "12px"
   md: "14px"
@@ -118,15 +130,17 @@ The palette is warm-neutral-and-one-accent: a single vital red carries every cal
 
 **Body/Label Font:** System (SF Pro on iOS, Roboto on Android) — no custom font is loaded; the system font already ships correct optical sizing and legibility tuning for each platform.
 
-**Character:** Small and restrained by design — nothing in the current component set exceeds 14px. The scale is built for UI chrome (labels, body copy, pill text), not display headlines; screens with real headings (onboarding, home) currently carry their own inline sizes and are the next surface to fold into this scale.
+**Character:** A five-step scale spanning small UI chrome through screen titles, adopted across both the shared component kit and every screen — no screen hand-picks its own font sizes anymore.
 
 ### Hierarchy
-- **Body** (400, 14px, 20px line-height, 0 tracking): the default for every readable string — button labels, `TextField` input text, `ChoiceGroup` pill labels, `EmptyState` titles.
-- **Caption** (400, 12px, 16px line-height, +0.1px tracking): secondary/supporting copy, e.g. `EmptyState` message text. Slightly looser leading and a touch of positive tracking, since small text needs both to stay legible.
+- **Title** (400, 20px, 26px line-height, -0.3px tracking): screen and section titles — `grocery-list`'s "Liste de courses", `weight-log`'s "Suivi de poids", `recipe/[id]`'s recipe name, `onboarding`'s step titles. The one step with negative tracking, since large text reads too loose at zero or positive tracking.
+- **Subtitle** (400, 16px, 22px line-height, -0.1px tracking): emphasis text sitting between body and title — `home`'s macro numbers, the login/signup brand wordmark.
+- **Body** (400, 14px, 20px line-height, 0 tracking): the default for every readable string — button labels, `TextField` input text, `ChoiceGroup` pill labels, `EmptyState` titles, most screen paragraph/description text.
+- **Caption** (400, 12px, 16px line-height, +0.1px tracking): secondary/supporting copy — `EmptyState` message text, list row metadata, error text. Slightly looser leading and a touch of positive tracking, since small text needs both to stay legible.
 - **Label** (700, 11px, 14px line-height, +0.4px tracking, uppercase): field labels and small caps chrome — `TextField`'s field label is the canonical example. The smallest, most positively-tracked step in the scale, on purpose: this is the size where negative or zero tracking starts to read as cramped.
 
 ### Named Rules
-**The Size-Specific Tracking Rule.** No fixed `letterSpacing` value is reused across sizes. Body sits at 0, Caption and Label both go positive as they shrink — matching Apple's own optical-sizing discipline rather than applying one tracking value everywhere.
+**The Size-Specific Tracking Rule.** No fixed `letterSpacing` value is reused across sizes. Tracking goes negative as text grows past body (Subtitle, Title) and positive as it shrinks below body (Caption, Label) — matching Apple's own optical-sizing discipline rather than applying one tracking value everywhere.
 
 ## 4. Elevation
 

@@ -14,8 +14,10 @@
     },
     "typographyMeta": {
       "label": { "displayName": "Label", "purpose": "Uppercase small-caps field labels and chrome, e.g. TextField's label." },
-      "body": { "displayName": "Body", "purpose": "Default readable text: button labels, input text, pill labels, EmptyState titles." },
-      "caption": { "displayName": "Caption", "purpose": "Secondary/supporting copy, e.g. EmptyState message text." }
+      "caption": { "displayName": "Caption", "purpose": "Secondary/supporting copy, e.g. EmptyState message text, list row metadata." },
+      "body": { "displayName": "Body", "purpose": "Default readable text: button labels, input text, pill labels, most screen paragraph text." },
+      "subtitle": { "displayName": "Subtitle", "purpose": "Emphasis text between body and title, e.g. home's macro numbers, the brand wordmark." },
+      "title": { "displayName": "Title", "purpose": "Screen and section titles across every screen, negative tracking." }
     },
     "shadows": [
       { "name": "card", "value": "shadowColor: #000000, shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: {0, 2}, elevation: 2", "purpose": "Default resting shadow for every solid surface (cards, buttons, fields, pills)." },
@@ -37,7 +39,7 @@
     ],
     "rules": [
       { "name": "The One Accent Rule", "body": "Vital Red is the only saturated color in the system. If a second saturated color feels tempting for a new state (success, warning), reach for weight, motion, or an icon before reaching for a second hue.", "section": "colors" },
-      { "name": "The Size-Specific Tracking Rule", "body": "No fixed letterSpacing value is reused across sizes. Body sits at 0, Caption and Label both go positive as they shrink -- matching Apple's own optical-sizing discipline rather than applying one tracking value everywhere.", "section": "typography" },
+      { "name": "The Size-Specific Tracking Rule", "body": "No fixed letterSpacing value is reused across sizes. Tracking goes negative as text grows past body (Subtitle, Title) and positive as it shrinks below body (Caption, Label) -- matching Apple's own optical-sizing discipline rather than applying one tracking value everywhere.", "section": "typography" },
       { "name": "The Earned Glass Rule", "body": "Real glass material is reserved for chrome that genuinely floats over other content (the tab bar) or surfaces that opt in explicitly (Card variant=\"glass\"). It is never the default surface treatment -- most cards, buttons, and fields are flat Pure White with a Card shadow, exactly as before glass was introduced.", "section": "elevation" }
     ],
     "dos": [

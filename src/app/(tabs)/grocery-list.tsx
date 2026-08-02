@@ -7,6 +7,7 @@ import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Screen } from '../../components/ui/Screen';
 import { colors, spacing } from '../../theme/tokens';
+import { typography } from '../../theme/typography';
 
 type AggregatedIngredient = { name: string; quantity: number; unit: string };
 
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   container: { padding: spacing.lg },
-  title: { fontSize: 17, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+  title: { ...typography.title, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -131,8 +132,8 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.divider,
   },
   rowLast: { borderBottomWidth: 0 },
-  name: { flex: 1, color: colors.textPrimary, fontSize: 13 },
-  quantity: { color: colors.textSecondary, fontSize: 12 },
+  name: { ...typography.body, flex: 1, color: colors.textPrimary },
+  quantity: { ...typography.caption, color: colors.textSecondary },
   error: { color: colors.error, marginBottom: spacing.md },
   emptyIcon: { fontSize: 32 },
 });

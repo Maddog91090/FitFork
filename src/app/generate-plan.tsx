@@ -11,6 +11,7 @@ import { generateWeeklyPlan, type MealSlot, type MealType } from '../lib/mealPla
 import { Button } from '../components/ui/Button';
 import { Screen } from '../components/ui/Screen';
 import { colors, radius, shadow, spacing } from '../theme/tokens';
+import { typography } from '../theme/typography';
 
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
@@ -138,12 +139,12 @@ export default function GeneratePlanScreen() {
 const styles = StyleSheet.create({
   scroll: { flex: 1 },
   container: { padding: spacing.lg },
-  title: { fontSize: 17, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+  title: { ...typography.title, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
   dayRow: { marginBottom: spacing.md },
   dayLabel: {
+    ...typography.label,
     fontWeight: '700',
     color: colors.textSecondary,
-    fontSize: 11,
     textTransform: 'uppercase',
     marginBottom: spacing.sm,
   },
@@ -156,7 +157,7 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   cellSelected: { backgroundColor: colors.accentRed, shadowColor: colors.accentRed, shadowOpacity: 0.25 },
-  cellLabel: { color: colors.textSecondary, fontSize: 11, fontWeight: '600' },
-  cellLabelSelected: { color: '#FFFFFF', fontSize: 11, fontWeight: '600' },
+  cellLabel: { ...typography.label, color: colors.textSecondary, fontWeight: '600' },
+  cellLabelSelected: { ...typography.label, color: '#FFFFFF', fontWeight: '600' },
   error: { color: colors.error, marginTop: spacing.md, marginBottom: spacing.sm },
 });

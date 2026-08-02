@@ -12,6 +12,7 @@ import { scaleIngredientQuantity, scaleMacroValue, clampPortionMultiplier } from
 import { Card } from '../../components/ui/Card';
 import { Screen } from '../../components/ui/Screen';
 import { colors, spacing } from '../../theme/tokens';
+import { typography } from '../../theme/typography';
 
 export default function RecipeDetailScreen() {
   const { id, portion: portionParam } = useLocalSearchParams<{ id: string; portion?: string }>();
@@ -124,11 +125,11 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   container: { padding: spacing.lg },
-  title: { fontSize: 19, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.xs },
-  macros: { color: colors.textSecondary, fontSize: 12, marginBottom: spacing.lg },
-  portionBanner: { color: colors.accentRed, fontWeight: '700', fontSize: 12, marginBottom: spacing.lg },
+  title: { ...typography.title, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.xs },
+  macros: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
+  portionBanner: { ...typography.caption, color: colors.accentRed, fontWeight: '700', marginBottom: spacing.lg },
   sectionTitle: {
-    fontSize: 11,
+    ...typography.label,
     textTransform: 'uppercase',
     color: colors.textSecondary,
     fontWeight: '700',
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   card: { marginBottom: spacing.sm },
-  ingredientLine: { color: colors.textPrimary, fontSize: 13, marginBottom: spacing.xs },
+  ingredientLine: { ...typography.body, color: colors.textPrimary, marginBottom: spacing.xs },
   stepRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm, alignItems: 'flex-start' },
   stepBadge: {
     width: 20,
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 1,
   },
-  stepBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
-  stepText: { flex: 1, color: colors.textPrimary, fontSize: 13 },
+  stepBadgeText: { ...typography.label, color: '#FFFFFF', fontWeight: '700' },
+  stepText: { ...typography.body, flex: 1, color: colors.textPrimary },
   error: { color: colors.error },
 });

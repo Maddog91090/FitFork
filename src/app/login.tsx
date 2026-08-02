@@ -6,6 +6,7 @@ import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
 import { Screen } from '../components/ui/Screen';
 import { colors, spacing, radius, shadow } from '../theme/tokens';
+import { typography } from '../theme/typography';
 
 export default function LoginScreen() {
   const { session, signIn } = useAuth();
@@ -80,15 +81,15 @@ const styles = StyleSheet.create({
   },
   logo: { width: '100%', height: '100%' },
   brand: {
+    ...typography.subtitle,
     textAlign: 'center',
     fontWeight: '800',
-    fontSize: 16,
     color: colors.textPrimary,
     marginBottom: spacing.xl,
   },
   error: { color: colors.error, marginBottom: spacing.md, textAlign: 'center' },
   switchLink: { marginTop: spacing.lg, textAlign: 'center' },
-  switchText: { textAlign: 'center', fontSize: 12, color: colors.textSecondary },
+  switchText: { ...typography.caption, textAlign: 'center', color: colors.textSecondary },
   switchTextAccent: { color: colors.accentRed, fontWeight: '700' },
 });
 

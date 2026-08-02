@@ -8,6 +8,7 @@ import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Screen } from '../../components/ui/Screen';
 import { colors, spacing } from '../../theme/tokens';
+import { typography } from '../../theme/typography';
 
 const DAY_LABELS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
   container: { padding: spacing.lg },
   dayBlock: { marginBottom: spacing.lg },
   dayLabel: {
-    fontSize: 11,
+    ...typography.label,
     textTransform: 'uppercase',
     color: colors.textSecondary,
     fontWeight: '700',
@@ -181,14 +182,14 @@ const styles = StyleSheet.create({
   entryCard: { marginBottom: spacing.sm },
   entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   entryInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  mealTypeLabel: { width: 80, color: colors.textSecondary, fontSize: 11 },
-  recipeName: { flex: 1, color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
+  mealTypeLabel: { ...typography.label, width: 80, color: colors.textSecondary },
+  recipeName: { ...typography.body, flex: 1, color: colors.textPrimary, fontWeight: '600' },
   swapButton: {
     marginLeft: spacing.md,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.sm,
   },
-  swapHint: { color: colors.accentRed, fontSize: 12, fontWeight: '700' },
+  swapHint: { ...typography.caption, color: colors.accentRed, fontWeight: '700' },
   error: { color: colors.error, marginBottom: spacing.md },
   emptyIcon: { fontSize: 32 },
 });

@@ -9,6 +9,7 @@ import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
 import { Screen } from '../components/ui/Screen';
 import { colors, spacing } from '../theme/tokens';
+import { typography } from '../theme/typography';
 import type { Sex, ActivityLevel, Goal } from '../lib/nutrition';
 
 const SEX_OPTIONS: { value: Sex; label: string }[] = [
@@ -299,12 +300,12 @@ const styles = StyleSheet.create({
   progressRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
   segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.divider },
   segmentDone: { backgroundColor: colors.accentRed },
-  stepCounter: { fontSize: 10, color: colors.textSecondary, fontWeight: '700', marginBottom: spacing.xs },
-  title: { fontSize: 18, fontWeight: '800', color: colors.textPrimary },
+  stepCounter: { ...typography.label, color: colors.textSecondary, fontWeight: '700', marginBottom: spacing.xs },
+  title: { ...typography.title, fontWeight: '800', color: colors.textPrimary },
   body: { flex: 1 },
   bodyContent: { padding: spacing.lg, paddingTop: spacing.sm },
   label: {
-    fontSize: 11,
+    ...typography.label,
     textTransform: 'uppercase',
     color: colors.textSecondary,
     fontWeight: '700',
@@ -314,9 +315,9 @@ const styles = StyleSheet.create({
   error: { color: colors.error, marginTop: spacing.md },
   footer: { padding: spacing.lg },
   backLink: { alignSelf: 'flex-start', marginBottom: spacing.md },
-  backLinkText: { color: colors.textSecondary, fontSize: 13, fontWeight: '600' },
+  backLinkText: { ...typography.body, color: colors.textSecondary, fontWeight: '600' },
   recapGroup: {
-    fontSize: 11,
+    ...typography.label,
     textTransform: 'uppercase',
     color: colors.textSecondary,
     fontWeight: '700',
@@ -330,6 +331,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.divider,
   },
-  recapLabel: { color: colors.textSecondary, fontSize: 12 },
-  recapValue: { color: colors.textPrimary, fontSize: 12, fontWeight: '600' },
+  recapLabel: { ...typography.caption, color: colors.textSecondary },
+  recapValue: { ...typography.caption, color: colors.textPrimary, fontWeight: '600' },
 });

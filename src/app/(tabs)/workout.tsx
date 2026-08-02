@@ -10,6 +10,7 @@ import type { Session } from '../../lib/homeWorkoutProgram';
 import { Card } from '../../components/ui/Card';
 import { Screen } from '../../components/ui/Screen';
 import { colors, spacing } from '../../theme/tokens';
+import { typography } from '../../theme/typography';
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
 
@@ -185,18 +186,18 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   container: { padding: spacing.lg },
-  title: { fontSize: 18, fontWeight: '800', color: colors.textPrimary },
-  subtitle: { fontSize: 13, color: colors.textSecondary, marginBottom: spacing.lg },
+  title: { ...typography.title, fontWeight: '800', color: colors.textPrimary },
+  subtitle: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
   block: { marginVertical: spacing.lg },
-  blockTitle: { fontSize: 14, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.xs },
-  blockText: { color: colors.textSecondary, fontSize: 13 },
-  levelSummary: { marginTop: spacing.sm, color: colors.textSecondary, fontSize: 13 },
-  levelDuration: { marginBottom: spacing.lg, color: colors.textSecondary, fontSize: 12, fontStyle: 'italic' },
+  blockTitle: { ...typography.body, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.xs },
+  blockText: { ...typography.body, color: colors.textSecondary },
+  levelSummary: { ...typography.body, marginTop: spacing.sm, color: colors.textSecondary },
+  levelDuration: { ...typography.caption, marginBottom: spacing.lg, color: colors.textSecondary, fontStyle: 'italic' },
   sessionCard: { marginBottom: spacing.sm },
-  sessionTitle: { fontSize: 13, fontWeight: '700', color: colors.textPrimary },
+  sessionTitle: { ...typography.body, fontWeight: '700', color: colors.textPrimary },
   sessionDetail: { marginTop: spacing.sm, marginLeft: spacing.md },
-  sessionMeta: { color: colors.textSecondary, fontSize: 12, marginBottom: spacing.xs },
-  exerciseLine: { color: colors.textPrimary, fontSize: 12, marginBottom: spacing.xs },
-  coachNote: { marginBottom: spacing.xs, color: colors.textSecondary, fontSize: 13 },
+  sessionMeta: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.xs },
+  exerciseLine: { ...typography.caption, color: colors.textPrimary, marginBottom: spacing.xs },
+  coachNote: { ...typography.body, marginBottom: spacing.xs, color: colors.textSecondary },
   error: { color: colors.error, marginBottom: spacing.md },
 });

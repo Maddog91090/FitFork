@@ -8,6 +8,7 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Screen } from '../../components/ui/Screen';
 import { colors, spacing } from '../../theme/tokens';
+import { typography } from '../../theme/typography';
 
 export default function HomeScreen() {
   const { session, loading, signOut } = useAuth();
@@ -115,23 +116,22 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   container: { padding: spacing.lg },
-  greeting: { fontSize: 12, color: colors.textSecondary },
-  name: { fontSize: 20, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+  greeting: { ...typography.caption, color: colors.textSecondary },
+  name: { ...typography.title, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
   error: { color: colors.error, marginBottom: spacing.md },
   macroCard: { marginBottom: spacing.lg },
   sectionLabel: {
-    fontSize: 11,
+    ...typography.label,
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
     color: colors.textSecondary,
     fontWeight: '700',
     marginBottom: spacing.sm,
   },
   macroRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
   macroItem: { alignItems: 'center', flex: 1 },
-  macroValue: { fontSize: 16, fontWeight: '800', color: colors.textPrimary },
+  macroValue: { ...typography.subtitle, fontWeight: '800', color: colors.textPrimary },
   macroValueAccent: { color: colors.accentRed },
-  macroLabel: { fontSize: 9, color: colors.textSecondary, textTransform: 'uppercase', marginTop: 2 },
+  macroLabel: { ...typography.label, color: colors.textSecondary, textTransform: 'uppercase', marginTop: 2 },
   actionsRow: { flexDirection: 'row', gap: spacing.sm },
   actionButton: { flex: 1 },
   signOut: { marginTop: spacing.xl },
