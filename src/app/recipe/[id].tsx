@@ -10,6 +10,7 @@ import {
 } from '../../lib/mealPlanData';
 import { scaleIngredientQuantity, scaleMacroValue, clampPortionMultiplier } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
+import { Screen } from '../../components/ui/Screen';
 import { colors, spacing } from '../../theme/tokens';
 
 export default function RecipeDetailScreen() {
@@ -51,23 +52,24 @@ export default function RecipeDetailScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
+      <Screen style={styles.centered}>
         <ActivityIndicator color={colors.accentRed} />
-      </View>
+      </Screen>
     );
   }
 
   if (error || !recipe) {
     return (
-      <View style={styles.centered}>
+      <Screen style={styles.centered}>
         <Text style={styles.error}>{error ?? 'Recette introuvable.'}</Text>
-      </View>
+      </Screen>
     );
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{recipe.name}</Text>
+    <Screen>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+        <Text style={styles.title}>{recipe.name}</Text>
       <Text style={styles.macros}>
         {scaleMacroValue(recipe.baseCalories, portionMultiplier)} kcal — {scaleMacroValue(recipe.baseProteinG, portionMultiplier)}g prot / {scaleMacroValue(recipe.baseFatG, portionMultiplier)}g lip / {scaleMacroValue(recipe.baseCarbsG, portionMultiplier)}g gluc (
         {scaleMacroValue(recipe.baseServingG, portionMultiplier)}g)
@@ -97,17 +99,17 @@ export default function RecipeDetailScreen() {
           <Text style={styles.stepText}>{step}</Text>
         </View>
       ))}
-    </ScrollView>
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
+  scroll: { flex: 1 },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.bgBase,
     padding: spacing.lg,
   },
   container: { padding: spacing.lg },

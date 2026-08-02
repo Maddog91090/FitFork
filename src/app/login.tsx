@@ -4,6 +4,7 @@ import { Link, router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
+import { Screen } from '../components/ui/Screen';
 import { colors, spacing, radius, shadow } from '../theme/tokens';
 
 export default function LoginScreen() {
@@ -30,7 +31,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.screen}>
+    <Screen style={styles.screen}>
       <View style={styles.logoWrap}>
         <Image source={require('../../assets/images/icon.png')} style={styles.logo} />
       </View>
@@ -54,12 +55,12 @@ export default function LoginScreen() {
           Pas de compte ? <Text style={styles.switchTextAccent}>Créer un compte</Text>
         </Text>
       </Link>
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: colors.bgBase },
+  screen: { justifyContent: 'center', padding: spacing.xl },
   logoWrap: {
     width: 64,
     height: 64,

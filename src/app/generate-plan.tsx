@@ -9,6 +9,7 @@ import { fetchRecentWeightLogs, type WeightLogEntry } from '../lib/weightLogData
 import { computeAdjustedTargets } from '../lib/progressTracking';
 import { generateWeeklyPlan, type MealSlot, type MealType } from '../lib/mealPlan';
 import { Button } from '../components/ui/Button';
+import { Screen } from '../components/ui/Screen';
 import { colors, radius, shadow, spacing } from '../theme/tokens';
 
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
@@ -103,8 +104,9 @@ export default function GeneratePlanScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Choisis les repas à générer</Text>
+    <Screen>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Choisis les repas à générer</Text>
       {DAY_LABELS.map((dayLabel, dayIndex) => (
         <View key={dayLabel} style={styles.dayRow}>
           <Text style={styles.dayLabel}>{dayLabel}</Text>
@@ -123,14 +125,15 @@ export default function GeneratePlanScreen() {
           </View>
         </View>
       ))}
-      {error && <Text style={styles.error}>{error}</Text>}
-      <Button title="Générer le plan" onPress={handleGenerate} loading={generating} />
-    </ScrollView>
+        {error && <Text style={styles.error}>{error}</Text>}
+        <Button title="Générer le plan" onPress={handleGenerate} loading={generating} />
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
+  scroll: { flex: 1 },
   container: { padding: spacing.lg },
   title: { fontSize: 17, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
   dayRow: { marginBottom: spacing.md },

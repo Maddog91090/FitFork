@@ -6,6 +6,7 @@ import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
+import { Screen } from '../../components/ui/Screen';
 import { colors, spacing } from '../../theme/tokens';
 
 export default function HomeScreen() {
@@ -54,15 +55,16 @@ export default function HomeScreen() {
 
   if (loading || !session || checkingProfile) {
     return (
-      <View style={styles.centered}>
+      <Screen edges={['top']} style={styles.centered}>
         <ActivityIndicator color={colors.accentRed} />
-      </View>
+      </Screen>
     );
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <Text style={styles.greeting}>Bonjour</Text>
+    <Screen edges={['top']}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+        <Text style={styles.greeting}>Bonjour</Text>
       <Text style={styles.name}>{session.user.email}</Text>
 
       {loadError && <Text style={styles.error}>{loadError}</Text>}
@@ -104,13 +106,14 @@ export default function HomeScreen() {
       <View style={styles.signOut}>
         <Button title="Se déconnecter" variant="secondary" onPress={signOut} />
       </View>
-    </ScrollView>
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+  scroll: { flex: 1 },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   container: { padding: spacing.lg },
   greeting: { fontSize: 12, color: colors.textSecondary },
   name: { fontSize: 20, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },

@@ -5,6 +5,7 @@ import { useAuth } from '../../lib/auth-context';
 import { getCurrentPlan, fetchRecipeIngredients } from '../../lib/mealPlanData';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { Screen } from '../../components/ui/Screen';
 import { colors, spacing } from '../../theme/tokens';
 
 type AggregatedIngredient = { name: string; quantity: number; unit: string };
@@ -69,15 +70,15 @@ export default function GroceryListScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={styles.centered}>
+      <Screen edges={['top']} style={styles.centered}>
         <ActivityIndicator color={colors.accentRed} />
-      </View>
+      </Screen>
     );
   }
 
   if (!hasPlan) {
     return (
-      <View style={styles.centered}>
+      <Screen edges={['top']} style={styles.centered}>
         <EmptyState
           icon={<Text style={styles.emptyIcon}>🛒</Text>}
           title="Aucun plan pour l'instant"
@@ -85,38 +86,39 @@ export default function GroceryListScreen() {
           actionLabel="Générer un plan"
           onAction={() => router.push('/generate-plan')}
         />
-      </View>
+      </Screen>
     );
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Liste de courses</Text>
-      {error && <Text style={styles.error}>{error}</Text>}
-      <Card>
-        {items.map((item, index) => (
-          <View
-            key={`${item.name}|${item.unit}`}
-            style={[styles.row, index === items.length - 1 && styles.rowLast]}
-          >
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.quantity}>
-              {Math.round(item.quantity * 10) / 10} {item.unit}
-            </Text>
-          </View>
-        ))}
-      </Card>
-    </ScrollView>
+    <Screen edges={['top']}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Liste de courses</Text>
+        {error && <Text style={styles.error}>{error}</Text>}
+        <Card>
+          {items.map((item, index) => (
+            <View
+              key={`${item.name}|${item.unit}`}
+              style={[styles.row, index === items.length - 1 && styles.rowLast]}
+            >
+              <Text style={styles.name}>{item.name}</Text>
+              <Text style={styles.quantity}>
+                {Math.round(item.quantity * 10) / 10} {item.unit}
+              </Text>
+            </View>
+          ))}
+        </Card>
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
+  scroll: { flex: 1 },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.bgBase,
     padding: spacing.lg,
   },
   container: { padding: spacing.lg },

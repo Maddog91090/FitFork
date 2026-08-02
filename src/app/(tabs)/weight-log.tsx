@@ -6,6 +6,7 @@ import { logWeight, fetchRecentWeightLogs, type WeightLogEntry } from '../../lib
 import { TextField } from '../../components/ui/TextField';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
+import { Screen } from '../../components/ui/Screen';
 import { colors, spacing } from '../../theme/tokens';
 
 export default function WeightLogScreen() {
@@ -65,39 +66,41 @@ export default function WeightLogScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={styles.centered}>
+      <Screen edges={['top']} style={styles.centered}>
         <ActivityIndicator color={colors.accentRed} />
-      </View>
+      </Screen>
     );
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Suivi de poids</Text>
-      <TextField label="Poids (kg)" value={weightInput} onChangeText={setWeightInput} keyboardType="numeric" />
-      {error && <Text style={styles.error}>{error}</Text>}
-      <Button title="Enregistrer" onPress={handleSubmit} loading={submitting} />
+    <Screen edges={['top']}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Suivi de poids</Text>
+        <TextField label="Poids (kg)" value={weightInput} onChangeText={setWeightInput} keyboardType="numeric" />
+        {error && <Text style={styles.error}>{error}</Text>}
+        <Button title="Enregistrer" onPress={handleSubmit} loading={submitting} />
 
-      <Text style={styles.historyTitle}>Historique</Text>
-      {logs.length === 0 ? (
-        <Text style={styles.emptyText}>Aucune pesée enregistrée.</Text>
-      ) : (
-        <Card>
-          {logs.map((log, index) => (
-            <View key={log.id} style={[styles.row, index === logs.length - 1 && styles.rowLast]}>
-              <Text style={styles.date}>{log.loggedAt}</Text>
-              <Text style={styles.weight}>{log.weightKg} kg</Text>
-            </View>
-          ))}
-        </Card>
-      )}
-    </ScrollView>
+        <Text style={styles.historyTitle}>Historique</Text>
+        {logs.length === 0 ? (
+          <Text style={styles.emptyText}>Aucune pesée enregistrée.</Text>
+        ) : (
+          <Card>
+            {logs.map((log, index) => (
+              <View key={log.id} style={[styles.row, index === logs.length - 1 && styles.rowLast]}>
+                <Text style={styles.date}>{log.loggedAt}</Text>
+                <Text style={styles.weight}>{log.weightKg} kg</Text>
+              </View>
+            ))}
+          </Card>
+        )}
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+  scroll: { flex: 1 },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   container: { padding: spacing.lg },
   title: { fontSize: 17, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
   historyTitle: {

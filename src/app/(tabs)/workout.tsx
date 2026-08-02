@@ -8,6 +8,7 @@ import { ChoiceGroup } from '../../components/ChoiceGroup';
 import { homeWorkoutProgram, getLevelProgram } from '../../lib/homeWorkoutProgram';
 import type { Session } from '../../lib/homeWorkoutProgram';
 import { Card } from '../../components/ui/Card';
+import { Screen } from '../../components/ui/Screen';
 import { colors, spacing } from '../../theme/tokens';
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
@@ -81,17 +82,18 @@ export default function WorkoutScreen() {
 
   if (loading || !session || checking || !trainingProfile) {
     return (
-      <View style={styles.centered}>
+      <Screen edges={['top']} style={styles.centered}>
         <ActivityIndicator color={colors.accentRed} />
-      </View>
+      </Screen>
     );
   }
 
   const levelProgram = getLevelProgram(trainingProfile.experienceLevel);
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      {error && <Text style={styles.error}>{error}</Text>}
+    <Screen edges={['top']}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+        {error && <Text style={styles.error}>{error}</Text>}
 
       <Text style={styles.title}>{homeWorkoutProgram.title}</Text>
       <Text style={styles.subtitle}>{homeWorkoutProgram.subtitle}</Text>
@@ -139,7 +141,8 @@ export default function WorkoutScreen() {
           </Text>
         ))}
       </View>
-    </ScrollView>
+      </ScrollView>
+    </Screen>
   );
 }
 
@@ -173,8 +176,8 @@ function SessionDetail({ session }: { session: Session }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+  scroll: { flex: 1 },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   container: { padding: spacing.lg },
   title: { fontSize: 18, fontWeight: '800', color: colors.textPrimary },
   subtitle: { fontSize: 13, color: colors.textSecondary, marginBottom: spacing.lg },

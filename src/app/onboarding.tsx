@@ -7,6 +7,7 @@ import type { ExperienceLevel, Equipment } from '../lib/profile';
 import { ChoiceGroup } from '../components/ChoiceGroup';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
+import { Screen } from '../components/ui/Screen';
 import { colors, spacing } from '../theme/tokens';
 import type { Sex, ActivityLevel, Goal } from '../lib/nutrition';
 
@@ -167,7 +168,7 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <View style={styles.screen}>
+    <Screen>
       <View style={styles.header}>
         <View style={styles.progressRow}>
           {Array.from({ length: TOTAL_STEPS }).map((_, index) => (
@@ -271,7 +272,7 @@ export default function OnboardingScreen() {
           <Button title="Valider" onPress={handleSubmit} loading={submitting} />
         )}
       </View>
-    </View>
+    </Screen>
   );
 }
 
@@ -285,7 +286,6 @@ function RecapRow({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
   header: { padding: spacing.lg, paddingBottom: spacing.sm },
   progressRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
   segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.divider },

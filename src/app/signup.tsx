@@ -4,6 +4,7 @@ import { Link } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
+import { Screen } from '../components/ui/Screen';
 import { colors, spacing, radius, shadow } from '../theme/tokens';
 
 export default function SignupScreen() {
@@ -28,19 +29,19 @@ export default function SignupScreen() {
 
   if (confirmationSent) {
     return (
-      <View style={styles.screen}>
+      <Screen style={styles.screen}>
         <Text style={styles.confirmText}>
           Compte créé. Vérifie ta boîte mail pour confirmer ton adresse, puis connecte-toi.
         </Text>
         <Link href="/login" style={styles.switchLink}>
           <Text style={styles.switchTextAccent}>Aller à la connexion</Text>
         </Link>
-      </View>
+      </Screen>
     );
   }
 
   return (
-    <View style={styles.screen}>
+    <Screen style={styles.screen}>
       <View style={styles.logoWrap}>
         <Image source={require('../../assets/images/icon.png')} style={styles.logo} />
       </View>
@@ -64,12 +65,12 @@ export default function SignupScreen() {
           Déjà un compte ? <Text style={styles.switchTextAccent}>Se connecter</Text>
         </Text>
       </Link>
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: colors.bgBase },
+  screen: { justifyContent: 'center', padding: spacing.xl },
   logoWrap: {
     width: 64,
     height: 64,

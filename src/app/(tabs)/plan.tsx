@@ -6,6 +6,7 @@ import { getCurrentPlan, updatePlanEntry, fetchRecipes, type Recipe, type SavedP
 import { pickReplacementRecipe, MEAL_TYPE_RATIOS, clampPortionMultiplier, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { Screen } from '../../components/ui/Screen';
 import { colors, spacing } from '../../theme/tokens';
 
 const DAY_LABELS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
@@ -86,15 +87,15 @@ export default function PlanScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={styles.centered}>
+      <Screen edges={['top']} style={styles.centered}>
         <ActivityIndicator color={colors.accentRed} />
-      </View>
+      </Screen>
     );
   }
 
   if (!plan || plan.entries.length === 0) {
     return (
-      <View style={styles.centered}>
+      <Screen edges={['top']} style={styles.centered}>
         <EmptyState
           icon={<Text style={styles.emptyIcon}>📋</Text>}
           title="Aucun plan pour l'instant"
@@ -102,13 +103,14 @@ export default function PlanScreen() {
           actionLabel="Générer un plan"
           onAction={() => router.push('/generate-plan')}
         />
-      </View>
+      </Screen>
     );
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      {error && <Text style={styles.error}>{error}</Text>}
+    <Screen edges={['top']}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+        {error && <Text style={styles.error}>{error}</Text>}
       {DAY_LABELS.map((dayLabel, dayIndex) => {
         const dayEntries = plan.entries.filter((e) => e.dayIndex === dayIndex);
         if (dayEntries.length === 0) return null;
@@ -147,17 +149,17 @@ export default function PlanScreen() {
           </View>
         );
       })}
-    </ScrollView>
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
+  scroll: { flex: 1 },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.bgBase,
     padding: spacing.lg,
   },
   container: { padding: spacing.lg },
