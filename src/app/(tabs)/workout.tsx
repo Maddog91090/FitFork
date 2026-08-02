@@ -115,7 +115,13 @@ export default function WorkoutScreen() {
       {levelProgram.sessions.map((sessionItem, index) => {
         const isExpanded = expanded.has(index);
         return (
-          <Pressable key={sessionItem.name} onPress={() => toggleSession(index)}>
+          <Pressable
+            key={sessionItem.name}
+            onPress={() => toggleSession(index)}
+            accessibilityRole="button"
+            accessibilityLabel={`Séance ${index + 1}, ${sessionItem.name}`}
+            accessibilityState={{ expanded: isExpanded }}
+          >
             <Card style={styles.sessionCard}>
               <Text style={styles.sessionTitle}>
                 Séance {index + 1} — {sessionItem.name}

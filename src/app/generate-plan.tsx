@@ -116,6 +116,9 @@ export default function GeneratePlanScreen() {
                 key={mealType}
                 onPress={() => toggle(dayIndex, mealIndex)}
                 style={[styles.cell, selected[dayIndex][mealIndex] && styles.cellSelected]}
+                accessibilityRole="checkbox"
+                accessibilityLabel={`${MEAL_TYPE_LABELS[mealType]}, ${dayLabel}`}
+                accessibilityState={{ checked: selected[dayIndex][mealIndex] }}
               >
                 <Text style={selected[dayIndex][mealIndex] ? styles.cellLabelSelected : styles.cellLabel}>
                   {MEAL_TYPE_LABELS[mealType]}

@@ -262,7 +262,13 @@ export default function OnboardingScreen() {
 
       <View style={styles.footer}>
         {step > 0 && (
-          <Pressable onPress={handleBack} style={styles.backLink}>
+          <Pressable
+            onPress={handleBack}
+            style={styles.backLink}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Retour à l'étape précédente"
+          >
             <Text style={styles.backLinkText}>← Retour</Text>
           </Pressable>
         )}

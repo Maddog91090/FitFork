@@ -124,6 +124,8 @@ export default function PlanScreen() {
                   <View style={styles.entryRow}>
                     <Pressable
                       style={styles.entryInfo}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${MEAL_TYPE_LABELS[entry.mealType]} : ${recipe ? recipe.name : entry.recipeId}, voir la recette`}
                       onPress={() =>
                         router.push({
                           pathname: '/recipe/[id]',
@@ -137,8 +139,13 @@ export default function PlanScreen() {
                       </Text>
                     </Pressable>
                     <Pressable
+                      style={styles.swapButton}
+                      hitSlop={8}
                       onPress={() => handleSwap(entry.id, entry.mealType, entry.recipeId)}
                       disabled={swappingId === entry.id}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Échanger ${recipe ? recipe.name : entry.recipeId} contre une autre recette`}
+                      accessibilityState={{ busy: swappingId === entry.id }}
                     >
                       <Text style={styles.swapHint}>{swappingId === entry.id ? '...' : 'Échanger'}</Text>
                     </Pressable>
@@ -176,7 +183,12 @@ const styles = StyleSheet.create({
   entryInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   mealTypeLabel: { width: 80, color: colors.textSecondary, fontSize: 11 },
   recipeName: { flex: 1, color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
-  swapHint: { color: colors.accentRed, marginLeft: spacing.md, fontSize: 12, fontWeight: '700' },
+  swapButton: {
+    marginLeft: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+  },
+  swapHint: { color: colors.accentRed, fontSize: 12, fontWeight: '700' },
   error: { color: colors.error, marginBottom: spacing.md },
   emptyIcon: { fontSize: 32 },
 });
