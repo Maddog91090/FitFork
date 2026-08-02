@@ -4,7 +4,7 @@ import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { type ThemeColors } from '../../theme/tokens';
 import { useColors } from '../../theme/useColors';
 
-const WIDE_BREAKPOINT = 700;
+export const WIDE_BREAKPOINT = 700;
 const WIDE_CONTENT_MAX_WIDTH = 600;
 
 type ScreenProps = {

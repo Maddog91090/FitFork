@@ -4,6 +4,10 @@ const light = {
   textPrimary: '#1E1B18',
   textSecondary: '#6E6860',
   accentRed: '#DC2626',
+  // A muted tonal wash of accentRed -- still "the one accent", just at low opacity, for
+  // selected-state backgrounds (e.g. the tablet nav rail's active item) where a solid fill
+  // would fight with red text/icons sitting on top of it.
+  accentRedTint: 'rgba(220, 38, 38, 0.12)',
   divider: '#F0ECE3',
   error: '#DC2626',
   onAccent: '#FFFFFF',
@@ -18,6 +22,7 @@ const dark = {
   // (white label) and standalone accent/error text against a near-black surface --
   // #DC2626 (the light-theme red) is too dark to pass text contrast on dark backgrounds.
   accentRed: '#FF453A',
+  accentRedTint: 'rgba(255, 69, 58, 0.18)',
   divider: '#332E26',
   error: '#FF453A',
   onAccent: '#FFFFFF',

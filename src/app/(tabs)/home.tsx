@@ -77,19 +77,19 @@ export default function HomeScreen() {
         <Card style={styles.macroCard}>
           <Text style={styles.sectionLabel}>Objectifs du jour</Text>
           <View style={styles.macroRow}>
-            <View style={styles.macroItem}>
+            <View style={styles.macroItem} accessible accessibilityLabel={`${macros.calories} kilocalories`}>
               <Text style={styles.macroValue}>{macros.calories}</Text>
               <Text style={styles.macroLabel}>kcal</Text>
             </View>
-            <View style={styles.macroItem}>
+            <View style={styles.macroItem} accessible accessibilityLabel={`${macros.proteinG} grammes de protéines`}>
               <Text style={[styles.macroValue, styles.macroValueAccent]}>{macros.proteinG}g</Text>
               <Text style={styles.macroLabel}>Prot</Text>
             </View>
-            <View style={styles.macroItem}>
+            <View style={styles.macroItem} accessible accessibilityLabel={`${macros.fatG} grammes de lipides`}>
               <Text style={styles.macroValue}>{macros.fatG}g</Text>
               <Text style={styles.macroLabel}>Lip</Text>
             </View>
-            <View style={styles.macroItem}>
+            <View style={styles.macroItem} accessible accessibilityLabel={`${macros.carbsG} grammes de glucides`}>
               <Text style={styles.macroValue}>{macros.carbsG}g</Text>
               <Text style={styles.macroLabel}>Gluc</Text>
             </View>
