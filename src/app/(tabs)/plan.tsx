@@ -1,13 +1,18 @@
-import { useCallback, useEffect, useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, Pressable, ActivityIndicator, ScrollView, Platform, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getCurrentPlan, updatePlanEntry, fetchRecipes, type Recipe, type SavedPlan } from '../../lib/mealPlanData';
 import { pickReplacementRecipe, MEAL_TYPE_RATIOS, clampPortionMultiplier, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { colors, spacing } from '../../theme/tokens';
+import { Screen } from '../../components/ui/Screen';
+import { StaggerItem } from '../../components/ui/StaggerItem';
+import { spacing, type ThemeColors } from '../../theme/tokens';
+import { typography } from '../../theme/typography';
+import { useColors } from '../../theme/useColors';
 
+const isAndroid = Platform.OS === 'android';
 const DAY_LABELS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
   breakfast: 'Petit-déj',
@@ -23,10 +28,20 @@ export default function PlanScreen() {
   const [checking, setChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [swappingId, setSwappingId] = useState<string | null>(null);
+  const hasLoadedOnce = useRef(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const hasEnteredRef = useRef(false);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const shouldAnimateEntrance = !hasEnteredRef.current;
+
+  useEffect(() => {
+    if (plan) hasEnteredRef.current = true;
+  });
 
   const load = useCallback(async () => {
     if (!session) return;
-    setChecking(true);
+    if (!hasLoadedOnce.current) setChecking(true);
     setError(null);
     try {
       const [currentPlan, allRecipes] = await Promise.all([getCurrentPlan(session.user.id), fetchRecipes()]);
@@ -36,6 +51,7 @@ export default function PlanScreen() {
       setError(err instanceof Error ? err.message : 'Erreur de chargement du plan.');
     } finally {
       setChecking(false);
+      hasLoadedOnce.current = true;
     }
   }, [session]);
 
@@ -69,6 +85,7 @@ export default function PlanScreen() {
       const replacement = pickReplacementRecipe(mealType, currentRecipeId, recipeOptions);
       if (!replacement) {
         setError('Aucune autre recette disponible pour ce repas.');
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
         return;
       }
 
@@ -76,9 +93,19 @@ export default function PlanScreen() {
       const newMultiplier = clampPortionMultiplier(slotTarget / replacement.baseCalories);
 
       await updatePlanEntry(entryId, replacement.id, newMultiplier);
-      await load();
+      setPlan((prev) =>
+        prev
+          ? {
+              ...prev,
+              entries: prev.entries.map((e) =>
+                e.id === entryId ? { ...e, recipeId: replacement.id, portionMultiplier: newMultiplier } : e
+              ),
+            }
+          : prev
+      );
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de l\'échange.');
+      setError(err instanceof Error ? err.message : "Erreur lors de l'échange.");
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
     } finally {
       setSwappingId(null);
     }
@@ -86,15 +113,15 @@ export default function PlanScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={styles.centered}>
+      <Screen edges={['top']} style={styles.centered}>
         <ActivityIndicator color={colors.accentRed} />
-      </View>
+      </Screen>
     );
   }
 
   if (!plan || plan.entries.length === 0) {
     return (
-      <View style={styles.centered}>
+      <Screen edges={['top']} style={styles.centered}>
         <EmptyState
           icon={<Text style={styles.emptyIcon}>📋</Text>}
           title="Aucun plan pour l'instant"
@@ -102,19 +129,20 @@ export default function PlanScreen() {
           actionLabel="Générer un plan"
           onAction={() => router.push('/generate-plan')}
         />
-      </View>
+      </Screen>
     );
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      {error && <Text style={styles.error}>{error}</Text>}
+    <Screen edges={['top']}>
+      <ScrollView ref={scrollRef} style={styles.scroll} contentContainerStyle={styles.container}>
+        {error && <Text style={styles.error}>{error}</Text>}
       {DAY_LABELS.map((dayLabel, dayIndex) => {
         const dayEntries = plan.entries.filter((e) => e.dayIndex === dayIndex);
         if (dayEntries.length === 0) return null;
         return (
-          <View key={dayLabel} style={styles.dayBlock}>
-            <Text style={styles.dayLabel}>{dayLabel}</Text>
+          <StaggerItem key={dayLabel} index={dayIndex} enabled={shouldAnimateEntrance} style={styles.dayBlock}>
+            <Text style={styles.dayLabel} accessibilityRole="header">{dayLabel}</Text>
             {dayEntries.map((entry) => {
               const recipe = recipeById.get(entry.recipeId);
               return (
@@ -122,6 +150,9 @@ export default function PlanScreen() {
                   <View style={styles.entryRow}>
                     <Pressable
                       style={styles.entryInfo}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${MEAL_TYPE_LABELS[entry.mealType]} : ${recipe ? recipe.name : entry.recipeId}, voir la recette`}
+                      android_ripple={{ color: colors.divider }}
                       onPress={() =>
                         router.push({
                           pathname: '/recipe/[id]',
@@ -135,46 +166,70 @@ export default function PlanScreen() {
                       </Text>
                     </Pressable>
                     <Pressable
+                      style={styles.swapButton}
+                      hitSlop={8}
+                      android_ripple={{ color: colors.divider }}
                       onPress={() => handleSwap(entry.id, entry.mealType, entry.recipeId)}
                       disabled={swappingId === entry.id}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Échanger ${recipe ? recipe.name : entry.recipeId} contre une autre recette`}
+                      accessibilityState={{ busy: swappingId === entry.id }}
                     >
-                      <Text style={styles.swapHint}>{swappingId === entry.id ? '...' : 'Échanger'}</Text>
+                      {swappingId === entry.id ? (
+                        <ActivityIndicator size="small" color={colors.accentRed} />
+                      ) : (
+                        <Text style={styles.swapHint}>Échanger</Text>
+                      )}
                     </Pressable>
                   </View>
                 </Card>
               );
             })}
-          </View>
+          </StaggerItem>
         );
       })}
-    </ScrollView>
+      </ScrollView>
+    </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.bgBase,
-    padding: spacing.lg,
-  },
-  container: { padding: spacing.lg },
-  dayBlock: { marginBottom: spacing.lg },
-  dayLabel: {
-    fontSize: 11,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    fontWeight: '700',
-    marginBottom: spacing.sm,
-  },
-  entryCard: { marginBottom: spacing.sm },
-  entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  entryInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  mealTypeLabel: { width: 80, color: colors.textSecondary, fontSize: 11 },
-  recipeName: { flex: 1, color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
-  swapHint: { color: colors.accentRed, marginLeft: spacing.md, fontSize: 12, fontWeight: '700' },
-  error: { color: colors.error, marginBottom: spacing.md },
-  emptyIcon: { fontSize: 32 },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    scroll: { flex: 1 },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: spacing.lg,
+    },
+    container: { padding: spacing.lg },
+    dayBlock: { marginBottom: spacing.lg },
+    dayLabel: {
+      ...typography.label,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+      fontWeight: '700',
+      marginBottom: spacing.sm,
+    },
+    entryCard: { marginBottom: spacing.sm, overflow: isAndroid ? 'hidden' : 'visible' },
+    entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    entryInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+      minHeight: 44,
+    },
+    mealTypeLabel: { ...typography.label, width: 80, color: colors.textSecondary },
+    recipeName: { ...typography.body, flex: 1, color: colors.textPrimary, fontWeight: '600' },
+    swapButton: {
+      marginLeft: spacing.md,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.sm,
+      // Reserves the "Échanger" text's width so swapping to the spinner doesn't shift the row.
+      minWidth: 70,
+      alignItems: 'center',
+    },
+    swapHint: { ...typography.caption, color: colors.accentRed, fontWeight: '700' },
+    error: { color: colors.error, marginBottom: spacing.md },
+    emptyIcon: { fontSize: 32 },
+  });

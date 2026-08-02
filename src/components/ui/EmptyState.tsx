@@ -1,7 +1,10 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Card } from './Card';
 import { Button } from './Button';
-import { colors, spacing } from '../../theme/tokens';
+import { spacing, type ThemeColors } from '../../theme/tokens';
+import { typography } from '../../theme/typography';
+import { useColors } from '../../theme/useColors';
 
 type EmptyStateProps = {
   icon: React.ReactNode;
@@ -12,6 +15,9 @@ type EmptyStateProps = {
 };
 
 export function EmptyState({ icon, title, message, actionLabel, onAction }: EmptyStateProps) {
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <Card style={styles.card}>
       <View style={styles.icon}>{icon}</View>
@@ -22,25 +28,30 @@ export function EmptyState({ icon, title, message, actionLabel, onAction }: Empt
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    alignItems: 'center',
-    paddingVertical: spacing.xl,
-  },
-  icon: {
-    marginBottom: spacing.md,
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-    textAlign: 'center',
-  },
-  message: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
-  },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    card: {
+      alignItems: 'center',
+      paddingVertical: spacing.xl,
+    },
+    icon: {
+      marginBottom: spacing.md,
+    },
+    title: {
+      fontSize: typography.body.fontSize,
+      lineHeight: typography.body.lineHeight,
+      letterSpacing: typography.body.letterSpacing,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      marginBottom: spacing.xs,
+      textAlign: 'center',
+    },
+    message: {
+      fontSize: typography.caption.fontSize,
+      lineHeight: typography.caption.lineHeight,
+      letterSpacing: typography.caption.letterSpacing,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginBottom: spacing.lg,
+    },
+  });

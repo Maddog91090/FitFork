@@ -1,5 +1,15 @@
-import { Pressable, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { colors, radius, shadow, spacing } from '../../theme/tokens';
+import { useMemo } from 'react';
+import { Pressable, Text, ActivityIndicator, StyleSheet, Platform } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { radius, shadow, spacing, type ThemeColors } from '../../theme/tokens';
+import { typography } from '../../theme/typography';
+import { motion, useReducedMotion } from '../../theme/motion';
+import { useColors } from '../../theme/useColors';
+
+const isAndroid = Platform.OS === 'android';
+// M3 filled/outlined buttons are fully rounded ("pill") at their natural height, not the
+// iOS-style rounded-rect radius.md; 24 matches this component's ~48pt computed height.
+const ANDROID_BUTTON_RADIUS = 24;
 
 type ButtonVariant = 'primary' | 'secondary';
 
@@ -13,65 +23,113 @@ type ButtonProps = {
 
 export function Button({ title, onPress, variant = 'primary', disabled = false, loading = false }: ButtonProps) {
   const isDisabled = disabled || loading;
+  const reduceMotion = useReducedMotion();
+  const scale = useSharedValue(1);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    // Reanimated's SharedValue.value is an intentional mutable escape hatch (like ref.current);
+    // React Compiler's static analysis doesn't recognize it and flags this as an illegal mutation.
+    // eslint-disable-next-line react-hooks/immutability
+    scale.value = reduceMotion ? 0.97 : withSpring(0.97, motion.spring.press);
+  };
+
+  const handlePressOut = () => {
+    // eslint-disable-next-line react-hooks/immutability
+    scale.value = reduceMotion ? 1 : withSpring(1, motion.spring.press);
+  };
+
   return (
-    <Pressable
-      onPress={onPress}
-      disabled={isDisabled}
-      style={[
-        styles.base,
-        variant === 'primary' ? styles.primary : styles.secondary,
-        isDisabled && styles.disabled,
-      ]}
-    >
-      {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#FFFFFF' : colors.textPrimary} />
-      ) : (
-        <Text
-          style={[
-            styles.label,
-            variant === 'primary' ? styles.labelPrimary : styles.labelSecondary,
-            isDisabled && styles.labelDisabled,
-          ]}
-        >
-          {title}
-        </Text>
-      )}
-    </Pressable>
+    <Animated.View style={animatedStyle}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={isDisabled}
+        accessibilityRole="button"
+        accessibilityLabel={title}
+        accessibilityState={{ disabled: isDisabled, busy: loading }}
+        android_ripple={{
+          color: variant === 'primary' ? 'rgba(255,255,255,0.25)' : colors.accentRedTint,
+        }}
+        style={[
+          styles.base,
+          variant === 'primary' ? styles.primary : styles.secondary,
+          isDisabled && styles.disabled,
+        ]}
+      >
+        {loading ? (
+          <ActivityIndicator
+            color={variant === 'primary' ? colors.onAccent : isAndroid ? colors.accentRed : colors.textPrimary}
+          />
+        ) : (
+          <Text
+            style={[
+              styles.label,
+              variant === 'primary' ? styles.labelPrimary : styles.labelSecondary,
+              isDisabled && styles.labelDisabled,
+            ]}
+          >
+            {title}
+          </Text>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    borderRadius: radius.md,
-    paddingVertical: spacing.md + 2,
-    paddingHorizontal: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primary: {
-    backgroundColor: colors.accentRed,
-    ...shadow.button,
-  },
-  secondary: {
-    backgroundColor: colors.bgSurface,
-    ...shadow.card,
-  },
-  disabled: {
-    backgroundColor: colors.bgSurface,
-    shadowOpacity: 0.04,
-    elevation: 0,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  labelPrimary: {
-    color: '#FFFFFF',
-  },
-  labelSecondary: {
-    color: colors.textPrimary,
-  },
-  labelDisabled: {
-    color: colors.textSecondary,
-  },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    base: {
+      borderRadius: isAndroid ? ANDROID_BUTTON_RADIUS : radius.md,
+      minHeight: 44,
+      paddingVertical: spacing.md + 2,
+      paddingHorizontal: spacing.lg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: isAndroid ? 'hidden' : 'visible',
+    },
+    primary: {
+      backgroundColor: colors.accentRed,
+      // M3 filled buttons carry almost no shadow -- emphasis comes from the fill color,
+      // not an iOS-style ambient glow.
+      ...(isAndroid ? { elevation: 1 } : shadow.button),
+    },
+    secondary: isAndroid
+      ? {
+          // M3 outlined button: transparent fill, a hairline border, accent-colored label.
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          borderColor: colors.outline,
+        }
+      : {
+          backgroundColor: colors.bgSurface,
+          ...shadow.card,
+        },
+    disabled: {
+      backgroundColor: isAndroid ? 'transparent' : colors.bgSurface,
+      borderColor: isAndroid ? colors.divider : undefined,
+      shadowOpacity: 0.04,
+      elevation: 0,
+    },
+    label: {
+      fontSize: typography.body.fontSize,
+      lineHeight: typography.body.lineHeight,
+      letterSpacing: typography.body.letterSpacing,
+      fontWeight: '700',
+    },
+    labelPrimary: {
+      color: colors.onAccent,
+    },
+    labelSecondary: {
+      color: isAndroid ? colors.accentRed : colors.textPrimary,
+    },
+    labelDisabled: {
+      color: colors.textSecondary,
+    },
+  });

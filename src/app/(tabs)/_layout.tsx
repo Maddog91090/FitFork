@@ -1,16 +1,33 @@
+import { Platform, StyleSheet, useWindowDimensions } from 'react-native';
 import { Tabs } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { KgIcon } from '../../components/icons/KgIcon';
-import { colors } from '../../theme/tokens';
+import { GlassSurface } from '../../components/ui/GlassSurface';
+import { WIDE_BREAKPOINT } from '../../components/ui/Screen';
+import { useColors } from '../../theme/useColors';
 
 export default function TabsLayout() {
+  const colors = useColors();
+  const { width } = useWindowDimensions();
+  const isWide = width >= WIDE_BREAKPOINT;
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.accentRed,
         tabBarInactiveTintColor: colors.textSecondary,
-        tabBarStyle: { backgroundColor: colors.bgSurface, borderTopColor: colors.divider },
+        // Without this the platform default (iOS system blue) shows through as the
+        // selected-item pill background, clashing with the "One Accent Rule" (vital red only).
+        tabBarActiveBackgroundColor: colors.accentRedTint,
+        // Tablet/expanded-width gets a nav rail on the left instead of a stretched phone
+        // bottom bar; Android gets the real Material 3 tab bar treatment (ripple, pill
+        // indicator) instead of the iOS-shaped default.
+        tabBarPosition: isWide ? 'left' : 'bottom',
+        tabBarVariant: Platform.OS === 'android' ? 'material' : 'uikit',
+        tabBarStyle: isWide
+          ? { borderTopColor: 'transparent', borderRightColor: colors.divider }
+          : { borderTopColor: colors.divider },
+        tabBarBackground: () => <GlassSurface style={StyleSheet.absoluteFill} />,
       }}
     >
       <Tabs.Screen
@@ -53,7 +70,9 @@ export default function TabsLayout() {
         name="weight-log"
         options={{
           title: 'Poids',
-          tabBarIcon: ({ color, focused }) => <KgIcon color={color} focused={focused} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'scale' : 'scale-outline'} size={22} color={color} />
+          ),
         }}
       />
     </Tabs>

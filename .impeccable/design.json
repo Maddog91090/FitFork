@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-02T00:00:00Z",
+  "title": "Design System: FitPro",
+  "note": "React Native / Expo (adaptive: iOS + Android) project. No live-mode browser panel applies here, so component entries are omitted rather than fabricating HTML/CSS snippets that would never render against this codebase. Tonal ramps are omitted for the same reason: nothing consumes them.",
+  "extensions": {
+    "colorMeta": {
+      "vital-red": { "role": "primary", "displayName": "Vital Red", "canonical": "#DC2626" },
+      "warm-fog": { "role": "neutral", "displayName": "Warm Fog", "canonical": "#F7F5F2" },
+      "pure-white": { "role": "neutral", "displayName": "Pure White", "canonical": "#FFFFFF" },
+      "warm-ink": { "role": "neutral", "displayName": "Warm Ink", "canonical": "#1E1B18" },
+      "soft-taupe": { "role": "neutral", "displayName": "Soft Taupe", "canonical": "#9A958D" },
+      "hairline-warm": { "role": "neutral", "displayName": "Hairline Warm", "canonical": "#F0ECE3" }
+    },
+    "typographyMeta": {
+      "label": { "displayName": "Label", "purpose": "Uppercase small-caps field labels and chrome, e.g. TextField's label." },
+      "caption": { "displayName": "Caption", "purpose": "Secondary/supporting copy, e.g. EmptyState message text, list row metadata." },
+      "body": { "displayName": "Body", "purpose": "Default readable text: button labels, input text, pill labels, most screen paragraph text." },
+      "subtitle": { "displayName": "Subtitle", "purpose": "Emphasis text between body and title, e.g. home's secondary macro numbers (protein/fat/carbs), the brand wordmark." },
+      "title": { "displayName": "Title", "purpose": "Screen and section titles across every screen, negative tracking." },
+      "display": { "displayName": "Display", "purpose": "One hero numeral per screen that should be unmistakable at a glance, e.g. home's calorie target. Not a general-purpose large-text step." }
+    },
+    "shadows": [
+      { "name": "card", "value": "shadowColor: #000000, shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: {0, 2}, elevation: 2", "purpose": "Default resting shadow for every solid surface (cards, buttons, fields, pills)." },
+      { "name": "button-primary", "value": "shadowColor: #DC2626, shadowOpacity: 0.25, shadowRadius: 14, shadowOffset: {0, 4}, elevation: 3", "purpose": "Colored glow under the primary button and selected ChoiceGroup pill." }
+    ],
+    "motion": [
+      { "name": "press", "value": "damping 1.0, response 0.15s (stiffness 1754.6, damping 83.78, mass 1)", "purpose": "Press-down feedback on Button and ChoiceGroup pills. Near-instant, no overshoot." },
+      { "name": "settle", "value": "damping 1.0, response 0.3s (stiffness 438.65, damping 41.89, mass 1)", "purpose": "Focus and selection state transitions on TextField and ChoiceGroup. Critically damped, slightly slower settle." }
+    ]
+  },
+  "narrative": {
+    "northStar": "Warm Glass",
+    "overview": "FitPro's visual system sits at the tension between two things: the warmth of a coach who's rooting for you, and the restraint of Apple-grade native materials. It borrows its material vocabulary from Apple Fitness and Apple Health -- soft ambient shadows at rest, real native glass (Liquid Glass via expo-glass-effect) for floating chrome, spring-based motion that responds to touch instead of playing a fixed animation -- but it never lets that craft read as cold or clinical. The palette is warm off-whites and a single vital red, not slate grays and blue gradients; type never shouts a calorie count at you. The system explicitly rejects the loud gamification of free fitness apps -- streak badges, aggressive notification chrome, flashy stat walls -- and the opposite failure mode of a dense manual-logging tool where every screen is a table to fill in. This app plans for the user; the interface should feel like it's handing you a finished week, not asking you to build one.",
+    "keyCharacteristics": [
+      "One committed accent (vital red) against warm neutrals -- never a full palette of competing colors.",
+      "Real native materials (glass, springs) reserved for chrome and moments that earn them, not decoration everywhere.",
+      "Numbers (calories, macros, weight) are present but never the loudest thing on any screen.",
+      "Every interactive surface responds on press-down, not on release -- the interface feels alive under the finger."
+    ],
+    "rules": [
+      { "name": "The One Accent Rule", "body": "Vital Red is the only saturated color in the system. If a second saturated color feels tempting for a new state (success, warning), reach for weight, motion, or an icon before reaching for a second hue.", "section": "colors" },
+      { "name": "The Size-Specific Tracking Rule", "body": "No fixed letterSpacing value is reused across sizes. Tracking goes negative as text grows past body (Subtitle, Title) and positive as it shrinks below body (Caption, Label) -- matching Apple's own optical-sizing discipline rather than applying one tracking value everywhere.", "section": "typography" },
+      { "name": "The Earned Glass Rule", "body": "Real glass material is reserved for chrome that genuinely floats over other content (the tab bar) or surfaces that opt in explicitly (Card variant=\"glass\"). It is never the default surface treatment -- most cards, buttons, and fields are flat Pure White with a Card shadow, exactly as before glass was introduced.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use Vital Red (#DC2626) as the only saturated color on any screen -- it should always mean \"this is the action\" or \"this is selected.\"",
+      "Do start every press interaction on press-down (onPressIn), never wait for release to show feedback.",
+      "Do animate state changes (focus, selection) with the settle spring instead of an instant style swap.",
+      "Do fall back to a flat Pure White + Card shadow surface wherever real glass material isn't available -- never ship a half-broken translucent look.",
+      "Do respect the OS reduced-motion and reduced-transparency settings on every animated or glass surface."
+    ],
+    "donts": [
+      "Don't add a second saturated accent color alongside Vital Red -- reach for weight, motion, or an icon instead.",
+      "Don't use streak badges, aggressive push-style in-app banners, or flashy stat walls.",
+      "Don't build dense manual-logging tables in the MyFitnessPal mold -- the app plans for the user.",
+      "Don't add a border that only appears on focus/selection and shifts layout.",
+      "Don't use real glass material as a decorative default on every surface -- it's reserved for floating chrome and explicit opt-in."
+    ]
+  }
+}

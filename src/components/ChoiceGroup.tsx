@@ -1,5 +1,17 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors, radius, shadow, spacing } from '../theme/tokens';
+import { useEffect } from 'react';
+import { View, Pressable, StyleSheet, Platform } from 'react-native';
+import Animated, {
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
+import { radius, shadow, spacing } from '../theme/tokens';
+import { typography } from '../theme/typography';
+import { motion, useReducedMotion } from '../theme/motion';
+import { useColors } from '../theme/useColors';
+
+const isAndroid = Platform.OS === 'android';
 
 export type ChoiceOption<T extends string> = { value: T; label: string };
 
@@ -11,36 +23,109 @@ type ChoiceGroupProps<T extends string> = {
 
 export function ChoiceGroup<T extends string>({ options, value, onChange }: ChoiceGroupProps<T>) {
   return (
-    <View style={styles.row}>
+    <View style={styles.row} accessibilityRole="radiogroup">
       {options.map((option) => (
-        <Pressable
+        <Pill
           key={option.value}
+          label={option.label}
+          selected={value === option.value}
           onPress={() => onChange(option.value)}
-          style={[styles.pill, value === option.value && styles.pillSelected]}
-        >
-          <Text style={value === option.value ? styles.labelSelected : styles.label}>
-            {option.label}
-          </Text>
-        </Pressable>
+        />
       ))}
     </View>
   );
 }
 
+type PillProps = {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+};
+
+function Pill({ label, selected, onPress }: PillProps) {
+  const reduceMotion = useReducedMotion();
+  const scale = useSharedValue(1);
+  const selectedProgress = useSharedValue(selected ? 1 : 0);
+  const colors = useColors();
+
+  useEffect(() => {
+    const target = selected ? 1 : 0;
+    selectedProgress.value = reduceMotion ? target : withSpring(target, motion.spring.settle);
+  }, [selected, reduceMotion, selectedProgress]);
+
+  const handlePressIn = () => {
+    scale.value = reduceMotion ? 0.97 : withSpring(0.97, motion.spring.press);
+  };
+
+  const handlePressOut = () => {
+    scale.value = reduceMotion ? 1 : withSpring(1, motion.spring.press);
+  };
+
+  const animatedPillStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      selectedProgress.value,
+      [0, 1],
+      [isAndroid ? colors.surfaceVariant : colors.bgSurface, colors.accentRed]
+    );
+    if (isAndroid) {
+      // M3 chip: flat at rest, a hairline border instead of an iOS-style ambient shadow.
+      return {
+        transform: [{ scale: scale.value }],
+        backgroundColor,
+        borderColor: interpolateColor(selectedProgress.value, [0, 1], [colors.outline, colors.accentRed]),
+      };
+    }
+    return {
+      transform: [{ scale: scale.value }],
+      backgroundColor,
+      shadowColor: interpolateColor(selectedProgress.value, [0, 1], [shadow.card.shadowColor, colors.accentRed]),
+      shadowOpacity: shadow.card.shadowOpacity + (0.25 - shadow.card.shadowOpacity) * selectedProgress.value,
+    };
+  });
+
+  const animatedLabelStyle = useAnimatedStyle(() => ({
+    color: interpolateColor(selectedProgress.value, [0, 1], [colors.textPrimary, colors.onAccent]),
+  }));
+
+  return (
+    <Pressable
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      accessibilityRole="radio"
+      accessibilityLabel={label}
+      accessibilityState={{ selected }}
+      android_ripple={{ color: colors.accentRedTint }}
+      style={styles.pillTouchable}
+    >
+      <Animated.View style={[styles.pill, animatedPillStyle]}>
+        <Animated.Text style={[styles.label, animatedLabelStyle]}>{label}</Animated.Text>
+      </Animated.View>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
+  pillTouchable: {
+    borderRadius: radius.pill,
+    overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
+  },
   pill: {
     borderRadius: radius.pill,
+    minHeight: 44,
     paddingVertical: spacing.sm + 2,
     paddingHorizontal: spacing.md + 2,
-    backgroundColor: colors.bgSurface,
-    ...shadow.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...(isAndroid
+      ? { borderWidth: 1 }
+      : { elevation: shadow.card.elevation, shadowOffset: shadow.card.shadowOffset, shadowRadius: shadow.card.shadowRadius }),
   },
-  pillSelected: {
-    backgroundColor: colors.accentRed,
-    shadowColor: colors.accentRed,
-    shadowOpacity: 0.25,
+  label: {
+    fontSize: typography.body.fontSize,
+    lineHeight: typography.body.lineHeight,
+    letterSpacing: typography.body.letterSpacing,
+    fontWeight: '600',
   },
-  label: { color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
-  labelSelected: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
 });

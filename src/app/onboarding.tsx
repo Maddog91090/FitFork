@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { upsertProfile, upsertTrainingProfile } from '../lib/profile';
@@ -7,7 +7,10 @@ import type { ExperienceLevel, Equipment } from '../lib/profile';
 import { ChoiceGroup } from '../components/ChoiceGroup';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
-import { colors, spacing } from '../theme/tokens';
+import { Screen } from '../components/ui/Screen';
+import { spacing, type ThemeColors } from '../theme/tokens';
+import { typography } from '../theme/typography';
+import { useColors } from '../theme/useColors';
 import type { Sex, ActivityLevel, Goal } from '../lib/nutrition';
 
 const SEX_OPTIONS: { value: Sex; label: string }[] = [
@@ -56,14 +59,18 @@ export type OnboardingFields = {
   equipment: Equipment | null;
 };
 
+function parseDecimal(value: string): number {
+  return Number(value.trim().replace(',', '.'));
+}
+
 export function validateStep(step: number, fields: OnboardingFields): string | null {
   if (step === 0) {
     if (!fields.sex) return 'Merci de choisir un sexe.';
     const ageNum = Number(fields.age);
     if (!Number.isFinite(ageNum) || ageNum <= 0 || ageNum >= 120) return 'Âge invalide.';
-    const heightNum = Number(fields.heightCm);
+    const heightNum = parseDecimal(fields.heightCm);
     if (!Number.isFinite(heightNum) || heightNum <= 0) return 'Taille invalide.';
-    const weightNum = Number(fields.weightKg);
+    const weightNum = parseDecimal(fields.weightKg);
     if (!Number.isFinite(weightNum) || weightNum <= 0) return 'Poids invalide.';
     return null;
   }
@@ -98,6 +105,8 @@ export default function OnboardingScreen() {
   const [equipment, setEquipment] = useState<Equipment | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   useEffect(() => {
     if (!loading && !session) {
@@ -144,8 +153,8 @@ export default function OnboardingScreen() {
       await upsertProfile(session.user.id, {
         sex: sex!,
         age: Number(age),
-        heightCm: Number(heightCm),
-        weightKg: Number(weightKg),
+        heightCm: parseDecimal(heightCm),
+        weightKg: parseDecimal(weightKg),
         activityLevel: activityLevel!,
         goal: goal!,
       });
@@ -167,7 +176,8 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <View style={styles.screen}>
+    <Screen>
+      <KeyboardAvoidingView style={styles.avoiding} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={styles.header}>
         <View style={styles.progressRow}>
           {Array.from({ length: TOTAL_STEPS }).map((_, index) => (
@@ -177,7 +187,7 @@ export default function OnboardingScreen() {
         <Text style={styles.stepCounter}>
           {step < TOTAL_STEPS - 1 ? `ÉTAPE ${step + 1}/${TOTAL_STEPS}` : 'RÉCAPITULATIF'}
         </Text>
-        <Text style={styles.title}>{STEP_TITLES[step]}</Text>
+        <Text style={styles.title} accessibilityRole="header">{STEP_TITLES[step]}</Text>
       </View>
 
       <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
@@ -190,14 +200,14 @@ export default function OnboardingScreen() {
               label="Taille (cm)"
               value={heightCm}
               onChangeText={setHeightCm}
-              keyboardType="numeric"
+              keyboardType="decimal-pad"
               testID="height-input"
             />
             <TextField
               label="Poids (kg)"
               value={weightKg}
               onChangeText={setWeightKg}
-              keyboardType="numeric"
+              keyboardType="decimal-pad"
               testID="weight-input"
             />
           </>
@@ -205,7 +215,7 @@ export default function OnboardingScreen() {
 
         {step === 1 && (
           <>
-            <Text style={styles.label}>Niveau d'activité quotidienne</Text>
+            <Text style={styles.label}>Niveau d&apos;activité quotidienne</Text>
             <ChoiceGroup options={ACTIVITY_OPTIONS} value={activityLevel} onChange={setActivityLevel} />
             <Text style={styles.label}>Objectif</Text>
             <ChoiceGroup options={GOAL_OPTIONS} value={goal} onChange={setGoal} />
@@ -261,7 +271,14 @@ export default function OnboardingScreen() {
 
       <View style={styles.footer}>
         {step > 0 && (
-          <Pressable onPress={handleBack} style={styles.backLink}>
+          <Pressable
+            onPress={handleBack}
+            style={styles.backLink}
+            hitSlop={8}
+            android_ripple={{ color: colors.divider }}
+            accessibilityRole="button"
+            accessibilityLabel="Retour à l'étape précédente"
+          >
             <Text style={styles.backLinkText}>← Retour</Text>
           </Pressable>
         )}
@@ -271,11 +288,14 @@ export default function OnboardingScreen() {
           <Button title="Valider" onPress={handleSubmit} loading={submitting} />
         )}
       </View>
-    </View>
+      </KeyboardAvoidingView>
+    </Screen>
   );
 }
 
 function RecapRow({ label, value }: { label: string; value: string }) {
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.recapRow}>
       <Text style={styles.recapLabel}>{label}</Text>
@@ -284,43 +304,44 @@ function RecapRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  header: { padding: spacing.lg, paddingBottom: spacing.sm },
-  progressRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
-  segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.divider },
-  segmentDone: { backgroundColor: colors.accentRed },
-  stepCounter: { fontSize: 10, color: colors.textSecondary, fontWeight: '700', marginBottom: spacing.xs },
-  title: { fontSize: 18, fontWeight: '800', color: colors.textPrimary },
-  body: { flex: 1 },
-  bodyContent: { padding: spacing.lg, paddingTop: spacing.sm },
-  label: {
-    fontSize: 11,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    fontWeight: '700',
-    marginBottom: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  error: { color: colors.error, marginTop: spacing.md },
-  footer: { padding: spacing.lg },
-  backLink: { alignSelf: 'flex-start', marginBottom: spacing.md },
-  backLinkText: { color: colors.textSecondary, fontSize: 13, fontWeight: '600' },
-  recapGroup: {
-    fontSize: 11,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    fontWeight: '700',
-    marginTop: spacing.md,
-    marginBottom: spacing.xs,
-  },
-  recapRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
-  },
-  recapLabel: { color: colors.textSecondary, fontSize: 12 },
-  recapValue: { color: colors.textPrimary, fontSize: 12, fontWeight: '600' },
-});
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    avoiding: { flex: 1 },
+    header: { padding: spacing.lg, paddingBottom: spacing.sm },
+    progressRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
+    segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.divider },
+    segmentDone: { backgroundColor: colors.accentRed },
+    stepCounter: { ...typography.label, color: colors.textSecondary, fontWeight: '700', marginBottom: spacing.xs },
+    title: { ...typography.title, fontWeight: '800', color: colors.textPrimary },
+    body: { flex: 1 },
+    bodyContent: { padding: spacing.lg, paddingTop: spacing.sm },
+    label: {
+      ...typography.label,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+      fontWeight: '700',
+      marginBottom: spacing.sm,
+      marginTop: spacing.sm,
+    },
+    error: { color: colors.error, marginTop: spacing.md },
+    footer: { padding: spacing.lg },
+    backLink: { alignSelf: 'flex-start', marginBottom: spacing.md },
+    backLinkText: { ...typography.body, color: colors.textSecondary, fontWeight: '600' },
+    recapGroup: {
+      ...typography.label,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+      fontWeight: '700',
+      marginTop: spacing.md,
+      marginBottom: spacing.xs,
+    },
+    recapRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.divider,
+    },
+    recapLabel: { ...typography.caption, color: colors.textSecondary },
+    recapValue: { ...typography.caption, color: colors.textPrimary, fontWeight: '600' },
+  });

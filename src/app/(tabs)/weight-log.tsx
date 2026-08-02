@@ -1,12 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Text, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import Animated, { interpolateColor, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { logWeight, fetchRecentWeightLogs, type WeightLogEntry } from '../../lib/weightLogData';
 import { TextField } from '../../components/ui/TextField';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { colors, spacing } from '../../theme/tokens';
+import { Screen } from '../../components/ui/Screen';
+import { spacing, type ThemeColors } from '../../theme/tokens';
+import { typography } from '../../theme/typography';
+import { useReducedMotion } from '../../theme/motion';
+import { useColors } from '../../theme/useColors';
 
 export default function WeightLogScreen() {
   const { session, loading } = useAuth();
@@ -15,18 +20,25 @@ export default function WeightLogScreen() {
   const [checking, setChecking] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [justSavedId, setJustSavedId] = useState<string | null>(null);
+  const hasLoadedOnce = useRef(false);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  const load = useCallback(async () => {
-    if (!session) return;
-    setChecking(true);
+  const load = useCallback(async (): Promise<WeightLogEntry[]> => {
+    if (!session) return [];
+    if (!hasLoadedOnce.current) setChecking(true);
     setError(null);
     try {
       const recent = await fetchRecentWeightLogs(session.user.id);
       setLogs(recent);
+      return recent;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur de chargement.');
+      return [];
     } finally {
       setChecking(false);
+      hasLoadedOnce.current = true;
     }
   }, [session]);
 
@@ -44,7 +56,7 @@ export default function WeightLogScreen() {
 
   const handleSubmit = async () => {
     setError(null);
-    const weightNum = Number(weightInput);
+    const weightNum = Number(weightInput.trim().replace(',', '.'));
     if (!Number.isFinite(weightNum) || weightNum <= 0) {
       setError('Poids invalide.');
       return;
@@ -55,7 +67,16 @@ export default function WeightLogScreen() {
     try {
       await logWeight(session.user.id, weightNum);
       setWeightInput('');
-      await load();
+      const refreshed = await load();
+      // Newest entry is refreshed[0] (fetchRecentWeightLogs orders by logged_at desc) --
+      // a quiet, one-time "recorded" confirmation, not a persistent badge.
+      if (refreshed[0]) {
+        const savedId = refreshed[0].id;
+        setJustSavedId(savedId);
+        setTimeout(() => {
+          setJustSavedId((current) => (current === savedId ? null : current));
+        }, 1400);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur lors de l'enregistrement.");
     } finally {
@@ -65,59 +86,111 @@ export default function WeightLogScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={styles.centered}>
+      <Screen edges={['top']} style={styles.centered}>
         <ActivityIndicator color={colors.accentRed} />
-      </View>
+      </Screen>
     );
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Suivi de poids</Text>
-      <TextField label="Poids (kg)" value={weightInput} onChangeText={setWeightInput} keyboardType="numeric" />
-      {error && <Text style={styles.error}>{error}</Text>}
-      <Button title="Enregistrer" onPress={handleSubmit} loading={submitting} />
+    <Screen edges={['top']}>
+      <KeyboardAvoidingView style={styles.avoiding} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+          <Text style={styles.title} accessibilityRole="header">Suivi de poids</Text>
+          <TextField
+            label="Poids (kg)"
+            value={weightInput}
+            onChangeText={(text) => {
+              setWeightInput(text);
+              if (error) setError(null);
+            }}
+            keyboardType="decimal-pad"
+          />
+          {error && <Text style={styles.error}>{error}</Text>}
+          <Button title="Enregistrer" onPress={handleSubmit} loading={submitting} />
 
-      <Text style={styles.historyTitle}>Historique</Text>
-      {logs.length === 0 ? (
-        <Text style={styles.emptyText}>Aucune pesée enregistrée.</Text>
-      ) : (
-        <Card>
-          {logs.map((log, index) => (
-            <View key={log.id} style={[styles.row, index === logs.length - 1 && styles.rowLast]}>
-              <Text style={styles.date}>{log.loggedAt}</Text>
-              <Text style={styles.weight}>{log.weightKg} kg</Text>
-            </View>
-          ))}
-        </Card>
-      )}
-    </ScrollView>
+          <Text style={styles.historyTitle}>Historique</Text>
+          {logs.length === 0 ? (
+            <Text style={styles.emptyText}>Aucune pesée enregistrée.</Text>
+          ) : (
+            <Card>
+              {logs.map((log, index) => (
+                <HistoryRow
+                  key={log.id}
+                  log={log}
+                  isLast={index === logs.length - 1}
+                  justSaved={log.id === justSavedId}
+                  colors={colors}
+                />
+              ))}
+            </Card>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
-  container: { padding: spacing.lg },
-  title: { fontSize: 17, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
-  historyTitle: {
-    fontSize: 11,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    fontWeight: '700',
-    marginTop: spacing.xl,
-    marginBottom: spacing.sm,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm + 1,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
-  },
-  rowLast: { borderBottomWidth: 0 },
-  date: { color: colors.textPrimary, fontSize: 12 },
-  weight: { color: colors.textSecondary, fontSize: 12, fontWeight: '600' },
-  error: { color: colors.error, marginBottom: spacing.md },
-  emptyText: { color: colors.textSecondary, fontSize: 12 },
-});
+type HistoryRowProps = {
+  log: WeightLogEntry;
+  isLast: boolean;
+  justSaved: boolean;
+  colors: ThemeColors;
+};
+
+function HistoryRow({ log, isLast, justSaved, colors }: HistoryRowProps) {
+  const reduceMotion = useReducedMotion();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const highlight = useSharedValue(justSaved && !reduceMotion ? 1 : 0);
+
+  useEffect(() => {
+    if (justSaved && !reduceMotion) {
+      highlight.value = 1;
+      highlight.value = withTiming(0, { duration: 1200 });
+    }
+    // Intentionally ignoring `reduceMotion`/`highlight` here -- this should only react to a
+    // fresh `justSaved` becoming true, not to the decay it itself triggers.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [justSaved]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(highlight.value, [0, 1], ['transparent', colors.accentRedTint]),
+  }));
+
+  return (
+    <Animated.View style={[styles.row, isLast && styles.rowLast, animatedStyle]}>
+      <Text style={styles.date}>{log.loggedAt}</Text>
+      <Text style={styles.weight}>{log.weightKg} kg</Text>
+    </Animated.View>
+  );
+}
+
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    avoiding: { flex: 1 },
+    scroll: { flex: 1 },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    container: { padding: spacing.lg },
+    title: { ...typography.title, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+    historyTitle: {
+      ...typography.label,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+      fontWeight: '700',
+      marginTop: spacing.xl,
+      marginBottom: spacing.sm,
+    },
+    row: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.sm + 1,
+      paddingHorizontal: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.divider,
+    },
+    rowLast: { borderBottomWidth: 0 },
+    date: { ...typography.caption, color: colors.textPrimary },
+    weight: { ...typography.caption, color: colors.textSecondary, fontWeight: '600' },
+    error: { color: colors.error, marginBottom: spacing.md },
+    emptyText: { ...typography.caption, color: colors.textSecondary },
+  });
