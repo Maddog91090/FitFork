@@ -95,7 +95,7 @@ export default function RecipeDetailScreen() {
         </Text>
       )}
 
-      <Text style={styles.sectionTitle}>Ingrédients</Text>
+      <Text style={styles.sectionTitle} accessibilityRole="header">Ingrédients</Text>
       <Card style={styles.card}>
         {ingredients.map((ing, index) => (
           <Text key={index} style={styles.ingredientLine}>
@@ -105,7 +105,7 @@ export default function RecipeDetailScreen() {
         ))}
       </Card>
 
-      <Text style={styles.sectionTitle}>Préparation</Text>
+      <Text style={styles.sectionTitle} accessibilityRole="header">Préparation</Text>
       {instructions.map((step, index) => (
         <View key={index} style={styles.stepRow}>
           <View style={styles.stepBadge}>

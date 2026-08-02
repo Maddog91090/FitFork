@@ -11,6 +11,7 @@ import { spacing, type ThemeColors } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
 import { useColors } from '../../theme/useColors';
 
+const isAndroid = Platform.OS === 'android';
 const DAY_LABELS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
   breakfast: 'Petit-déj',
@@ -27,6 +28,7 @@ export default function PlanScreen() {
   const [error, setError] = useState<string | null>(null);
   const [swappingId, setSwappingId] = useState<string | null>(null);
   const hasLoadedOnce = useRef(false);
+  const scrollRef = useRef<ScrollView>(null);
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
@@ -76,6 +78,7 @@ export default function PlanScreen() {
       const replacement = pickReplacementRecipe(mealType, currentRecipeId, recipeOptions);
       if (!replacement) {
         setError('Aucune autre recette disponible pour ce repas.');
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
         return;
       }
 
@@ -95,6 +98,7 @@ export default function PlanScreen() {
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur lors de l'échange.");
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
     } finally {
       setSwappingId(null);
     }
@@ -124,7 +128,7 @@ export default function PlanScreen() {
 
   return (
     <Screen edges={['top']}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+      <ScrollView ref={scrollRef} style={styles.scroll} contentContainerStyle={styles.container}>
         {error && <Text style={styles.error}>{error}</Text>}
       {DAY_LABELS.map((dayLabel, dayIndex) => {
         const dayEntries = plan.entries.filter((e) => e.dayIndex === dayIndex);
@@ -164,7 +168,11 @@ export default function PlanScreen() {
                       accessibilityLabel={`Échanger ${recipe ? recipe.name : entry.recipeId} contre une autre recette`}
                       accessibilityState={{ busy: swappingId === entry.id }}
                     >
-                      <Text style={styles.swapHint}>{swappingId === entry.id ? '...' : 'Échanger'}</Text>
+                      {swappingId === entry.id ? (
+                        <ActivityIndicator size="small" color={colors.accentRed} />
+                      ) : (
+                        <Text style={styles.swapHint}>Échanger</Text>
+                      )}
                     </Pressable>
                   </View>
                 </Card>
@@ -196,7 +204,7 @@ const makeStyles = (colors: ThemeColors) =>
       fontWeight: '700',
       marginBottom: spacing.sm,
     },
-    entryCard: { marginBottom: spacing.sm, overflow: Platform.OS === 'android' ? 'hidden' : 'visible' },
+    entryCard: { marginBottom: spacing.sm, overflow: isAndroid ? 'hidden' : 'visible' },
     entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     entryInfo: {
       flexDirection: 'row',
@@ -210,6 +218,9 @@ const makeStyles = (colors: ThemeColors) =>
       marginLeft: spacing.md,
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.sm,
+      // Reserves the "Échanger" text's width so swapping to the spinner doesn't shift the row.
+      minWidth: 70,
+      alignItems: 'center',
     },
     swapHint: { ...typography.caption, color: colors.accentRed, fontWeight: '700' },
     error: { color: colors.error, marginBottom: spacing.md },

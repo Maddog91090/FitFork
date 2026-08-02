@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Pressable, Platform } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getTrainingProfile, upsertTrainingProfile } from '../../lib/profile';
@@ -11,8 +13,10 @@ import { Card } from '../../components/ui/Card';
 import { Screen } from '../../components/ui/Screen';
 import { spacing, type ThemeColors } from '../../theme/tokens';
 import { typography } from '../../theme/typography';
+import { motion, useReducedMotion } from '../../theme/motion';
 import { useColors } from '../../theme/useColors';
 
+const isAndroid = Platform.OS === 'android';
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
 
 export default function WorkoutScreen() {
@@ -118,27 +122,16 @@ export default function WorkoutScreen() {
       <Text style={styles.levelSummary}>{levelProgram.summary}</Text>
       <Text style={styles.levelDuration}>Durée par séance : {levelProgram.sessionDurationLabel}</Text>
 
-      {levelProgram.sessions.map((sessionItem, index) => {
-        const isExpanded = expanded.has(index);
-        return (
-          <Pressable
-            key={sessionItem.name}
-            onPress={() => toggleSession(index)}
-            accessibilityRole="button"
-            accessibilityLabel={`Séance ${index + 1}, ${sessionItem.name}`}
-            accessibilityState={{ expanded: isExpanded }}
-            android_ripple={{ color: colors.divider }}
-            style={styles.sessionTouchable}
-          >
-            <Card style={styles.sessionCard}>
-              <Text style={styles.sessionTitle}>
-                Séance {index + 1} — {sessionItem.name}
-              </Text>
-              {isExpanded && <SessionDetail session={sessionItem} colors={colors} />}
-            </Card>
-          </Pressable>
-        );
-      })}
+      {levelProgram.sessions.map((sessionItem, index) => (
+        <SessionCard
+          key={sessionItem.name}
+          index={index}
+          session={sessionItem}
+          isExpanded={expanded.has(index)}
+          onToggle={() => toggleSession(index)}
+          colors={colors}
+        />
+      ))}
 
       <View style={styles.block}>
         <Text style={styles.blockTitle}>
@@ -157,6 +150,52 @@ export default function WorkoutScreen() {
       </View>
       </ScrollView>
     </Screen>
+  );
+}
+
+type SessionCardProps = {
+  index: number;
+  session: Session;
+  isExpanded: boolean;
+  onToggle: () => void;
+  colors: ThemeColors;
+};
+
+function SessionCard({ index, session, isExpanded, onToggle, colors }: SessionCardProps) {
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const reduceMotion = useReducedMotion();
+  const rotation = useSharedValue(isExpanded ? 1 : 0);
+
+  useEffect(() => {
+    const target = isExpanded ? 1 : 0;
+    rotation.value = reduceMotion ? target : withSpring(target, motion.spring.settle);
+  }, [isExpanded, reduceMotion, rotation]);
+
+  const animatedChevronStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value * 180}deg` }],
+  }));
+
+  return (
+    <Pressable
+      onPress={onToggle}
+      accessibilityRole="button"
+      accessibilityLabel={`Séance ${index + 1}, ${session.name}`}
+      accessibilityState={{ expanded: isExpanded }}
+      android_ripple={{ color: colors.divider }}
+      style={styles.sessionTouchable}
+    >
+      <Card style={styles.sessionCard}>
+        <View style={styles.sessionHeader}>
+          <Text style={styles.sessionTitle}>
+            Séance {index + 1} — {session.name}
+          </Text>
+          <Animated.View style={animatedChevronStyle}>
+            <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />
+          </Animated.View>
+        </View>
+        {isExpanded && <SessionDetail session={session} colors={colors} />}
+      </Card>
+    </Pressable>
   );
 }
 
@@ -205,10 +244,11 @@ const makeStyles = (colors: ThemeColors) =>
     levelDuration: { ...typography.caption, marginBottom: spacing.lg, color: colors.textSecondary, fontStyle: 'italic' },
     sessionTouchable: {
       borderRadius: 16,
-      overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
+      overflow: isAndroid ? 'hidden' : 'visible',
     },
     sessionCard: { marginBottom: spacing.sm },
-    sessionTitle: { ...typography.body, fontWeight: '700', color: colors.textPrimary },
+    sessionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    sessionTitle: { ...typography.body, fontWeight: '700', color: colors.textPrimary, flex: 1, marginRight: spacing.sm },
     sessionDetail: { marginTop: spacing.sm, marginLeft: spacing.md },
     sessionMeta: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.xs },
     exerciseLine: { ...typography.caption, color: colors.textPrimary, marginBottom: spacing.xs },

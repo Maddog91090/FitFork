@@ -69,7 +69,9 @@ export default function HomeScreen() {
     <Screen edges={['top']}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
         <Text style={styles.greeting}>Bonjour</Text>
-      <Text style={styles.name} accessibilityRole="header">{session.user.email}</Text>
+      <Text style={styles.name} accessibilityRole="header" numberOfLines={1} ellipsizeMode="tail">
+        {session.user.email}
+      </Text>
 
       {loadError && <Text style={styles.error}>{loadError}</Text>}
 

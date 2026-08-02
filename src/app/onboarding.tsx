@@ -59,14 +59,18 @@ export type OnboardingFields = {
   equipment: Equipment | null;
 };
 
+function parseDecimal(value: string): number {
+  return Number(value.trim().replace(',', '.'));
+}
+
 export function validateStep(step: number, fields: OnboardingFields): string | null {
   if (step === 0) {
     if (!fields.sex) return 'Merci de choisir un sexe.';
     const ageNum = Number(fields.age);
     if (!Number.isFinite(ageNum) || ageNum <= 0 || ageNum >= 120) return 'Âge invalide.';
-    const heightNum = Number(fields.heightCm);
+    const heightNum = parseDecimal(fields.heightCm);
     if (!Number.isFinite(heightNum) || heightNum <= 0) return 'Taille invalide.';
-    const weightNum = Number(fields.weightKg);
+    const weightNum = parseDecimal(fields.weightKg);
     if (!Number.isFinite(weightNum) || weightNum <= 0) return 'Poids invalide.';
     return null;
   }
@@ -149,8 +153,8 @@ export default function OnboardingScreen() {
       await upsertProfile(session.user.id, {
         sex: sex!,
         age: Number(age),
-        heightCm: Number(heightCm),
-        weightKg: Number(weightKg),
+        heightCm: parseDecimal(heightCm),
+        weightKg: parseDecimal(weightKg),
         activityLevel: activityLevel!,
         goal: goal!,
       });
@@ -196,14 +200,14 @@ export default function OnboardingScreen() {
               label="Taille (cm)"
               value={heightCm}
               onChangeText={setHeightCm}
-              keyboardType="numeric"
+              keyboardType="decimal-pad"
               testID="height-input"
             />
             <TextField
               label="Poids (kg)"
               value={weightKg}
               onChangeText={setWeightKg}
-              keyboardType="numeric"
+              keyboardType="decimal-pad"
               testID="weight-input"
             />
           </>

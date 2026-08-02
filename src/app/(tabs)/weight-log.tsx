@@ -83,7 +83,15 @@ export default function WeightLogScreen() {
       <KeyboardAvoidingView style={styles.avoiding} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
           <Text style={styles.title} accessibilityRole="header">Suivi de poids</Text>
-          <TextField label="Poids (kg)" value={weightInput} onChangeText={setWeightInput} keyboardType="decimal-pad" />
+          <TextField
+            label="Poids (kg)"
+            value={weightInput}
+            onChangeText={(text) => {
+              setWeightInput(text);
+              if (error) setError(null);
+            }}
+            keyboardType="decimal-pad"
+          />
           {error && <Text style={styles.error}>{error}</Text>}
           <Button title="Enregistrer" onPress={handleSubmit} loading={submitting} />
 
