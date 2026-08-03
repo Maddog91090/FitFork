@@ -11,8 +11,9 @@ type EmptyStateProps = {
   icon?: React.ReactNode;
   title: string;
   message: string;
-  actionLabel: string;
-  onAction: () => void;
+  /** Omit both when the screen already offers the action elsewhere. */
+  actionLabel?: string;
+  onAction?: () => void;
 };
 
 export function EmptyState({
@@ -23,6 +24,7 @@ export function EmptyState({
   actionLabel,
   onAction,
 }: EmptyStateProps) {
+  const hasAction = Boolean(actionLabel && onAction);
   return (
     <Card style={styles.card}>
       {illustration ? (
@@ -31,8 +33,8 @@ export function EmptyState({
         icon && <View style={styles.icon}>{icon}</View>
       )}
       <Text style={styles.title}>{title}</Text>
-      <Text style={styles.message}>{message}</Text>
-      <Button title={actionLabel} onPress={onAction} />
+      <Text style={[styles.message, hasAction && styles.messageSpaced]}>{message}</Text>
+      {actionLabel && onAction && <Button title={actionLabel} onPress={onAction} />}
     </Card>
   );
 }
@@ -60,6 +62,8 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textSecondary,
     textAlign: 'center',
+  },
+  messageSpaced: {
     marginBottom: spacing.lg,
   },
 });

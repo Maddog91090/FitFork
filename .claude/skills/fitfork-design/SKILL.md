@@ -163,13 +163,25 @@ The app tutoies the user and speaks like a coach who respects their time:
 ## Where things stand
 
 Shipped: tokens, both fonts, the shared components (`Button`, `Card`,
-`TextField`, `EmptyState`, `ChoiceGroup`), and the typography pass across all
-screens.
+`TextField`, `EmptyState`, `ChoiceGroup`, `Sparkline`), the typography pass
+across all screens, and the three brand illustrations.
+
+**Charts.** Read the `dataviz` skill before writing the first line of chart
+code. Two things it does not know about this app, learned building the weight
+trend: the serif `typography.metric` is right for a hero number here even
+though the skill warns against display faces, because the serif is systematic
+across the app rather than decoration; and the brand red does **not** go to a
+chart mark — the screen's one primary action already owns it, so emphasis
+comes from ink weight (`textSecondary` line, `textPrimary` current point).
+`Sparkline` draws a single series from rotated views, no charting dependency.
 
 Not built yet, and worth knowing before you plan work:
 
-- **Dark mode.** No dark tokens exist. `app.json` still declares
-  `userInterfaceStyle: "automatic"` while the app is light-only.
+- **Dark mode.** No dark tokens exist, and `app.json` now declares
+  `userInterfaceStyle: "light"` to match. Note the order of operations: the
+  three shipped illustrations have their light background baked in, so dark
+  mode needs transparent re-exports before it can look right — doing the
+  token work first would leave three white slabs on a dark screen.
 - **Illustrations beyond the three that shipped.** The onboarding hero and
   the plan / grocery empty states are in `assets/images/illustrations/`; see
   that folder's README and
@@ -179,9 +191,6 @@ Not built yet, and worth knowing before you plan work:
   card — and measured before shipping, because a background a few points off
   bands visibly against a flat screen. Recipe and exercise imagery, and the
   weight-log empty state, are still unillustrated.
-- **Charts.** `weight-log` shows a list where it wants a trend line. Read the
-  `dataviz` skill before writing the first line of chart code, and take the
-  series colors from `colors`.
 - **Splash screen.** `assets/images/splash-icon.png` has an opaque white
   background, so `app.json`'s splash `backgroundColor` cannot move to `bgBase`
   until the asset is re-exported with transparency.
