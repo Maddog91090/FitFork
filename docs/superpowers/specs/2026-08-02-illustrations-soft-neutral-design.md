@@ -67,14 +67,30 @@ than "nothing here", which is what the copy already promises.
 
 ## Technical Specs
 
-| Asset | Ratio | Generated size | Ground |
+| Asset | Generated | Shipped | Ground |
 | --- | --- | --- | --- |
-| `onboarding-hero.png` | 3:2 | 2528×1696 | `#F7F5F2` |
-| `empty-plan.png` | 1:1 | 2048×2048 | `#FFFFFF` |
-| `empty-grocery.png` | 1:1 | 2048×2048 | `#FFFFFF` |
+| `onboarding-hero.png` | 3:2, 2528×1696 | 2.4:1, 1200×499 | `#F7F5F2` |
+| `empty-plan.png` | 1:1, 2048×2048 | 1:1, 512×512 | `#FFFFFF` |
+| `empty-grocery.png` | 1:1, 2048×2048 | 1:1, 512×512 | `#FFFFFF` |
 
-Destination: `assets/images/illustrations/`. Loaded with `expo-image` and
-downscaled in-app; no `@2x`/`@3x` variants needed at these resolutions.
+Destination: `assets/images/illustrations/`, loaded with `expo-image`. Shipped
+sizes cover the largest rendered size at @3x; the 2k masters stay in the
+Higgsfield gallery rather than in the bundle. No `@2x`/`@3x` variants.
+
+Two corrections were needed between generation and shipping:
+
+- **The hero's background was not `bgBase`.** It came out at `#F5F2EB` —
+  warmer and darker, 7 off on the blue channel — which would have banded
+  against the screen. Fixed by shifting the whole image by the measured
+  delta rather than repainting the background: the grain, the gradients and
+  the runner's contact shadow survive untouched, where a keyed replace would
+  have left a halo. Verified back to `#F7F5F2` after the resample.
+- **The hero was cropped to 2.4:1.** At 3:2 the banner is 260pt tall on a
+  390pt phone, which pushes the wizard's first field below the fold. The
+  generation left ~25% empty above and below the composition, so the crop
+  costs nothing.
+
+The empty states needed neither: both measured `#FFFFFF` exactly.
 
 ## Production
 
@@ -104,15 +120,27 @@ illustration is a one-prop change — the component already centers and pads
 whatever it is handed. The emoji stay as the fallback for any empty state
 that has no illustration of its own.
 
-## Known blocker
+## Selected candidates
 
-This repo's session container cannot reach `upload.higgsfield.ai` or the
-Higgsfield CDN — the environment's network policy answers 403 to CONNECT.
-Generation works (it runs server-side), but the resulting files cannot be
-downloaded into the repo from an agent session. Until that changes, the
-approved images have to be saved from the Higgsfield gallery and committed
-to `assets/images/illustrations/` by hand; the code wiring above only
-lands once the files exist, since Metro fails on a missing `require`.
+- **Hero**: `cf727c7b` — single runner. Picked over the double-figure
+  mannequin (`cdd68ed5`), which is more sophisticated but risks reading as
+  noise at banner height, and over the character-anchored cartoon
+  (`01fa78ea`), whose register and large red field sit outside Soft Neutral.
+- **Empty meal plan**: `73fb6639`. The alternative had a dark smudge
+  artifact in the plate's well.
+- **Empty grocery list**: `a1acbc64`. The alternative had a broken,
+  duplicated handle and put a red apple and brown bread outside the palette.
+
+## Note on tooling
+
+This environment's network policy answers 403 to `upload.higgsfield.ai` and
+the Higgsfield CDN, so an agent session can generate images (that runs
+server-side through MCP) but cannot download them or upload a style
+reference. Two consequences worth knowing next time: the prompts had to
+describe the logo's style in words instead of passing the reference image,
+and the approved files reached the repo by being attached to the session.
+Allowing `higgsfield.ai`, `*.higgsfield.ai` and the CDN hosts on the
+environment removes both detours.
 
 ## Testing / Validation
 

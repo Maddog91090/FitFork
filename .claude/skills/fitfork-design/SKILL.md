@@ -170,14 +170,15 @@ Not built yet, and worth knowing before you plan work:
 
 - **Dark mode.** No dark tokens exist. `app.json` still declares
   `userInterfaceStyle: "automatic"` while the app is light-only.
-- **Onboarding and empty-state illustrations.** Direction and the resolved
-  light-ground palette are in
-  `docs/superpowers/specs/2026-08-02-illustrations-soft-neutral-design.md`,
-  which supersedes the dark-background assumptions of the 2026-07-31 hero
-  spec. Candidates are generated; the files are not in the repo yet, and the
-  session container cannot download them (network policy blocks the
-  Higgsfield CDN). Illustrations sit on the color they are placed over —
-  `bgBase` for the onboarding banner, `bgSurface` inside a card.
+- **Illustrations beyond the three that shipped.** The onboarding hero and
+  the plan / grocery empty states are in `assets/images/illustrations/`; see
+  that folder's README and
+  `docs/superpowers/specs/2026-08-02-illustrations-soft-neutral-design.md`.
+  The rule that matters when adding one: an illustration is generated on the
+  exact color it will sit over — `bgBase` on a screen, `bgSurface` inside a
+  card — and measured before shipping, because a background a few points off
+  bands visibly against a flat screen. Recipe and exercise imagery, and the
+  weight-log empty state, are still unillustrated.
 - **Charts.** `weight-log` shows a list where it wants a trend line. Read the
   `dataviz` skill before writing the first line of chart code, and take the
   series colors from `colors`.

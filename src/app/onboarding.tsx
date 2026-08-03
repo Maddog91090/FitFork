@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { upsertProfile, upsertTrainingProfile } from '../lib/profile';
@@ -168,6 +169,11 @@ export default function OnboardingScreen() {
 
   return (
     <View style={styles.screen}>
+      <Image
+        source={require('../../assets/images/illustrations/onboarding-hero.png')}
+        style={styles.hero}
+        contentFit="contain"
+      />
       <View style={styles.header}>
         <View style={styles.progressRow}>
           {Array.from({ length: TOTAL_STEPS }).map((_, index) => (
@@ -286,6 +292,11 @@ function RecapRow({ label, value }: { label: string; value: string }) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bgBase },
+  // Full bleed: the illustration is generated on bgBase, so it blends into the
+  // screen with no seam — which is also why `contain` is safe here, any letterbox
+  // is the same color as the screen. maxHeight keeps the form above the fold on
+  // a small phone. Same banner on all four steps.
+  hero: { width: '100%', aspectRatio: 2.4, maxHeight: 150 },
   header: { padding: spacing.lg, paddingBottom: spacing.sm },
   progressRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
   segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.divider },

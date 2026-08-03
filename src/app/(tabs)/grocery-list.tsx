@@ -79,7 +79,7 @@ export default function GroceryListScreen() {
     return (
       <View style={styles.centered}>
         <EmptyState
-          icon={<Text style={styles.emptyIcon}>🛒</Text>}
+          illustration={require('../../../assets/images/illustrations/empty-grocery.png')}
           title="Aucun plan pour l'instant"
           message="Génère un plan de repas pour obtenir ta liste de courses."
           actionLabel="Générer un plan"
@@ -132,5 +132,4 @@ const styles = StyleSheet.create({
   name: { ...typography.body, flex: 1, color: colors.textPrimary },
   quantity: { ...typography.captionStrong, color: colors.textSecondary },
   error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
-  emptyIcon: { fontSize: 32 },
 });

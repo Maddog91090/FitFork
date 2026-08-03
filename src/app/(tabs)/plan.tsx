@@ -96,7 +96,7 @@ export default function PlanScreen() {
     return (
       <View style={styles.centered}>
         <EmptyState
-          icon={<Text style={styles.emptyIcon}>📋</Text>}
+          illustration={require('../../../assets/images/illustrations/empty-plan.png')}
           title="Aucun plan pour l'instant"
           message="Génère ton premier plan de repas de la semaine."
           actionLabel="Générer un plan"
@@ -174,5 +174,4 @@ const styles = StyleSheet.create({
   recipeName: { ...typography.bodyStrong, flex: 1, color: colors.textPrimary },
   swapHint: { ...typography.captionStrong, color: colors.accentRedDeep, marginLeft: spacing.md },
   error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
-  emptyIcon: { fontSize: 32 },
 });
