@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { Link, router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
-import { centeredContent, colors, spacing, radius, shadow, typography } from '../theme/tokens';
+import { centeredContent, spacing, radius, shadow, typography, useThemeColors, type ThemeColors } from '../theme/tokens';
 
 export default function LoginScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { session, signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -65,31 +67,32 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: colors.bgBase },
-  content: { ...centeredContent },
-  logoWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: radius.lg,
-    backgroundColor: colors.bgSurface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    marginBottom: spacing.sm,
-    padding: spacing.sm,
-    ...shadow.card,
-  },
-  logo: { width: '100%', height: '100%' },
-  brand: {
-    ...typography.display,
-    textAlign: 'center',
-    color: colors.textPrimary,
-    marginBottom: spacing.xl,
-  },
-  error: { ...typography.body, color: colors.error, marginBottom: spacing.md, textAlign: 'center' },
-  switchLink: { marginTop: spacing.lg, textAlign: 'center' },
-  switchText: { ...typography.caption, textAlign: 'center', color: colors.textSecondary },
-  switchTextAccent: { ...typography.captionStrong, color: colors.accentRedDeep },
-});
-
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    screen: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: colors.bgBase },
+    content: { ...centeredContent },
+    logoWrap: {
+      width: 64,
+      height: 64,
+      borderRadius: radius.lg,
+      backgroundColor: colors.bgSurface,
+      alignItems: 'center',
+      justifyContent: 'center',
+      alignSelf: 'center',
+      marginBottom: spacing.sm,
+      padding: spacing.sm,
+      ...shadow.card,
+    },
+    logo: { width: '100%', height: '100%' },
+    brand: {
+      ...typography.display,
+      textAlign: 'center',
+      color: colors.textPrimary,
+      marginBottom: spacing.xl,
+    },
+    error: { ...typography.body, color: colors.error, marginBottom: spacing.md, textAlign: 'center' },
+    switchLink: { marginTop: spacing.lg, textAlign: 'center' },
+    switchText: { ...typography.caption, textAlign: 'center', color: colors.textSecondary },
+    switchTextAccent: { ...typography.captionStrong, color: colors.accentRedDeep },
+  });
+}

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 import {
@@ -10,9 +10,11 @@ import {
 } from '../../lib/mealPlanData';
 import { scaleIngredientQuantity, scaleMacroValue, clampPortionMultiplier } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
-import { centeredContent, colors, spacing, typography } from '../../theme/tokens';
+import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 export default function RecipeDetailScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { id, portion: portionParam } = useLocalSearchParams<{ id: string; portion?: string }>();
   const parsedPortion = Number(portionParam);
   const portionMultiplier =
@@ -101,38 +103,40 @@ export default function RecipeDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.bgBase,
-    padding: spacing.lg,
-  },
-  container: { padding: spacing.lg, ...centeredContent },
-  title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.xs },
-  macros: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
-  portionBanner: { ...typography.captionStrong, color: colors.accentRedDeep, marginBottom: spacing.lg },
-  sectionTitle: {
-    ...typography.overline,
-    color: colors.textSecondary,
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  card: { marginBottom: spacing.sm },
-  ingredientLine: { ...typography.body, color: colors.textPrimary, marginBottom: spacing.xs },
-  stepRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm, alignItems: 'flex-start' },
-  stepBadge: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: colors.accentRed,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
-  },
-  stepBadgeText: { ...typography.overline, color: colors.textOnAccent, letterSpacing: 0 },
-  stepText: { ...typography.body, flex: 1, color: colors.textPrimary },
-  error: { ...typography.body, color: colors.error },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.bgBase },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.bgBase,
+      padding: spacing.lg,
+    },
+    container: { padding: spacing.lg, ...centeredContent },
+    title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.xs },
+    macros: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
+    portionBanner: { ...typography.captionStrong, color: colors.accentRedDeep, marginBottom: spacing.lg },
+    sectionTitle: {
+      ...typography.overline,
+      color: colors.textSecondary,
+      marginTop: spacing.md,
+      marginBottom: spacing.sm,
+    },
+    card: { marginBottom: spacing.sm },
+    ingredientLine: { ...typography.body, color: colors.textPrimary, marginBottom: spacing.xs },
+    stepRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm, alignItems: 'flex-start' },
+    stepBadge: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      backgroundColor: colors.accentRed,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 1,
+    },
+    stepBadgeText: { ...typography.overline, color: colors.textOnAccent, letterSpacing: 0 },
+    stepText: { ...typography.body, flex: 1, color: colors.textPrimary },
+    error: { ...typography.body, color: colors.error },
+  });
+}

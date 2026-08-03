@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
@@ -9,7 +9,7 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Sparkline } from '../../components/ui/Sparkline';
-import { centeredContent, colors, fontFamily, spacing, typography } from '../../theme/tokens';
+import { centeredContent, fontFamily, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 /** French decimals, without depending on Intl being built into the JS engine. */
 function formatNumber(value: number, decimals = 1): string {
@@ -32,6 +32,8 @@ function formatTrend(percentPerWeek: number): string {
 }
 
 export default function WeightLogScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { session, loading } = useAuth();
   const [logs, setLogs] = useState<WeightLogEntry[]>([]);
   const [weightInput, setWeightInput] = useState('');
@@ -156,34 +158,36 @@ export default function WeightLogScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
-  container: { padding: spacing.lg, ...centeredContent },
-  title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
-  statCard: { marginTop: spacing.xl },
-  statLabel: { ...typography.overline, color: colors.textSecondary },
-  statValue: { ...typography.metric, color: colors.textPrimary, marginTop: spacing.xs },
-  statDelta: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.xs },
-  chart: { marginTop: spacing.lg },
-  chartAxis: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.xs },
-  axisLabel: { ...typography.caption, color: colors.textTertiary },
-  historyTitle: {
-    ...typography.overline,
-    color: colors.textSecondary,
-    marginTop: spacing.xl,
-    marginBottom: spacing.sm,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm + 1,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
-  },
-  rowLast: { borderBottomWidth: 0 },
-  date: { ...typography.caption, color: colors.textPrimary },
-  // The number is the point of this screen — serif, and darker than its date.
-  weight: { ...typography.bodyStrong, color: colors.textPrimary, fontFamily: fontFamily.displayBold },
-  error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.bgBase },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+    container: { padding: spacing.lg, ...centeredContent },
+    title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
+    statCard: { marginTop: spacing.xl },
+    statLabel: { ...typography.overline, color: colors.textSecondary },
+    statValue: { ...typography.metric, color: colors.textPrimary, marginTop: spacing.xs },
+    statDelta: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.xs },
+    chart: { marginTop: spacing.lg },
+    chartAxis: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.xs },
+    axisLabel: { ...typography.caption, color: colors.textTertiary },
+    historyTitle: {
+      ...typography.overline,
+      color: colors.textSecondary,
+      marginTop: spacing.xl,
+      marginBottom: spacing.sm,
+    },
+    row: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.sm + 1,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.divider,
+    },
+    rowLast: { borderBottomWidth: 0 },
+    date: { ...typography.caption, color: colors.textPrimary },
+    // The number is the point of this screen — serif, and darker than its date.
+    weight: { ...typography.bodyStrong, color: colors.textPrimary, fontFamily: fontFamily.displayBold },
+    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
+  });
+}

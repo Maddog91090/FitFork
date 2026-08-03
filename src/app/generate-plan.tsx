@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
@@ -10,7 +10,16 @@ import { computeAdjustedTargets } from '../lib/progressTracking';
 import { generateWeeklyPlan, type MealSlot, type MealType } from '../lib/mealPlan';
 import { Button } from '../components/ui/Button';
 import { PressableScale } from '../components/ui/PressableScale';
-import { centeredContent, colors, radius, shadow, spacing, state, typography } from '../theme/tokens';
+import {
+  centeredContent,
+  radius,
+  shadow,
+  spacing,
+  state,
+  typography,
+  useThemeColors,
+  type ThemeColors,
+} from '../theme/tokens';
 
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
@@ -26,6 +35,8 @@ function defaultSelection(): boolean[][] {
 }
 
 export default function GeneratePlanScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { session, loading } = useAuth();
   const [selected, setSelected] = useState<boolean[][]>(defaultSelection());
   const [generating, setGenerating] = useState(false);
@@ -132,28 +143,30 @@ export default function GeneratePlanScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  container: { padding: spacing.lg, ...centeredContent },
-  title: { ...typography.title, color: colors.textPrimary, marginBottom: spacing.lg },
-  dayRow: { marginBottom: spacing.md },
-  dayLabel: {
-    ...typography.overline,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-  },
-  mealRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  cell: {
-    backgroundColor: colors.bgSurface,
-    borderRadius: radius.sm,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    minHeight: state.minTouchSize,
-    justifyContent: 'center',
-    ...shadow.card,
-  },
-  cellSelected: { backgroundColor: colors.accentRed, shadowColor: colors.accentRed, shadowOpacity: 0.25 },
-  cellLabel: { ...typography.caption, color: colors.textSecondary },
-  cellLabelSelected: { ...typography.captionStrong, color: colors.textOnAccent },
-  error: { ...typography.body, color: colors.error, marginTop: spacing.md, marginBottom: spacing.sm },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.bgBase },
+    container: { padding: spacing.lg, ...centeredContent },
+    title: { ...typography.title, color: colors.textPrimary, marginBottom: spacing.lg },
+    dayRow: { marginBottom: spacing.md },
+    dayLabel: {
+      ...typography.overline,
+      color: colors.textSecondary,
+      marginBottom: spacing.sm,
+    },
+    mealRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+    cell: {
+      backgroundColor: colors.bgSurface,
+      borderRadius: radius.sm,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      minHeight: state.minTouchSize,
+      justifyContent: 'center',
+      ...shadow.card,
+    },
+    cellSelected: { backgroundColor: colors.accentRed, shadowColor: colors.accentRed, shadowOpacity: 0.25 },
+    cellLabel: { ...typography.caption, color: colors.textSecondary },
+    cellLabelSelected: { ...typography.captionStrong, color: colors.textOnAccent },
+    error: { ...typography.body, color: colors.error, marginTop: spacing.md, marginBottom: spacing.sm },
+  });
+}

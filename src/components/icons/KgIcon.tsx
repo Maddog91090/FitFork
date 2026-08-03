@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, type ColorValue } from 'react-native';
-import { colors, fontFamily } from '../../theme/tokens';
+import { fontFamily, useThemeColors } from '../../theme/tokens';
 
 type KgIconProps = {
   color: ColorValue;
@@ -8,6 +8,7 @@ type KgIconProps = {
 };
 
 export function KgIcon({ color, focused, size = 22 }: KgIconProps) {
+  const colors = useThemeColors();
   return (
     <View
       style={[

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, {
@@ -15,7 +15,7 @@ import type { ExperienceLevel, Equipment } from '../lib/profile';
 import { ChoiceGroup } from '../components/ChoiceGroup';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
-import { centeredContent, colors, motion, spacing, typography } from '../theme/tokens';
+import { centeredContent, motion, spacing, typography, useThemeColors, type ThemeColors } from '../theme/tokens';
 import type { Sex, ActivityLevel, Goal } from '../lib/nutrition';
 
 const SEX_OPTIONS: { value: Sex; label: string }[] = [
@@ -93,6 +93,8 @@ export function validateStep(step: number, fields: OnboardingFields): string | n
 }
 
 export default function OnboardingScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { session, loading } = useAuth();
   const [step, setStep] = useState(0);
   const [sex, setSex] = useState<Sex | null>(null);
@@ -185,7 +187,7 @@ export default function OnboardingScreen() {
       <View style={styles.header}>
         <View style={styles.progressRow}>
           {Array.from({ length: TOTAL_STEPS }).map((_, index) => (
-            <ProgressSegment key={index} done={index <= step} />
+            <ProgressSegment key={index} done={index <= step} styles={styles} />
           ))}
         </View>
         <Text style={styles.stepCounter}>
@@ -250,27 +252,30 @@ export default function OnboardingScreen() {
         {step === 3 && (
           <>
             <Text style={styles.recapGroup}>Profil</Text>
-            <RecapRow label="Sexe" value={SEX_OPTIONS.find((o) => o.value === sex)?.label ?? '—'} />
-            <RecapRow label="Âge" value={`${age} ans`} />
-            <RecapRow label="Taille" value={`${heightCm} cm`} />
-            <RecapRow label="Poids" value={`${weightKg} kg`} />
+            <RecapRow label="Sexe" value={SEX_OPTIONS.find((o) => o.value === sex)?.label ?? '—'} styles={styles} />
+            <RecapRow label="Âge" value={`${age} ans`} styles={styles} />
+            <RecapRow label="Taille" value={`${heightCm} cm`} styles={styles} />
+            <RecapRow label="Poids" value={`${weightKg} kg`} styles={styles} />
 
             <Text style={styles.recapGroup}>Activité</Text>
             <RecapRow
               label="Niveau d'activité"
               value={ACTIVITY_OPTIONS.find((o) => o.value === activityLevel)?.label ?? '—'}
+              styles={styles}
             />
-            <RecapRow label="Objectif" value={GOAL_OPTIONS.find((o) => o.value === goal)?.label ?? '—'} />
+            <RecapRow label="Objectif" value={GOAL_OPTIONS.find((o) => o.value === goal)?.label ?? '—'} styles={styles} />
 
             <Text style={styles.recapGroup}>Entraînement</Text>
-            <RecapRow label="Jours/semaine" value={daysPerWeek} />
+            <RecapRow label="Jours/semaine" value={daysPerWeek} styles={styles} />
             <RecapRow
               label="Niveau"
               value={EXPERIENCE_OPTIONS.find((o) => o.value === experienceLevel)?.label ?? '—'}
+              styles={styles}
             />
             <RecapRow
               label="Matériel"
               value={EQUIPMENT_OPTIONS.find((o) => o.value === equipment)?.label ?? '—'}
+              styles={styles}
             />
           </>
         )}
@@ -296,12 +301,14 @@ export default function OnboardingScreen() {
   );
 }
 
+type Styles = ReturnType<typeof createStyles>;
+
 /**
  * A progress segment whose red fill grows left-to-right when its step is
  * reached, rather than snapping on. The track underneath stays visible, so an
  * in-progress fill reads as "getting there".
  */
-function ProgressSegment({ done }: { done: boolean }) {
+function ProgressSegment({ done, styles }: { done: boolean; styles: Styles }) {
   const fill = useSharedValue(done ? 1 : 0);
 
   useEffect(() => {
@@ -320,7 +327,7 @@ function ProgressSegment({ done }: { done: boolean }) {
   );
 }
 
-function RecapRow({ label, value }: { label: string; value: string }) {
+function RecapRow({ label, value, styles }: { label: string; value: string; styles: Styles }) {
   return (
     <View style={styles.recapRow}>
       <Text style={styles.recapLabel}>{label}</Text>
@@ -329,56 +336,58 @@ function RecapRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  // Full bleed: the illustration is generated on bgBase, so it blends into the
-  // screen with no seam — which is also why `contain` is safe here, any letterbox
-  // is the same color as the screen. maxHeight keeps the form above the fold on
-  // a small phone. Same banner on all four steps.
-  hero: { width: '100%', aspectRatio: 2.4, maxHeight: 150 },
-  // Everything below the full-bleed hero is capped and centered; the hero
-  // itself stays outside this wrapper so it keeps spanning edge to edge.
-  content: { flex: 1, ...centeredContent },
-  header: { padding: spacing.lg, paddingBottom: spacing.sm },
-  progressRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
-  segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.divider, overflow: 'hidden' },
-  segmentFill: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 2,
-    backgroundColor: colors.accentRed,
-    transformOrigin: 'left',
-  },
-  stepCounter: { ...typography.overline, color: colors.textSecondary, marginBottom: spacing.xs },
-  title: { ...typography.title, color: colors.textPrimary },
-  body: { flex: 1 },
-  bodyContent: { padding: spacing.lg, paddingTop: spacing.sm },
-  label: {
-    ...typography.overline,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  error: { ...typography.body, color: colors.error, marginTop: spacing.md },
-  footer: { padding: spacing.lg },
-  backLink: { alignSelf: 'flex-start', marginBottom: spacing.md },
-  backLinkText: { ...typography.subheading, color: colors.textSecondary },
-  recapGroup: {
-    ...typography.overline,
-    color: colors.textSecondary,
-    marginTop: spacing.md,
-    marginBottom: spacing.xs,
-  },
-  recapRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
-  },
-  recapLabel: { ...typography.caption, color: colors.textSecondary },
-  recapValue: { ...typography.captionStrong, color: colors.textPrimary },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.bgBase },
+    // Full bleed: the illustration is generated on bgBase, so it blends into the
+    // screen with no seam — which is also why `contain` is safe here, any letterbox
+    // is the same color as the screen. maxHeight keeps the form above the fold on
+    // a small phone. Same banner on all four steps.
+    hero: { width: '100%', aspectRatio: 2.4, maxHeight: 150 },
+    // Everything below the full-bleed hero is capped and centered; the hero
+    // itself stays outside this wrapper so it keeps spanning edge to edge.
+    content: { flex: 1, ...centeredContent },
+    header: { padding: spacing.lg, paddingBottom: spacing.sm },
+    progressRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
+    segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.divider, overflow: 'hidden' },
+    segmentFill: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      borderRadius: 2,
+      backgroundColor: colors.accentRed,
+      transformOrigin: 'left',
+    },
+    stepCounter: { ...typography.overline, color: colors.textSecondary, marginBottom: spacing.xs },
+    title: { ...typography.title, color: colors.textPrimary },
+    body: { flex: 1 },
+    bodyContent: { padding: spacing.lg, paddingTop: spacing.sm },
+    label: {
+      ...typography.overline,
+      color: colors.textSecondary,
+      marginBottom: spacing.sm,
+      marginTop: spacing.sm,
+    },
+    error: { ...typography.body, color: colors.error, marginTop: spacing.md },
+    footer: { padding: spacing.lg },
+    backLink: { alignSelf: 'flex-start', marginBottom: spacing.md },
+    backLinkText: { ...typography.subheading, color: colors.textSecondary },
+    recapGroup: {
+      ...typography.overline,
+      color: colors.textSecondary,
+      marginTop: spacing.md,
+      marginBottom: spacing.xs,
+    },
+    recapRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.divider,
+    },
+    recapLabel: { ...typography.caption, color: colors.textSecondary },
+    recapValue: { ...typography.captionStrong, color: colors.textPrimary },
+  });
+}

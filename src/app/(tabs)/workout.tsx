@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
@@ -8,11 +8,13 @@ import { ChoiceGroup } from '../../components/ChoiceGroup';
 import { homeWorkoutProgram, getLevelProgram } from '../../lib/homeWorkoutProgram';
 import type { Session } from '../../lib/homeWorkoutProgram';
 import { Card } from '../../components/ui/Card';
-import { centeredContent, colors, spacing, typography } from '../../theme/tokens';
+import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
 
 export default function WorkoutScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { session, loading } = useAuth();
   const [trainingProfile, setTrainingProfile] = useState<TrainingProfile | null>(null);
   const [checking, setChecking] = useState(true);
@@ -118,7 +120,7 @@ export default function WorkoutScreen() {
               <Text style={styles.sessionTitle}>
                 Séance {index + 1} — {sessionItem.name}
               </Text>
-              {isExpanded && <SessionDetail session={sessionItem} />}
+              {isExpanded && <SessionDetail session={sessionItem} styles={styles} />}
             </Card>
           </Pressable>
         );
@@ -143,7 +145,9 @@ export default function WorkoutScreen() {
   );
 }
 
-function SessionDetail({ session }: { session: Session }) {
+type Styles = ReturnType<typeof createStyles>;
+
+function SessionDetail({ session, styles }: { session: Session; styles: Styles }) {
   if (session.type === 'circuit') {
     return (
       <View style={styles.sessionDetail}>
@@ -172,22 +176,24 @@ function SessionDetail({ session }: { session: Session }) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
-  container: { padding: spacing.lg, ...centeredContent },
-  title: { ...typography.display, color: colors.textPrimary },
-  subtitle: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.lg },
-  block: { marginVertical: spacing.lg },
-  blockTitle: { ...typography.heading, color: colors.textPrimary, marginBottom: spacing.xs },
-  blockText: { ...typography.body, color: colors.textSecondary },
-  levelSummary: { ...typography.body, marginTop: spacing.sm, color: colors.textSecondary },
-  levelDuration: { ...typography.caption, marginBottom: spacing.lg, color: colors.textSecondary },
-  sessionCard: { marginBottom: spacing.sm },
-  sessionTitle: { ...typography.subheading, color: colors.textPrimary },
-  sessionDetail: { marginTop: spacing.sm, marginLeft: spacing.md },
-  sessionMeta: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.xs },
-  exerciseLine: { ...typography.body, color: colors.textPrimary, marginBottom: spacing.xs },
-  coachNote: { ...typography.body, marginBottom: spacing.xs, color: colors.textSecondary },
-  error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.bgBase },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+    container: { padding: spacing.lg, ...centeredContent },
+    title: { ...typography.display, color: colors.textPrimary },
+    subtitle: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.lg },
+    block: { marginVertical: spacing.lg },
+    blockTitle: { ...typography.heading, color: colors.textPrimary, marginBottom: spacing.xs },
+    blockText: { ...typography.body, color: colors.textSecondary },
+    levelSummary: { ...typography.body, marginTop: spacing.sm, color: colors.textSecondary },
+    levelDuration: { ...typography.caption, marginBottom: spacing.lg, color: colors.textSecondary },
+    sessionCard: { marginBottom: spacing.sm },
+    sessionTitle: { ...typography.subheading, color: colors.textPrimary },
+    sessionDetail: { marginTop: spacing.sm, marginLeft: spacing.md },
+    sessionMeta: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.xs },
+    exerciseLine: { ...typography.body, color: colors.textPrimary, marginBottom: spacing.xs },
+    coachNote: { ...typography.body, marginBottom: spacing.xs, color: colors.textSecondary },
+    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
+  });
+}

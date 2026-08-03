@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
@@ -6,9 +6,11 @@ import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { centeredContent, colors, spacing, typography } from '../../theme/tokens';
+import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 export default function HomeScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { session, loading, signOut } = useAuth();
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [macros, setMacros] = useState<MacroTargets | null>(null);
@@ -108,31 +110,33 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
-  container: { padding: spacing.lg, ...centeredContent },
-  greeting: { ...typography.caption, color: colors.textSecondary },
-  name: { ...typography.hero, color: colors.textPrimary, marginBottom: spacing.lg },
-  error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
-  macroCard: { marginBottom: spacing.lg },
-  sectionLabel: {
-    ...typography.overline,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-  },
-  macroRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
-  macroItem: { alignItems: 'center', flex: 1 },
-  // Calories stay neutral; each macro carries its own hue so the numbers are
-  // scannable at a glance and match the colors used elsewhere for the same macro.
-  // typography.title rather than typography.metric: four values share this row,
-  // and metric's 28px would wrap a 4-digit calorie target on narrow phones.
-  macroValue: { ...typography.title, color: colors.textPrimary },
-  macroProtein: { color: colors.macroProtein },
-  macroFat: { color: colors.macroFat },
-  macroCarbs: { color: colors.macroCarbs },
-  macroLabel: { ...typography.overline, color: colors.textSecondary, marginTop: spacing.xs },
-  actionsRow: { flexDirection: 'row', gap: spacing.sm },
-  actionButton: { flex: 1 },
-  signOut: { marginTop: spacing.xl },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.bgBase },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+    container: { padding: spacing.lg, ...centeredContent },
+    greeting: { ...typography.caption, color: colors.textSecondary },
+    name: { ...typography.hero, color: colors.textPrimary, marginBottom: spacing.lg },
+    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
+    macroCard: { marginBottom: spacing.lg },
+    sectionLabel: {
+      ...typography.overline,
+      color: colors.textSecondary,
+      marginBottom: spacing.sm,
+    },
+    macroRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
+    macroItem: { alignItems: 'center', flex: 1 },
+    // Calories stay neutral; each macro carries its own hue so the numbers are
+    // scannable at a glance and match the colors used elsewhere for the same macro.
+    // typography.title rather than typography.metric: four values share this row,
+    // and metric's 28px would wrap a 4-digit calorie target on narrow phones.
+    macroValue: { ...typography.title, color: colors.textPrimary },
+    macroProtein: { color: colors.macroProtein },
+    macroFat: { color: colors.macroFat },
+    macroCarbs: { color: colors.macroCarbs },
+    macroLabel: { ...typography.overline, color: colors.textSecondary, marginTop: spacing.xs },
+    actionsRow: { flexDirection: 'row', gap: spacing.sm },
+    actionButton: { flex: 1 },
+    signOut: { marginTop: spacing.xl },
+  });
+}

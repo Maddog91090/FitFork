@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
+import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { Fraunces_600SemiBold } from '@expo-google-fonts/fraunces/600SemiBold';
 import { Fraunces_700Bold } from '@expo-google-fonts/fraunces/700Bold';
@@ -9,7 +10,7 @@ import { PlusJakartaSans_500Medium } from '@expo-google-fonts/plus-jakarta-sans/
 import { PlusJakartaSans_600SemiBold } from '@expo-google-fonts/plus-jakarta-sans/600SemiBold';
 import { PlusJakartaSans_700Bold } from '@expo-google-fonts/plus-jakarta-sans/700Bold';
 import { AuthProvider } from '../lib/auth-context';
-import { colors } from '../theme/tokens';
+import { useThemeColors } from '../theme/tokens';
 
 // Hold the splash screen until the brand fonts are ready, so no screen ever
 // renders in the system font first. `useFonts` (rather than the expo-font
@@ -17,6 +18,7 @@ import { colors } from '../theme/tokens';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const colors = useThemeColors();
   const [fontsLoaded, fontError] = useFonts({
     Fraunces_600SemiBold,
     Fraunces_700Bold,
@@ -40,6 +42,7 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
+      <StatusBar style="auto" />
       <Stack
         screenOptions={{
           headerShown: false,

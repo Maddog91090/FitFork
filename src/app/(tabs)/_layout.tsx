@@ -1,9 +1,10 @@
 import { Tabs } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { KgIcon } from '../../components/icons/KgIcon';
-import { colors, typography } from '../../theme/tokens';
+import { typography, useThemeColors } from '../../theme/tokens';
 
 export default function TabsLayout() {
+  const colors = useThemeColors();
   return (
     <Tabs
       screenOptions={{

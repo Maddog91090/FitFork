@@ -1,5 +1,6 @@
+import { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { colors } from '../../theme/tokens';
+import { useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const STROKE = 2;
 const MARKER = 8;
@@ -23,6 +24,9 @@ type SparklineProps = {
  * The history list underneath is the accessible table view of the same data.
  */
 export function Sparkline({ values, width, height = 64, accessibilityLabel }: SparklineProps) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   if (values.length < 2 || width <= 0) {
     return null;
   }
@@ -71,24 +75,26 @@ export function Sparkline({ values, width, height = 64, accessibilityLabel }: Sp
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    position: 'relative',
-  },
-  segment: {
-    position: 'absolute',
-    height: STROKE,
-    backgroundColor: colors.textSecondary,
-    transformOrigin: 'left center',
-  },
-  marker: {
-    position: 'absolute',
-    width: MARKER,
-    height: MARKER,
-    borderRadius: MARKER / 2,
-    backgroundColor: colors.textPrimary,
-    // Surface ring so the point stays legible where the line runs under it.
-    borderWidth: 2,
-    borderColor: colors.bgSurface,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      position: 'relative',
+    },
+    segment: {
+      position: 'absolute',
+      height: STROKE,
+      backgroundColor: colors.textSecondary,
+      transformOrigin: 'left center',
+    },
+    marker: {
+      position: 'absolute',
+      width: MARKER,
+      height: MARKER,
+      borderRadius: MARKER / 2,
+      backgroundColor: colors.textPrimary,
+      // Surface ring so the point stays legible where the line runs under it.
+      borderWidth: 2,
+      borderColor: colors.bgSurface,
+    },
+  });
+}

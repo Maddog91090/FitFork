@@ -1,8 +1,9 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Image, type ImageProps } from 'expo-image';
 import { Card } from './Card';
 import { Button } from './Button';
-import { colors, spacing, typography } from '../../theme/tokens';
+import { spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 type EmptyStateProps = {
   /** Brand illustration for this slot. Generated on bgSurface, so it sits on the card seamlessly. */
@@ -24,6 +25,8 @@ export function EmptyState({
   actionLabel,
   onAction,
 }: EmptyStateProps) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const hasAction = Boolean(actionLabel && onAction);
   return (
     <Card style={styles.card}>
@@ -39,31 +42,33 @@ export function EmptyState({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    alignItems: 'center',
-    paddingVertical: spacing.xl,
-  },
-  illustration: {
-    width: 160,
-    height: 160,
-    marginBottom: spacing.sm,
-  },
-  icon: {
-    marginBottom: spacing.md,
-  },
-  title: {
-    ...typography.title,
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-    textAlign: 'center',
-  },
-  message: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  messageSpaced: {
-    marginBottom: spacing.lg,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    card: {
+      alignItems: 'center',
+      paddingVertical: spacing.xl,
+    },
+    illustration: {
+      width: 160,
+      height: 160,
+      marginBottom: spacing.sm,
+    },
+    icon: {
+      marginBottom: spacing.md,
+    },
+    title: {
+      ...typography.title,
+      color: colors.textPrimary,
+      marginBottom: spacing.xs,
+      textAlign: 'center',
+    },
+    message: {
+      ...typography.body,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    messageSpaced: {
+      marginBottom: spacing.lg,
+    },
+  });
+}

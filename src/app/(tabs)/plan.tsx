@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
@@ -6,7 +6,7 @@ import { getCurrentPlan, updatePlanEntry, fetchRecipes, type Recipe, type SavedP
 import { pickReplacementRecipe, MEAL_TYPE_RATIOS, clampPortionMultiplier, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { centeredContent, colors, spacing, typography } from '../../theme/tokens';
+import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const DAY_LABELS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -17,6 +17,8 @@ const MEAL_TYPE_LABELS: Record<MealType, string> = {
 };
 
 export default function PlanScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { session, loading } = useAuth();
   const [plan, setPlan] = useState<SavedPlan | null>(null);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -151,27 +153,29 @@ export default function PlanScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.bgBase,
-    padding: spacing.lg,
-  },
-  container: { padding: spacing.lg, ...centeredContent },
-  dayBlock: { marginBottom: spacing.lg },
-  dayLabel: {
-    ...typography.overline,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-  },
-  entryCard: { marginBottom: spacing.sm },
-  entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  entryInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  mealTypeLabel: { ...typography.caption, width: 80, color: colors.textSecondary },
-  recipeName: { ...typography.bodyStrong, flex: 1, color: colors.textPrimary },
-  swapHint: { ...typography.captionStrong, color: colors.accentRedDeep, marginLeft: spacing.md },
-  error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.bgBase },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.bgBase,
+      padding: spacing.lg,
+    },
+    container: { padding: spacing.lg, ...centeredContent },
+    dayBlock: { marginBottom: spacing.lg },
+    dayLabel: {
+      ...typography.overline,
+      color: colors.textSecondary,
+      marginBottom: spacing.sm,
+    },
+    entryCard: { marginBottom: spacing.sm },
+    entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    entryInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+    mealTypeLabel: { ...typography.caption, width: 80, color: colors.textSecondary },
+    recipeName: { ...typography.bodyStrong, flex: 1, color: colors.textPrimary },
+    swapHint: { ...typography.captionStrong, color: colors.accentRedDeep, marginLeft: spacing.md },
+    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
+  });
+}

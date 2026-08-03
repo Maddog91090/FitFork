@@ -28,7 +28,29 @@ which sizes an emoji glyph rather than text.
 
 ## Color
 
-Import `colors`. The names carry the intent — respect it:
+Call `useThemeColors()` inside the component — never import the static
+`colors` export in a screen or a shared component. It resolves to
+`lightColors` or `darkColors` based on the OS setting (`useColorScheme()`
+under the hood) and re-renders when the user flips their system theme, which
+the static object can't do. Because the palette is now dynamic, styles move
+into a factory function called with `useMemo`:
+
+```tsx
+export function Thing() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  return <View style={styles.card} />;
+}
+
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({ card: { backgroundColor: colors.bgSurface } });
+}
+```
+
+The static `colors` export still exists (it's `lightColors`) for the rare
+non-component call site — tests mostly — that can't call a hook.
+
+The names carry the intent — respect it:
 
 | Use | Token |
 | --- | --- |
@@ -55,8 +77,13 @@ Rules:
 - Macros always keep their hue, everywhere they appear (cards, charts, legends):
   `macroProtein` (terracotta), `macroCarbs` (teal), `macroFat` (indigo).
   Training uses `effort` and `rest`. Never re-map these per screen.
-- Every foreground token is ≥ 4.5:1 on `bgBase`. If you add a color, verify the
-  ratio before committing it, and write the ratio in the comment next to it.
+- Every foreground token is ≥ 4.5:1 on `bgBase`/`bgSurface` — **in both
+  `lightColors` and `darkColors`.** If you add or change a color, verify the
+  ratio in both palettes before committing (a quick WCAG relative-luminance
+  script is enough; there's no in-repo validator). `darkColors` is not just
+  light-colors-inverted: several light-mode text shades (the macro hues,
+  `accentRedDeep`) are too dark to read on a near-black background and needed
+  a lighter step picked specifically for dark contrast, not a mechanical flip.
 
 ## Typography
 
@@ -183,11 +210,13 @@ The app tutoies the user and speaks like a coach who respects their time:
 
 ## Where things stand
 
-Shipped: tokens, both fonts, the shared components (`Button`, `Card`,
-`TextField`, `EmptyState`, `ChoiceGroup`, `Sparkline`, `PressableScale`), the
-typography pass across all screens, the three brand illustrations, and the
-first motion pass (onboarding step transitions and progress fill, springy chip
-and cell presses).
+Shipped: tokens (light **and** dark), `useThemeColors()`, both fonts, the
+shared components (`Button`, `Card`, `TextField`, `EmptyState`, `ChoiceGroup`,
+`Sparkline`, `PressableScale`), the typography pass across all screens, the
+three brand illustrations (transparent, dark-safe), the app icon / splash
+(also dark-safe, with a native dark splash variant), and the first motion pass
+(onboarding step transitions and progress fill, springy chip and cell
+presses).
 
 **Charts.** Read the `dataviz` skill before writing the first line of chart
 code. Two things it does not know about this app, learned building the weight
@@ -197,31 +226,58 @@ across the app rather than decoration; and the brand red does **not** go to a
 chart mark — the screen's one primary action already owns it, so emphasis
 comes from ink weight (`textSecondary` line, `textPrimary` current point).
 `Sparkline` draws a single series from rotated views, no charting dependency.
+It already reads `useThemeColors()`, so it's dark-mode-correct with no extra
+work.
 
-Not built yet, and worth knowing before you plan work:
+**Dark mode — shipped, here's what to know:**
 
-- **Dark mode.** No dark tokens exist, and `app.json` now declares
-  `userInterfaceStyle: "light"` to match. Note the order of operations: the
-  three shipped illustrations have their light background baked in, so dark
-  mode needs transparent re-exports before it can look right — doing the
-  token work first would leave three white slabs on a dark screen.
-- **Illustrations beyond the three that shipped.** The onboarding hero and
-  the plan / grocery empty states are in `assets/images/illustrations/`; see
-  that folder's README and
-  `docs/superpowers/specs/2026-08-02-illustrations-soft-neutral-design.md`.
-  The rule that matters when adding one: an illustration is generated on the
-  exact color it will sit over — `bgBase` on a screen, `bgSurface` inside a
-  card — and measured before shipping, because a background a few points off
-  bands visibly against a flat screen. Recipe and exercise imagery, and the
-  weight-log empty state, are still unillustrated.
-- **Splash & app icon — done, and how.** The brand mark is the running figure
-  from the onboarding hero (fork in hand, red track sweep), not the old
-  plate/track logo. The full icon set (`icon.png`, the three `android-icon-*`
-  layers, `favicon.png`, `splash-icon.png`) and the transparent
-  `logo-mark.png` master were keyed from one square 2k render by flood-filling
-  the off-white background — flood-fill, not a distance threshold, because the
-  mark's interior white lane lines are pure white and a threshold key would eat
-  them. Every icon sits on `bgBase`, so the render's faint light edge fringe is
-  invisible; it would only show on a dark surface, which is also why the mark is
-  not yet dark-mode-ready. `app.json` splash and adaptive-icon backgrounds are
-  now `bgBase`. login/signup show `logo-mark.png` via `expo-image` `contain`.
+- `app.json` is back to `userInterfaceStyle: "automatic"`; the splash screen
+  has a native `dark` variant (`expo-splash-screen`'s plugin supports a
+  `dark: { image, backgroundColor }` key since it's SDK-native, not a custom
+  hack) pointing at the same transparent splash image with a dark
+  `backgroundColor`.
+- The three illustrations and the logo were re-exported **fully transparent**
+  (no baked background at all, unlike the first light-only pass) specifically
+  so they self-adapt to either theme — the "generate on the exact background
+  color" approach documented lower in this file is now historical: it was the
+  right call before dark mode existed, but a transparent asset is strictly
+  more robust once there are two themes to sit on.
+- Getting there required un-premultiplying (decontaminating) the edges: a
+  transparent PNG whose partially-transparent border pixels still carry the
+  RGB of the old opaque background reads as an invisible seam on a light
+  screen and a visible light **halo** on a dark one. Fix: for every pixel
+  with `0 < alpha < 255`, recover the true foreground color with
+  `fg = (observed − bg×(1−alpha)) / alpha` rather than just keeping the
+  alpha-keyed cutout. Don't apply this blindly to every partial-alpha pixel,
+  though — a soft drop shadow is *also* partial-alpha, and decontaminating it
+  would be repainting a legitimate design element, not fixing a defect. Gate
+  the correction on the pixel being light-colored (a real bg-bleed halo),
+  and leave dark, low-alpha pixels (shadows) alone.
+- One illustration — `onboarding-hero.png` — keeps a soft light glow along the
+  track on a dark background even after that fix. That glow is baked into
+  fully **opaque** pixels (the generator's own "speed motion" rendering
+  style, not a matting artifact), so it can't be pixel-fixed without
+  repainting the art. It's a judgment call whether that reads as an
+  intentional "glowing track at night" effect or as unwanted haze — it hasn't
+  been seen on an actual dark device yet, so don't assume either way; look
+  before touching it again.
+- Every dark color was chosen against a computed WCAG contrast ratio, not
+  eyeballed — see the rule under **Color** above. The one thing not yet
+  verified is the **rendered** result: this was built and type/test-checked
+  in an environment that could composite the illustration/logo PNGs against
+  the dark hex values pixel-by-pixel, but couldn't reliably force
+  `prefers-color-scheme: dark` in the dev-server browser to see the actual
+  React output live (`useColorScheme()` is captured at module load by
+  react-native-web's Appearance polyfill; monkey-patching `matchMedia`
+  afterward doesn't reach it). First real look happens on-device, where
+  toggling system dark mode is native and instant.
+
+**Illustrations beyond the three that shipped.** The onboarding hero and the
+plan / grocery empty states are in `assets/images/illustrations/`; see that
+folder's README and
+`docs/superpowers/specs/2026-08-02-illustrations-soft-neutral-design.md` (that
+spec's "generate on the exact background color" guidance is superseded by the
+transparent approach above). Recipe and exercise imagery, and the weight-log
+empty state, are still unillustrated — recipe/exercise imagery also has no
+data-model field to hold it yet (`Recipe` has no `imageUrl`), so that's a
+schema change first, not just an asset drop.
