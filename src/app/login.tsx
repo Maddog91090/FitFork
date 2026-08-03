@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { Link, router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { TextField } from '../components/ui/TextField';
@@ -32,7 +33,11 @@ export default function LoginScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.logoWrap}>
-        <Image source={require('../../assets/images/icon.png')} style={styles.logo} />
+        <Image
+          source={require('../../assets/images/logo-mark.png')}
+          style={styles.logo}
+          contentFit="contain"
+        />
       </View>
       <Text style={styles.brand}>FitPro</Text>
 
@@ -69,7 +74,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignSelf: 'center',
     marginBottom: spacing.sm,
-    overflow: 'hidden',
+    padding: spacing.sm,
     ...shadow.card,
   },
   logo: { width: '100%', height: '100%' },

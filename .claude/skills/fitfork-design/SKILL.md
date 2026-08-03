@@ -214,6 +214,14 @@ Not built yet, and worth knowing before you plan work:
   card — and measured before shipping, because a background a few points off
   bands visibly against a flat screen. Recipe and exercise imagery, and the
   weight-log empty state, are still unillustrated.
-- **Splash screen.** `assets/images/splash-icon.png` has an opaque white
-  background, so `app.json`'s splash `backgroundColor` cannot move to `bgBase`
-  until the asset is re-exported with transparency.
+- **Splash & app icon — done, and how.** The brand mark is the running figure
+  from the onboarding hero (fork in hand, red track sweep), not the old
+  plate/track logo. The full icon set (`icon.png`, the three `android-icon-*`
+  layers, `favicon.png`, `splash-icon.png`) and the transparent
+  `logo-mark.png` master were keyed from one square 2k render by flood-filling
+  the off-white background — flood-fill, not a distance threshold, because the
+  mark's interior white lane lines are pure white and a threshold key would eat
+  them. Every icon sits on `bgBase`, so the render's faint light edge fringe is
+  invisible; it would only show on a dark surface, which is also why the mark is
+  not yet dark-mode-ready. `app.json` splash and adaptive-icon backgrounds are
+  now `bgBase`. login/signup show `logo-mark.png` via `expo-image` `contain`.
