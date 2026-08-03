@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { Link, router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
+import { translateAuthError } from '../lib/authErrors';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
 import { centeredContent, spacing, radius, shadow, typography, useThemeColors, type ThemeColors } from '../theme/tokens';
@@ -10,11 +11,13 @@ import { centeredContent, spacing, radius, shadow, typography, useThemeColors, t
 export default function LoginScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { session, signIn } = useAuth();
+  const { session, signIn, resetPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [resetSubmitting, setResetSubmitting] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   useEffect(() => {
     if (session) {
@@ -24,12 +27,30 @@ export default function LoginScreen() {
 
   const handleSubmit = async () => {
     setError(null);
+    setResetSent(false);
     setSubmitting(true);
     const { error } = await signIn(email, password);
     setSubmitting(false);
     if (error) {
-      setError(error.message);
+      setError(translateAuthError(error));
     }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Entre ton email ci-dessus pour recevoir le lien de réinitialisation.');
+      return;
+    }
+    setError(null);
+    setResetSent(false);
+    setResetSubmitting(true);
+    const { error } = await resetPassword(email);
+    setResetSubmitting(false);
+    if (error) {
+      setError(translateAuthError(error));
+      return;
+    }
+    setResetSent(true);
   };
 
   return (
@@ -53,6 +74,11 @@ export default function LoginScreen() {
         />
         <TextField label="Mot de passe" value={password} onChangeText={setPassword} secureTextEntry />
 
+        <Pressable onPress={handleForgotPassword} disabled={resetSubmitting} style={styles.forgotLink}>
+          <Text style={styles.switchTextAccent}>Mot de passe oublié ?</Text>
+        </Pressable>
+
+        {resetSent && <Text style={styles.confirmText}>Email envoyé si ce compte existe. Vérifie ta boîte mail.</Text>}
         {error && <Text style={styles.error}>{error}</Text>}
 
         <Button title="Se connecter" onPress={handleSubmit} loading={submitting} />
@@ -90,7 +116,15 @@ function createStyles(colors: ThemeColors) {
       color: colors.textPrimary,
       marginBottom: spacing.xl,
     },
-    error: { ...typography.body, color: colors.error, marginBottom: spacing.md, textAlign: 'center' },
+    forgotLink: { alignSelf: 'flex-end', marginTop: spacing.sm },
+    confirmText: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: spacing.md,
+      marginBottom: spacing.md,
+      textAlign: 'center',
+    },
+    error: { ...typography.body, color: colors.error, marginTop: spacing.md, marginBottom: spacing.md, textAlign: 'center' },
     switchLink: { marginTop: spacing.lg, textAlign: 'center' },
     switchText: { ...typography.caption, textAlign: 'center', color: colors.textSecondary },
     switchTextAccent: { ...typography.captionStrong, color: colors.accentRedDeep },

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
+import { translateAuthError } from '../lib/authErrors';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
 import { centeredContent, spacing, radius, shadow, typography, useThemeColors, type ThemeColors } from '../theme/tokens';
@@ -13,17 +14,22 @@ export default function SignupScreen() {
   const { signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [confirmationSent, setConfirmationSent] = useState(false);
 
   const handleSubmit = async () => {
     setError(null);
+    if (password !== confirmPassword) {
+      setError('Les mots de passe ne correspondent pas.');
+      return;
+    }
     setSubmitting(true);
     const { error } = await signUp(email, password);
     setSubmitting(false);
     if (error) {
-      setError(error.message);
+      setError(translateAuthError(error));
       return;
     }
     setConfirmationSent(true);
@@ -64,6 +70,12 @@ export default function SignupScreen() {
           keyboardType="email-address"
         />
         <TextField label="Mot de passe" value={password} onChangeText={setPassword} secureTextEntry />
+        <TextField
+          label="Confirmer le mot de passe"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+        />
 
         {error && <Text style={styles.error}>{error}</Text>}
 

@@ -4,6 +4,7 @@ import { Link, router } from 'expo-router';
 import { useLinkingURL } from 'expo-linking';
 import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import { supabase } from '../../lib/supabase';
+import { translateAuthError } from '../../lib/authErrors';
 import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 /**
@@ -25,7 +26,11 @@ export default function AuthCallbackScreen() {
     const { params, errorCode } = QueryParams.getQueryParams(url);
 
     if (errorCode || params.error) {
-      setError(params.error_description ?? errorCode ?? 'Lien invalide ou expiré.');
+      setError(
+        params.error_code === 'otp_expired'
+          ? 'Ce lien a expiré ou a déjà été utilisé. Demande un nouveau lien.'
+          : 'Lien invalide ou expiré.'
+      );
       return;
     }
 
@@ -38,10 +43,10 @@ export default function AuthCallbackScreen() {
       .setSession({ access_token: params.access_token, refresh_token: params.refresh_token })
       .then(({ error: sessionError }) => {
         if (sessionError) {
-          setError(sessionError.message);
+          setError(translateAuthError(sessionError));
           return;
         }
-        router.replace('/home');
+        router.replace(params.type === 'recovery' ? '/auth/reset-password' : '/home');
       });
   }, [url]);
 
