@@ -117,7 +117,9 @@ export default function WorkoutScreen() {
         return (
           <Pressable key={sessionItem.name} onPress={() => toggleSession(index)}>
             <Card style={styles.sessionCard}>
-              <Image source={sessionItem.image} style={styles.sessionPhoto} accessibilityLabel={sessionItem.name} />
+              <View style={styles.sessionPhotoFrame}>
+                <Image source={sessionItem.image} style={styles.sessionPhoto} accessibilityLabel={sessionItem.name} />
+              </View>
               <Text style={styles.sessionTitle}>
                 Séance {index + 1} — {sessionItem.name}
               </Text>
@@ -190,12 +192,17 @@ function createStyles(colors: ThemeColors) {
     levelSummary: { ...typography.body, marginTop: spacing.sm, color: colors.textSecondary },
     levelDuration: { ...typography.caption, marginBottom: spacing.lg, color: colors.textSecondary },
     sessionCard: { marginBottom: spacing.sm },
-    sessionPhoto: {
+    sessionPhotoFrame: {
       width: '100%',
       aspectRatio: 4 / 3,
       borderRadius: radius.md,
       backgroundColor: colors.bgSunken,
       marginBottom: spacing.sm,
+      overflow: 'hidden',
+    },
+    sessionPhoto: {
+      width: '100%',
+      height: '100%',
     },
     sessionTitle: { ...typography.subheading, color: colors.textPrimary },
     sessionDetail: { marginTop: spacing.sm, marginLeft: spacing.md },

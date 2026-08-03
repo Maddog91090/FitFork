@@ -81,7 +81,9 @@ export default function RecipeDetailScreen() {
       )}
 
       {recipe.imageUrl && (
-        <Image source={{ uri: recipe.imageUrl }} style={styles.photo} accessibilityLabel={recipe.name} />
+        <View style={styles.photoFrame}>
+          <Image source={{ uri: recipe.imageUrl }} style={styles.photo} accessibilityLabel={recipe.name} />
+        </View>
       )}
 
       <Text style={styles.sectionTitle}>Ingrédients</Text>
@@ -121,13 +123,18 @@ function createStyles(colors: ThemeColors) {
     title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.xs },
     macros: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
     portionBanner: { ...typography.captionStrong, color: colors.accentRedDeep, marginBottom: spacing.lg },
-    photo: {
+    photoFrame: {
       width: '100%',
       aspectRatio: 4 / 3,
       borderRadius: radius.lg,
       backgroundColor: colors.bgSunken,
       marginBottom: spacing.lg,
+      overflow: 'hidden',
       ...shadow.card,
+    },
+    photo: {
+      width: '100%',
+      height: '100%',
     },
     sectionTitle: {
       ...typography.overline,
