@@ -8,7 +8,7 @@ import { ChoiceGroup } from '../../components/ChoiceGroup';
 import { homeWorkoutProgram, getLevelProgram } from '../../lib/homeWorkoutProgram';
 import type { Session } from '../../lib/homeWorkoutProgram';
 import { Card } from '../../components/ui/Card';
-import { colors, spacing, typography } from '../../theme/tokens';
+import { centeredContent, colors, spacing, typography } from '../../theme/tokens';
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
 
@@ -175,7 +175,7 @@ function SessionDetail({ session }: { session: Session }) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bgBase },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
-  container: { padding: spacing.lg },
+  container: { padding: spacing.lg, ...centeredContent },
   title: { ...typography.display, color: colors.textPrimary },
   subtitle: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.lg },
   block: { marginVertical: spacing.lg },

@@ -15,7 +15,7 @@ import type { ExperienceLevel, Equipment } from '../lib/profile';
 import { ChoiceGroup } from '../components/ChoiceGroup';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
-import { colors, motion, spacing, typography } from '../theme/tokens';
+import { centeredContent, colors, motion, spacing, typography } from '../theme/tokens';
 import type { Sex, ActivityLevel, Goal } from '../lib/nutrition';
 
 const SEX_OPTIONS: { value: Sex; label: string }[] = [
@@ -181,6 +181,7 @@ export default function OnboardingScreen() {
         style={styles.hero}
         contentFit="contain"
       />
+      <View style={styles.content}>
       <View style={styles.header}>
         <View style={styles.progressRow}>
           {Array.from({ length: TOTAL_STEPS }).map((_, index) => (
@@ -290,6 +291,7 @@ export default function OnboardingScreen() {
           <Button title="Valider" onPress={handleSubmit} loading={submitting} />
         )}
       </View>
+      </View>
     </View>
   );
 }
@@ -334,6 +336,9 @@ const styles = StyleSheet.create({
   // is the same color as the screen. maxHeight keeps the form above the fold on
   // a small phone. Same banner on all four steps.
   hero: { width: '100%', aspectRatio: 2.4, maxHeight: 150 },
+  // Everything below the full-bleed hero is capped and centered; the hero
+  // itself stays outside this wrapper so it keeps spanning edge to edge.
+  content: { flex: 1, ...centeredContent },
   header: { padding: spacing.lg, paddingBottom: spacing.sm },
   progressRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
   segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.divider, overflow: 'hidden' },

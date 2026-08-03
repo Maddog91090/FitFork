@@ -5,7 +5,7 @@ import { useAuth } from '../../lib/auth-context';
 import { getCurrentPlan, fetchRecipeIngredients } from '../../lib/mealPlanData';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { colors, spacing, typography } from '../../theme/tokens';
+import { centeredContent, colors, spacing, typography } from '../../theme/tokens';
 
 type AggregatedIngredient = { name: string; quantity: number; unit: string };
 
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgBase,
     padding: spacing.lg,
   },
-  container: { padding: spacing.lg },
+  container: { padding: spacing.lg, ...centeredContent },
   title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
   row: {
     flexDirection: 'row',

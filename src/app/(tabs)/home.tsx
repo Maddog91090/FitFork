@@ -6,7 +6,7 @@ import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { colors, spacing, typography } from '../../theme/tokens';
+import { centeredContent, colors, spacing, typography } from '../../theme/tokens';
 
 export default function HomeScreen() {
   const { session, loading, signOut } = useAuth();
@@ -111,7 +111,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bgBase },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
-  container: { padding: spacing.lg },
+  container: { padding: spacing.lg, ...centeredContent },
   greeting: { ...typography.caption, color: colors.textSecondary },
   name: { ...typography.hero, color: colors.textPrimary, marginBottom: spacing.lg },
   error: { ...typography.body, color: colors.error, marginBottom: spacing.md },

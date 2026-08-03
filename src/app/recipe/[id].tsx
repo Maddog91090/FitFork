@@ -10,7 +10,7 @@ import {
 } from '../../lib/mealPlanData';
 import { scaleIngredientQuantity, scaleMacroValue, clampPortionMultiplier } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
-import { colors, spacing, typography } from '../../theme/tokens';
+import { centeredContent, colors, spacing, typography } from '../../theme/tokens';
 
 export default function RecipeDetailScreen() {
   const { id, portion: portionParam } = useLocalSearchParams<{ id: string; portion?: string }>();
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgBase,
     padding: spacing.lg,
   },
-  container: { padding: spacing.lg },
+  container: { padding: spacing.lg, ...centeredContent },
   title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.xs },
   macros: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
   portionBanner: { ...typography.captionStrong, color: colors.accentRedDeep, marginBottom: spacing.lg },

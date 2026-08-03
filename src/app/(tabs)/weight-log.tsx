@@ -9,7 +9,7 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Sparkline } from '../../components/ui/Sparkline';
-import { colors, fontFamily, spacing, typography } from '../../theme/tokens';
+import { centeredContent, colors, fontFamily, spacing, typography } from '../../theme/tokens';
 
 /** French decimals, without depending on Intl being built into the JS engine. */
 function formatNumber(value: number, decimals = 1): string {
@@ -159,7 +159,7 @@ export default function WeightLogScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bgBase },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
-  container: { padding: spacing.lg },
+  container: { padding: spacing.lg, ...centeredContent },
   title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
   statCard: { marginTop: spacing.xl },
   statLabel: { ...typography.overline, color: colors.textSecondary },

@@ -170,6 +170,18 @@ export const layout = {
   maxContentWidth: 560,
 } as const;
 
+/**
+ * Spread into a screen's outer content style — `{ padding: spacing.lg, ...centeredContent }`
+ * — to cap it at `layout.maxContentWidth` and center it. A no-op on phone-width
+ * native screens (they never reach the cap); on web/tablet it stops inputs and
+ * cards from stretching edge to edge of the window.
+ */
+export const centeredContent = {
+  width: '100%',
+  maxWidth: layout.maxContentWidth,
+  alignSelf: 'center',
+} as const;
+
 export const shadow = {
   subtle: {
     shadowColor: '#000000',

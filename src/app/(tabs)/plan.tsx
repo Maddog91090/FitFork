@@ -6,7 +6,7 @@ import { getCurrentPlan, updatePlanEntry, fetchRecipes, type Recipe, type SavedP
 import { pickReplacementRecipe, MEAL_TYPE_RATIOS, clampPortionMultiplier, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { colors, spacing, typography } from '../../theme/tokens';
+import { centeredContent, colors, spacing, typography } from '../../theme/tokens';
 
 const DAY_LABELS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgBase,
     padding: spacing.lg,
   },
-  container: { padding: spacing.lg },
+  container: { padding: spacing.lg, ...centeredContent },
   dayBlock: { marginBottom: spacing.lg },
   dayLabel: {
     ...typography.overline,

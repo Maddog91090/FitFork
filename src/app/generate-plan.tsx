@@ -10,7 +10,7 @@ import { computeAdjustedTargets } from '../lib/progressTracking';
 import { generateWeeklyPlan, type MealSlot, type MealType } from '../lib/mealPlan';
 import { Button } from '../components/ui/Button';
 import { PressableScale } from '../components/ui/PressableScale';
-import { colors, radius, shadow, spacing, state, typography } from '../theme/tokens';
+import { centeredContent, colors, radius, shadow, spacing, state, typography } from '../theme/tokens';
 
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
@@ -134,7 +134,7 @@ export default function GeneratePlanScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bgBase },
-  container: { padding: spacing.lg },
+  container: { padding: spacing.lg, ...centeredContent },
   title: { ...typography.title, color: colors.textPrimary, marginBottom: spacing.lg },
   dayRow: { marginBottom: spacing.md },
   dayLabel: {
