@@ -29,6 +29,7 @@ describe('fetchRecipes', () => {
           base_fat_g: 8,
           base_carbs_g: 58,
           base_serving_g: 300,
+          image_url: 'https://example.com/porridge.jpg',
         },
       ],
       error: null,
@@ -48,6 +49,7 @@ describe('fetchRecipes', () => {
         baseFatG: 8,
         baseCarbsG: 58,
         baseServingG: 300,
+        imageUrl: 'https://example.com/porridge.jpg',
       },
     ]);
     expect(order).toHaveBeenCalledWith('id');

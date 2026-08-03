@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Image } from 'react-native';
 import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 import {
   fetchRecipes,
@@ -10,7 +10,7 @@ import {
 } from '../../lib/mealPlanData';
 import { scaleIngredientQuantity, scaleMacroValue, clampPortionMultiplier } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
-import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+import { centeredContent, radius, shadow, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 export default function RecipeDetailScreen() {
   const colors = useThemeColors();
@@ -80,6 +80,10 @@ export default function RecipeDetailScreen() {
         </Text>
       )}
 
+      {recipe.imageUrl && (
+        <Image source={{ uri: recipe.imageUrl }} style={styles.photo} accessibilityLabel={recipe.name} />
+      )}
+
       <Text style={styles.sectionTitle}>Ingrédients</Text>
       <Card style={styles.card}>
         {ingredients.map((ing, index) => (
@@ -117,6 +121,14 @@ function createStyles(colors: ThemeColors) {
     title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.xs },
     macros: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
     portionBanner: { ...typography.captionStrong, color: colors.accentRedDeep, marginBottom: spacing.lg },
+    photo: {
+      width: '100%',
+      aspectRatio: 4 / 3,
+      borderRadius: radius.lg,
+      backgroundColor: colors.bgSunken,
+      marginBottom: spacing.lg,
+      ...shadow.card,
+    },
     sectionTitle: {
       ...typography.overline,
       color: colors.textSecondary,
