@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Pressable, Image } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getTrainingProfile, upsertTrainingProfile } from '../../lib/profile';
@@ -8,7 +8,7 @@ import { ChoiceGroup } from '../../components/ChoiceGroup';
 import { homeWorkoutProgram, getLevelProgram } from '../../lib/homeWorkoutProgram';
 import type { Session } from '../../lib/homeWorkoutProgram';
 import { Card } from '../../components/ui/Card';
-import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+import { centeredContent, radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
 
@@ -117,6 +117,7 @@ export default function WorkoutScreen() {
         return (
           <Pressable key={sessionItem.name} onPress={() => toggleSession(index)}>
             <Card style={styles.sessionCard}>
+              <Image source={sessionItem.image} style={styles.sessionPhoto} accessibilityLabel={sessionItem.name} />
               <Text style={styles.sessionTitle}>
                 Séance {index + 1} — {sessionItem.name}
               </Text>
@@ -189,6 +190,13 @@ function createStyles(colors: ThemeColors) {
     levelSummary: { ...typography.body, marginTop: spacing.sm, color: colors.textSecondary },
     levelDuration: { ...typography.caption, marginBottom: spacing.lg, color: colors.textSecondary },
     sessionCard: { marginBottom: spacing.sm },
+    sessionPhoto: {
+      width: '100%',
+      aspectRatio: 4 / 3,
+      borderRadius: radius.md,
+      backgroundColor: colors.bgSunken,
+      marginBottom: spacing.sm,
+    },
     sessionTitle: { ...typography.subheading, color: colors.textPrimary },
     sessionDetail: { marginTop: spacing.sm, marginLeft: spacing.md },
     sessionMeta: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.xs },

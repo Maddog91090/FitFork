@@ -1,8 +1,10 @@
+import type { ImageSourcePropType } from 'react-native';
 import type { ExperienceLevel } from './profile';
 
 export type CircuitSession = {
   type: 'circuit';
   name: string;
+  image: ImageSourcePropType;
   workSeconds: number;
   restSeconds: number;
   rounds: number;
@@ -18,6 +20,7 @@ export type SeriesExercise = {
 export type SeriesSession = {
   type: 'series';
   name: string;
+  image: ImageSourcePropType;
   restLabel: string;
   exercises: SeriesExercise[];
 };
@@ -83,6 +86,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
         {
           type: 'circuit',
           name: 'Full body doux',
+          image: require('../../assets/images/workouts/beginner-full-body-doux.jpg'),
           workSeconds: 30,
           restSeconds: 30,
           rounds: 2,
@@ -98,6 +102,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
         {
           type: 'circuit',
           name: 'Cardio léger',
+          image: require('../../assets/images/workouts/beginner-cardio-leger.jpg'),
           workSeconds: 30,
           restSeconds: 30,
           rounds: 3,
@@ -112,6 +117,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
         {
           type: 'series',
           name: 'Renforcement de base',
+          image: require('../../assets/images/workouts/beginner-renforcement-de-base.jpg'),
           restLabel: '45 s à 1 min de repos entre chaque',
           exercises: [
             { name: 'Squats', detail: '3 × 12' },
@@ -131,6 +137,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
         {
           type: 'circuit',
           name: 'Full body en circuit',
+          image: require('../../assets/images/workouts/intermediaire-full-body-circuit.jpg'),
           workSeconds: 40,
           restSeconds: 20,
           rounds: 3,
@@ -146,6 +153,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
         {
           type: 'circuit',
           name: 'Cardio HIIT',
+          image: require('../../assets/images/workouts/intermediaire-cardio-hiit.jpg'),
           workSeconds: 30,
           restSeconds: 30,
           rounds: 4,
@@ -160,6 +168,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
         {
           type: 'series',
           name: 'Bas du corps + gainage',
+          image: require('../../assets/images/workouts/intermediaire-bas-du-corps-gainage.jpg'),
           restLabel: '45 s à 1 min de repos',
           exercises: [
             { name: 'Squats', detail: '4 × 15' },
@@ -181,6 +190,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
         {
           type: 'circuit',
           name: 'Full body intense',
+          image: require('../../assets/images/workouts/avance-full-body-intense.jpg'),
           workSeconds: 45,
           restSeconds: 15,
           rounds: 4,
@@ -196,6 +206,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
         {
           type: 'circuit',
           name: 'HIIT explosif',
+          image: require('../../assets/images/workouts/avance-hiit-explosif.jpg'),
           workSeconds: 40,
           restSeconds: 20,
           rounds: 5,
@@ -211,6 +222,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
         {
           type: 'series',
           name: 'Force + gainage',
+          image: require('../../assets/images/workouts/avance-force-gainage.jpg'),
           restLabel: '30 à 45 s de repos seulement',
           exercises: [
             { name: 'Squats bulgares (pied arrière surélevé)', detail: '4 × 12 par jambe' },
