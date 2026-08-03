@@ -277,7 +277,29 @@ plan / grocery empty states are in `assets/images/illustrations/`; see that
 folder's README and
 `docs/superpowers/specs/2026-08-02-illustrations-soft-neutral-design.md` (that
 spec's "generate on the exact background color" guidance is superseded by the
-transparent approach above). Recipe and exercise imagery, and the weight-log
-empty state, are still unillustrated — recipe/exercise imagery also has no
-data-model field to hold it yet (`Recipe` has no `imageUrl`), so that's a
-schema change first, not just an asset drop.
+transparent approach above). The weight-log empty state is still unillustrated.
+
+**Recipe photography — shipped, 32/32.** Every recipe has a photorealistic
+3/4-angle dish photo, shown on `recipe/[id].tsx` under the title and macros,
+before "Ingrédients". Recipes are Supabase-backed and user-editable in
+principle, so the photos live in Supabase Storage (public `recipe-photos`
+bucket) with the URL in `recipes.image_url`, not bundled as app assets — a
+schema/data thing, not a static asset. The house style, baked into the prompt
+template and **not to be regressed on** for future recipes: casual,
+unpretentious home-cook plating (no ring molds, no architectural garnish, no
+sauce-dot drizzle art) — a home cook should look at the photo and believe they
+can make it, not that it came from a restaurant kitchen. Warm natural window
+light, shallow depth of field, plain wood-table background, no hands/people/
+text/logos.
+
+**Workout-session photography — shipped, 9/9.** Every session card in
+`(tabs)/workout.tsx` shows a photo above its title. Unlike recipes, the
+workout program (`homeWorkoutProgram.ts`) is fully static data with no
+Supabase table behind it, so these are bundled locally under
+`assets/images/workouts/` and `require()`'d straight into each session
+object's new `image` field, matching how the illustrations are bundled. House
+style: a normal, relatable person (not a fitness-model physique) performing
+the session's signature move in a plain home living room — mat or rug over a
+wood floor, natural window light, no gym equipment, no mirrors, no branding —
+so it reads as "you could do this in your own living room," the same
+achievable ethos as the recipe photos, translated to training.
