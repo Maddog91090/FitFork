@@ -1,4 +1,5 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { PressableScale } from './ui/PressableScale';
 import { colors, radius, shadow, spacing, state, typography } from '../theme/tokens';
 
 export type ChoiceOption<T extends string> = { value: T; label: string };
@@ -13,21 +14,17 @@ export function ChoiceGroup<T extends string>({ options, value, onChange }: Choi
   return (
     <View style={styles.row}>
       {options.map((option) => (
-        <Pressable
+        <PressableScale
           key={option.value}
           onPress={() => onChange(option.value)}
           accessibilityRole="radio"
           accessibilityState={{ selected: value === option.value }}
-          style={({ pressed }) => [
-            styles.pill,
-            value === option.value && styles.pillSelected,
-            pressed && styles.pillPressed,
-          ]}
+          style={[styles.pill, value === option.value && styles.pillSelected]}
         >
           <Text style={value === option.value ? styles.labelSelected : styles.label}>
             {option.label}
           </Text>
-        </Pressable>
+        </PressableScale>
       ))}
     </View>
   );
@@ -48,10 +45,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accentRed,
     shadowColor: colors.accentRed,
     shadowOpacity: 0.25,
-  },
-  pillPressed: {
-    opacity: state.pressedOpacity,
-    transform: [{ scale: state.pressedScale }],
   },
   label: { ...typography.subheading, color: colors.textPrimary },
   labelSelected: { ...typography.subheading, color: colors.textOnAccent },

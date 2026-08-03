@@ -124,11 +124,32 @@ withTiming(1, {
 - Motion confirms an action; it never announces itself. No bounce on a button,
   no spinning icons for decoration.
 
+What is wired today, to copy rather than reinvent:
+
+- **`PressableScale`** (`src/components/ui/PressableScale.tsx`) is the springy
+  version of the "chips and cells" press pattern — a shared value driving
+  `withSpring(motion.spring.snappy)` on scale and opacity. Use it for chips,
+  cells, and list rows. Buttons still darken; never give a button this.
+- **Onboarding step transitions** wrap the step body in an `Animated.View`
+  keyed by `step` with `entering={FadeInDown…entrance}`, so each step replays
+  the entrance. The keyed-remount trick is the simplest way to fire an entering
+  animation on a value change.
+- **Onboarding progress segments** grow a red fill left-to-right with
+  `scaleX` + `transformOrigin: 'left'` over `duration.base`, rather than
+  snapping color.
+
+Testing note: `react-native-reanimated` cannot load under jest-expo (its native
+worklets module crashes), so `__mocks__/react-native-reanimated.js` hand-mocks
+the small surface the app uses — animated components render as plain views,
+animations resolve to their target value. Add to that file when you reach for a
+reanimated API it doesn't cover yet; don't try to load the library's own mock.
+
 ## Interaction and accessibility
 
 - Every `Pressable` needs a visible pressed state. Two accepted patterns:
-  darken the fill (buttons — see `src/components/ui/Button.tsx`), or
-  `state.pressedOpacity` + `state.pressedScale` (chips, cells).
+  darken the fill (buttons — see `src/components/ui/Button.tsx`), or the scale +
+  opacity dip (chips, cells) — reach for `PressableScale`, which springs it,
+  rather than re-implementing a static `state.pressedScale` style.
 - Every tappable element is at least `state.minTouchSize` tall.
 - Every `Pressable` gets an `accessibilityRole` and, when it has state, an
   `accessibilityState`.
@@ -163,8 +184,10 @@ The app tutoies the user and speaks like a coach who respects their time:
 ## Where things stand
 
 Shipped: tokens, both fonts, the shared components (`Button`, `Card`,
-`TextField`, `EmptyState`, `ChoiceGroup`, `Sparkline`), the typography pass
-across all screens, and the three brand illustrations.
+`TextField`, `EmptyState`, `ChoiceGroup`, `Sparkline`, `PressableScale`), the
+typography pass across all screens, the three brand illustrations, and the
+first motion pass (onboarding step transitions and progress fill, springy chip
+and cell presses).
 
 **Charts.** Read the `dataviz` skill before writing the first line of chart
 code. Two things it does not know about this app, learned building the weight

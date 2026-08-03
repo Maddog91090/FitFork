@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../lib/profile';
@@ -9,6 +9,7 @@ import { fetchRecentWeightLogs, type WeightLogEntry } from '../lib/weightLogData
 import { computeAdjustedTargets } from '../lib/progressTracking';
 import { generateWeeklyPlan, type MealSlot, type MealType } from '../lib/mealPlan';
 import { Button } from '../components/ui/Button';
+import { PressableScale } from '../components/ui/PressableScale';
 import { colors, radius, shadow, spacing, state, typography } from '../theme/tokens';
 
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
@@ -110,21 +111,17 @@ export default function GeneratePlanScreen() {
           <Text style={styles.dayLabel}>{dayLabel}</Text>
           <View style={styles.mealRow}>
             {MEAL_TYPES.map((mealType, mealIndex) => (
-              <Pressable
+              <PressableScale
                 key={mealType}
                 onPress={() => toggle(dayIndex, mealIndex)}
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: selected[dayIndex][mealIndex] }}
-                style={({ pressed }) => [
-                  styles.cell,
-                  selected[dayIndex][mealIndex] && styles.cellSelected,
-                  pressed && styles.cellPressed,
-                ]}
+                style={[styles.cell, selected[dayIndex][mealIndex] && styles.cellSelected]}
               >
                 <Text style={selected[dayIndex][mealIndex] ? styles.cellLabelSelected : styles.cellLabel}>
                   {MEAL_TYPE_LABELS[mealType]}
                 </Text>
-              </Pressable>
+              </PressableScale>
             ))}
           </View>
         </View>
@@ -156,7 +153,6 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   cellSelected: { backgroundColor: colors.accentRed, shadowColor: colors.accentRed, shadowOpacity: 0.25 },
-  cellPressed: { opacity: state.pressedOpacity, transform: [{ scale: state.pressedScale }] },
   cellLabel: { ...typography.caption, color: colors.textSecondary },
   cellLabelSelected: { ...typography.captionStrong, color: colors.textOnAccent },
   error: { ...typography.body, color: colors.error, marginTop: spacing.md, marginBottom: spacing.sm },

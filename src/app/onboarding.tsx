@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
+import Animated, {
+  FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { upsertProfile, upsertTrainingProfile } from '../lib/profile';
@@ -8,7 +15,7 @@ import type { ExperienceLevel, Equipment } from '../lib/profile';
 import { ChoiceGroup } from '../components/ChoiceGroup';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
-import { colors, spacing, typography } from '../theme/tokens';
+import { colors, motion, spacing, typography } from '../theme/tokens';
 import type { Sex, ActivityLevel, Goal } from '../lib/nutrition';
 
 const SEX_OPTIONS: { value: Sex; label: string }[] = [
@@ -177,7 +184,7 @@ export default function OnboardingScreen() {
       <View style={styles.header}>
         <View style={styles.progressRow}>
           {Array.from({ length: TOTAL_STEPS }).map((_, index) => (
-            <View key={index} style={[styles.segment, index <= step && styles.segmentDone]} />
+            <ProgressSegment key={index} done={index <= step} />
           ))}
         </View>
         <Text style={styles.stepCounter}>
@@ -187,6 +194,11 @@ export default function OnboardingScreen() {
       </View>
 
       <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
+        {/* Keyed by step so each transition remounts and replays the entrance. */}
+        <Animated.View
+          key={step}
+          entering={FadeInDown.duration(motion.duration.base).easing(Easing.bezier(...motion.curve.entrance))}
+        >
         {step === 0 && (
           <>
             <Text style={styles.label}>Sexe</Text>
@@ -263,6 +275,7 @@ export default function OnboardingScreen() {
         )}
 
         {error && <Text style={styles.error}>{error}</Text>}
+        </Animated.View>
       </ScrollView>
 
       <View style={styles.footer}>
@@ -277,6 +290,30 @@ export default function OnboardingScreen() {
           <Button title="Valider" onPress={handleSubmit} loading={submitting} />
         )}
       </View>
+    </View>
+  );
+}
+
+/**
+ * A progress segment whose red fill grows left-to-right when its step is
+ * reached, rather than snapping on. The track underneath stays visible, so an
+ * in-progress fill reads as "getting there".
+ */
+function ProgressSegment({ done }: { done: boolean }) {
+  const fill = useSharedValue(done ? 1 : 0);
+
+  useEffect(() => {
+    fill.value = withTiming(done ? 1 : 0, {
+      duration: motion.duration.base,
+      easing: Easing.bezier(...motion.curve.standard),
+    });
+  }, [done, fill]);
+
+  const fillStyle = useAnimatedStyle(() => ({ transform: [{ scaleX: fill.value }] }));
+
+  return (
+    <View style={styles.segment}>
+      <Animated.View style={[styles.segmentFill, fillStyle]} />
     </View>
   );
 }
@@ -299,8 +336,17 @@ const styles = StyleSheet.create({
   hero: { width: '100%', aspectRatio: 2.4, maxHeight: 150 },
   header: { padding: spacing.lg, paddingBottom: spacing.sm },
   progressRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
-  segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.divider },
-  segmentDone: { backgroundColor: colors.accentRed },
+  segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.divider, overflow: 'hidden' },
+  segmentFill: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 2,
+    backgroundColor: colors.accentRed,
+    transformOrigin: 'left',
+  },
   stepCounter: { ...typography.overline, color: colors.textSecondary, marginBottom: spacing.xs },
   title: { ...typography.title, color: colors.textPrimary },
   body: { flex: 1 },
