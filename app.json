@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mealworkoutplanner",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "android": {
       "package": "com.maddog91steam.fitpro",
       "adaptiveIcon": {
@@ -28,11 +28,7 @@
         {
           "backgroundColor": "#F7F5F2",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 320,
-          "dark": {
-            "backgroundColor": "#17140F",
-            "image": "./assets/images/splash-icon.png"
-          }
+          "imageWidth": 320
         }
       ]
     ],

@@ -42,7 +42,7 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
       <Stack
         screenOptions={{
           headerShown: false,

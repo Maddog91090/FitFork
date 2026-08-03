@@ -5,8 +5,6 @@
  * hardcode colors, sizes, durations or font weights — import from here.
  * See `.claude/skills/fitfork-design/SKILL.md` for the rules behind these values.
  */
-import { useColorScheme } from 'react-native';
-
 export const lightColors = {
   // Surfaces — warm off-white base, pure white for raised content.
   bgBase: '#F7F5F2',
@@ -50,62 +48,17 @@ export const lightColors = {
   overlay: 'rgba(30, 27, 24, 0.45)',
 } as const;
 
-/**
- * Dark variant of the same semantic palette. Every text/background pairing
- * below is checked at ≥4.5:1 (WCAG AA) — see the contrast table in this
- * project's design notes before changing a value. Fills (accentRed, status
- * dots) stay the same hue as light mode; only colors used *as text* needed a
- * lighter step, since the light-mode text shades read as near-invisible on a
- * near-black background.
- */
-export const darkColors = {
-  bgBase: '#17140F',
-  bgSurface: '#252019',
-  bgSunken: '#0F0D0A',
-
-  textPrimary: '#F3F0EB',
-  textSecondary: '#A69D8F',
-  textTertiary: '#6E665A',
-  textOnAccent: '#FFFFFF',
-
-  accentRed: '#DC2626',
-  accentRedDeep: '#F87171',
-  accentRedSoft: '#2E1512',
-
-  divider: '#2C2822',
-  border: '#332E27',
-  borderStrong: '#433C32',
-
-  error: '#F87171',
-  errorSoft: '#2E1512',
-  success: '#4ADE80',
-  successSoft: '#132A1C',
-  warning: '#FBBF24',
-  warningSoft: '#2E2210',
-
-  macroProtein: '#FB923C',
-  macroCarbs: '#2DD4BF',
-  macroFat: '#A5B4FC',
-  effort: '#F87171',
-  rest: '#7DD3FC',
-
-  overlay: 'rgba(0, 0, 0, 0.6)',
-} as const;
-
-/** Light palette, kept as the default import for any call site that hasn't
- * been made theme-aware yet. Prefer `useThemeColors()` in components. */
 export const colors = lightColors;
 
 export type ThemeColors = { readonly [K in keyof typeof lightColors]: string };
 
 /**
- * The one place that reads the OS appearance setting. Returns `lightColors`
- * or `darkColors` reactively — call it inside a component (not at module
- * scope) so the screen re-renders when the user's system theme changes.
+ * The app is light-only by design decision — kept as a hook (rather than
+ * inlining `lightColors` at every call site) so screens don't need to change
+ * if that decision is ever revisited.
  */
 export function useThemeColors(): ThemeColors {
-  const scheme = useColorScheme();
-  return scheme === 'dark' ? darkColors : lightColors;
+  return lightColors;
 }
 
 /**

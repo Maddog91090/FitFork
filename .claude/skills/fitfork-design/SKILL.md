@@ -210,11 +210,11 @@ The app tutoies the user and speaks like a coach who respects their time:
 
 ## Where things stand
 
-Shipped: tokens (light **and** dark), `useThemeColors()`, both fonts, the
-shared components (`Button`, `Card`, `TextField`, `EmptyState`, `ChoiceGroup`,
-`Sparkline`, `PressableScale`), the typography pass across all screens, the
-three brand illustrations (transparent, dark-safe), the app icon / splash
-(also dark-safe, with a native dark splash variant), and the first motion pass
+Shipped: tokens (light-only — see **Dark mode** below for why there's no dark
+palette anymore), `useThemeColors()`, both fonts, the shared components
+(`Button`, `Card`, `TextField`, `EmptyState`, `ChoiceGroup`, `Sparkline`,
+`PressableScale`), the typography pass across all screens, the three brand
+illustrations (transparent), the app icon / splash, and the first motion pass
 (onboarding step transitions and progress fill, springy chip and cell
 presses).
 
@@ -226,51 +226,41 @@ across the app rather than decoration; and the brand red does **not** go to a
 chart mark — the screen's one primary action already owns it, so emphasis
 comes from ink weight (`textSecondary` line, `textPrimary` current point).
 `Sparkline` draws a single series from rotated views, no charting dependency.
-It already reads `useThemeColors()`, so it's dark-mode-correct with no extra
-work.
+It reads `useThemeColors()` like everything else, rather than hardcoding a
+color of its own.
 
-**Dark mode — shipped, here's what to know:**
+**Dark mode — tried, then reverted. The app is light-only by decision.**
 
-- `app.json` is back to `userInterfaceStyle: "automatic"`; the splash screen
-  has a native `dark` variant (`expo-splash-screen`'s plugin supports a
-  `dark: { image, backgroundColor }` key since it's SDK-native, not a custom
-  hack) pointing at the same transparent splash image with a dark
-  `backgroundColor`.
-- The three illustrations and the logo were re-exported **fully transparent**
-  (no baked background at all, unlike the first light-only pass) specifically
-  so they self-adapt to either theme — the "generate on the exact background
-  color" approach documented lower in this file is now historical: it was the
-  right call before dark mode existed, but a transparent asset is strictly
-  more robust once there are two themes to sit on.
-- Getting there required un-premultiplying (decontaminating) the edges: a
-  transparent PNG whose partially-transparent border pixels still carry the
-  RGB of the old opaque background reads as an invisible seam on a light
-  screen and a visible light **halo** on a dark one. Fix: for every pixel
-  with `0 < alpha < 255`, recover the true foreground color with
-  `fg = (observed − bg×(1−alpha)) / alpha` rather than just keeping the
-  alpha-keyed cutout. Don't apply this blindly to every partial-alpha pixel,
-  though — a soft drop shadow is *also* partial-alpha, and decontaminating it
-  would be repainting a legitimate design element, not fixing a defect. Gate
-  the correction on the pixel being light-colored (a real bg-bleed halo),
-  and leave dark, low-alpha pixels (shadows) alone.
-- One illustration — `onboarding-hero.png` — keeps a soft light glow along the
-  track on a dark background even after that fix. That glow is baked into
-  fully **opaque** pixels (the generator's own "speed motion" rendering
-  style, not a matting artifact), so it can't be pixel-fixed without
-  repainting the art. It's a judgment call whether that reads as an
-  intentional "glowing track at night" effect or as unwanted haze — it hasn't
-  been seen on an actual dark device yet, so don't assume either way; look
-  before touching it again.
-- Every dark color was chosen against a computed WCAG contrast ratio, not
-  eyeballed — see the rule under **Color** above. The one thing not yet
-  verified is the **rendered** result: this was built and type/test-checked
-  in an environment that could composite the illustration/logo PNGs against
-  the dark hex values pixel-by-pixel, but couldn't reliably force
-  `prefers-color-scheme: dark` in the dev-server browser to see the actual
-  React output live (`useColorScheme()` is captured at module load by
-  react-native-web's Appearance polyfill; monkey-patching `matchMedia`
-  afterward doesn't reach it). First real look happens on-device, where
-  toggling system dark mode is native and instant.
+Dark mode was fully built (theme-aware tokens, dark-safe transparent assets,
+native dark splash) and shipped, but the first real look on-device showed a
+dark login screen the user didn't like, and the call — deliberately, not from
+a bug — was to drop dark mode everywhere rather than patch just that screen.
+Current state:
+
+- `useThemeColors()` in `src/theme/tokens.ts` still exists and every screen
+  still calls it — it just always returns `lightColors` now. This was the
+  one-file fix: no screen or component needed touching, because they were
+  never coupled to `useColorScheme()` directly. `darkColors` was deleted
+  rather than kept dead — it's still in git history (`228667e`) if dark mode
+  ever comes back.
+- `app.json`'s `userInterfaceStyle` is `"light"` (not `"automatic"`), the
+  splash screen's `dark` variant block was removed, and `_layout.tsx`'s
+  `<StatusBar>` is hardcoded to `style="dark"`. All three matter: leaving any
+  of them on "automatic" would let native chrome (status bar, splash) follow
+  the OS scheme while the JS-rendered UI stays light — exactly the mismatch
+  this was meant to avoid.
+- The illustrations and logo are still exported fully **transparent** (no
+  baked background) — that was the right call independent of dark mode (it
+  also sidesteps any background-color mismatch on light), so nothing there
+  needed reverting. The decontamination technique — for every pixel with
+  `0 < alpha < 255`, recover `fg = (observed − bg×(1−alpha)) / alpha`, gated
+  on the pixel being light-colored so real drop shadows aren't touched — is
+  still the right tool if a background-bleed halo ever shows up on a new
+  asset; it just isn't a dark-mode-specific concern anymore.
+- If dark mode is revisited later: the WCAG-verified `darkColors` values are
+  recoverable from `228667e`, but re-verify the **rendered** result on-device
+  before shipping again — that step never happened last time before the
+  revert.
 
 **Illustrations beyond the three that shipped.** The onboarding hero and the
 plan / grocery empty states are in `assets/images/illustrations/`; see that
