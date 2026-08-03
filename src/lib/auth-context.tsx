@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import type { Session, AuthError } from '@supabase/supabase-js';
+import { makeRedirectUri } from 'expo-auth-session';
 import { supabase } from './supabase';
 
 export type AuthContextType = {
@@ -39,7 +40,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp: AuthContextType['signUp'] = async (email, password) => {
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: makeRedirectUri({ path: 'auth/callback' }) },
+    });
     return { error };
   };
 
