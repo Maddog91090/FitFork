@@ -27,9 +27,14 @@ Avant d'écrire quoi que ce soit, détermine :
 
 - **Le type de repas** (`breakfast`, `lunch`, `dinner`, `snack`). Si l'utilisateur dit juste
   « une recette de poulet », demande — le type de repas change complètement la cible calorique.
-- **Les contraintes** : ingrédients imposés ou interdits, végétarien, sans lactose, temps de
-  préparation, cuisine (italienne, mexicaine…), objectif (riche en protéines, léger…).
+- **Les contraintes** : ingrédients imposés ou interdits, sans lactose, temps de préparation,
+  cuisine (italienne, mexicaine…), objectif (riche en protéines, léger…).
 - **Le nombre de recettes** : une seule, ou un lot ? Un lot va dans une seule migration.
+
+**Par défaut, construis la recette autour d'une source de protéines animale** — viande, volaille,
+poisson, fruits de mer, œufs ou produits laitiers. Ne propose une recette végétarienne ou végane
+que si l'utilisateur la demande explicitement, et ne la suggère pas de toi-même comme alternative.
+C'est une préférence assumée du projet, pas une contrainte technique.
 
 Vérifie ensuite qu'elle n'existe pas déjà. Le nom sert de clé de jointure dans le SQL, donc un
 doublon casse l'insertion :
