@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Pressable, Image } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Image } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getTrainingProfile, upsertTrainingProfile } from '../../lib/profile';
@@ -13,6 +13,11 @@ import { centeredContent, radius, spacing, typography, useThemeColors, type Them
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
 
+const SESSION_TAB_OPTIONS = homeWorkoutProgram.levels[0].sessions.map((_, index) => ({
+  value: String(index),
+  label: `Séance ${index + 1}`,
+}));
+
 export default function WorkoutScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -21,19 +26,7 @@ export default function WorkoutScreen() {
   const [checking, setChecking] = useState(true);
   const [savingLevel, setSavingLevel] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<Set<number>>(new Set());
-
-  const toggleSession = (index: number) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
-      return next;
-    });
-  };
+  const [activeSessionIndex, setActiveSessionIndex] = useState(0);
 
   const load = useCallback(async () => {
     if (!session) return;
@@ -58,6 +51,7 @@ export default function WorkoutScreen() {
     const previous = trainingProfile;
     const next = { ...trainingProfile, experienceLevel: level };
     setTrainingProfile(next);
+    setActiveSessionIndex(0);
     setSavingLevel(true);
     setError(null);
     try {
@@ -113,20 +107,24 @@ export default function WorkoutScreen() {
       <Text style={styles.levelSummary}>{levelProgram.summary}</Text>
       <Text style={styles.levelDuration}>Durée par séance : {levelProgram.sessionDurationLabel}</Text>
 
+      <ChoiceGroup
+        options={SESSION_TAB_OPTIONS}
+        value={String(activeSessionIndex)}
+        onChange={(value) => setActiveSessionIndex(Number(value))}
+      />
+
       {levelProgram.sessions.map((sessionItem, index) => {
-        const isExpanded = expanded.has(index);
+        if (index !== activeSessionIndex) return null;
         return (
-          <Pressable key={sessionItem.name} onPress={() => toggleSession(index)}>
-            <Card style={styles.sessionCard}>
-              <View style={styles.sessionPhotoFrame}>
-                <Image source={sessionItem.image} style={styles.sessionPhoto} accessibilityLabel={sessionItem.name} />
-              </View>
-              <Text style={styles.sessionTitle}>
-                Séance {index + 1} — {sessionItem.name}
-              </Text>
-              {isExpanded && <SessionDetail session={sessionItem} styles={styles} />}
-            </Card>
-          </Pressable>
+          <Card key={sessionItem.name} style={styles.sessionCard}>
+            <View style={styles.sessionPhotoFrame}>
+              <Image source={sessionItem.image} style={styles.sessionPhoto} accessibilityLabel={sessionItem.name} />
+            </View>
+            <Text style={styles.sessionTitle}>
+              Séance {index + 1} — {sessionItem.name}
+            </Text>
+            <SessionDetail session={sessionItem} styles={styles} />
+          </Card>
         );
       })}
 
@@ -165,8 +163,9 @@ function SessionDetail({ session, styles }: { session: Session; styles: Styles }
             onPress={() => router.push(`/exercise/${exercise.exerciseId}`)}
             accessibilityRole="link"
             hitSlop={4}
+            style={styles.exerciseCard}
           >
-            <Text style={styles.exerciseLine}>• {exercise.name}</Text>
+            <Text style={styles.exerciseLine}>{exercise.name}</Text>
           </PressableScale>
         ))}
       </View>
@@ -182,10 +181,10 @@ function SessionDetail({ session, styles }: { session: Session; styles: Styles }
           onPress={() => router.push(`/exercise/${exercise.exerciseId}`)}
           accessibilityRole="link"
           hitSlop={4}
+          style={styles.exerciseCard}
         >
-          <Text style={styles.exerciseLine}>
-            • {exercise.name} : {exercise.detail}
-          </Text>
+          <Text style={styles.exerciseLine}>{exercise.name}</Text>
+          <Text style={styles.exerciseDetail}>{exercise.detail}</Text>
         </PressableScale>
       ))}
     </View>
@@ -218,9 +217,19 @@ function createStyles(colors: ThemeColors) {
       height: '100%',
     },
     sessionTitle: { ...typography.subheading, color: colors.textPrimary },
-    sessionDetail: { marginTop: spacing.sm, marginLeft: spacing.md },
-    sessionMeta: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.xs },
-    exerciseLine: { ...typography.body, color: colors.textPrimary, marginBottom: spacing.xs },
+    sessionDetail: { marginTop: spacing.sm },
+    sessionMeta: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.sm },
+    exerciseCard: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.sm,
+      backgroundColor: colors.bgBase,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      marginBottom: spacing.sm,
+    },
+    exerciseLine: { ...typography.bodyStrong, color: colors.textPrimary },
+    exerciseDetail: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
     coachNote: { ...typography.body, marginBottom: spacing.xs, color: colors.textSecondary },
     error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
   });
