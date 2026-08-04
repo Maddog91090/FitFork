@@ -49,6 +49,8 @@ example
 
 # unrelated tooling artifacts (not part of this project)
 .agents/
-.claude/
+.claude/*
+# ...sauf les skills propres au projet, qui encodent nos conventions et sont partagés
+!.claude/skills/
 skills-lock.json
 videos/
