@@ -74,10 +74,6 @@ export default function LoginScreen() {
         />
         <TextField label="Mot de passe" value={password} onChangeText={setPassword} secureTextEntry />
 
-        <Pressable onPress={handleForgotPassword} disabled={resetSubmitting} style={styles.forgotLink}>
-          <Text style={styles.switchTextAccent}>Mot de passe oublié ?</Text>
-        </Pressable>
-
         {resetSent && <Text style={styles.confirmText}>Email envoyé si ce compte existe. Vérifie ta boîte mail.</Text>}
         {error && <Text style={styles.error}>{error}</Text>}
 
@@ -88,6 +84,12 @@ export default function LoginScreen() {
             Pas de compte ? <Text style={styles.switchTextAccent}>Créer un compte</Text>
           </Text>
         </Link>
+
+        <Pressable onPress={handleForgotPassword} disabled={resetSubmitting} style={styles.forgotLink}>
+          <Text style={styles.switchText}>
+            Mot de passe oublié ? <Text style={styles.switchTextAccent}>Réinitialiser</Text>
+          </Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -116,7 +118,7 @@ function createStyles(colors: ThemeColors) {
       color: colors.textPrimary,
       marginBottom: spacing.xl,
     },
-    forgotLink: { alignSelf: 'flex-end', marginTop: spacing.sm },
+    forgotLink: { marginTop: spacing.sm, textAlign: 'center' },
     confirmText: {
       ...typography.caption,
       color: colors.textSecondary,
