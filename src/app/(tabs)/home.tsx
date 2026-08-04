@@ -1,12 +1,27 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
+import { getCurrentPlan, fetchRecipes, type Recipe, type SavedPlanEntry } from '../../lib/mealPlanData';
+import type { MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+
+const MEAL_TYPE_LABELS: Record<MealType, string> = {
+  breakfast: 'Petit-déj',
+  lunch: 'Déjeuner',
+  snack: 'Collation',
+  dinner: 'Dîner',
+};
+const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'snack', 'dinner'];
+
+/** App's day-index convention is Monday=0..Sunday=6 (see plan.tsx's DAY_LABELS); JS's getDay() is Sunday=0. */
+function todayDayIndex(): number {
+  return (new Date().getDay() + 6) % 7;
+}
 
 export default function HomeScreen() {
   const colors = useThemeColors();
@@ -14,6 +29,8 @@ export default function HomeScreen() {
   const { session, loading, signOut } = useAuth();
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [macros, setMacros] = useState<MacroTargets | null>(null);
+  const [todayMeals, setTodayMeals] = useState<SavedPlanEntry[]>([]);
+  const [recipesById, setRecipesById] = useState<Map<string, Recipe>>(new Map());
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,9 +44,11 @@ export default function HomeScreen() {
 
     (async () => {
       try {
-        const [profile, trainingProfile] = await Promise.all([
+        const [profile, trainingProfile, plan, recipes] = await Promise.all([
           getProfile(session.user.id),
           getTrainingProfile(session.user.id),
+          getCurrentPlan(session.user.id),
+          fetchRecipes(),
         ]);
 
         if (cancelled) return;
@@ -40,6 +59,14 @@ export default function HomeScreen() {
         }
 
         setMacros(computeTargetsFromProfile(profile));
+        setRecipesById(new Map(recipes.map((r) => [r.id, r])));
+        if (plan) {
+          const dayIndex = todayDayIndex();
+          const entriesToday = plan.entries
+            .filter((e) => e.dayIndex === dayIndex)
+            .sort((a, b) => MEAL_ORDER.indexOf(a.mealType) - MEAL_ORDER.indexOf(b.mealType));
+          setTodayMeals(entriesToday);
+        }
       } catch (err) {
         if (!cancelled) {
           setLoadError(err instanceof Error ? err.message : 'Erreur de chargement du profil.');
@@ -103,6 +130,37 @@ export default function HomeScreen() {
         </View>
       </View>
 
+      <Text style={styles.sectionLabel}>Repas du jour</Text>
+      {todayMeals.length > 0 ? (
+        <Card style={styles.mealsCard}>
+          {todayMeals.map((entry, index) => {
+            const recipe = recipesById.get(entry.recipeId);
+            return (
+              <Pressable
+                key={entry.id}
+                onPress={() =>
+                  router.push({
+                    pathname: '/recipe/[id]',
+                    params: { id: entry.recipeId, portion: String(entry.portionMultiplier) },
+                  })
+                }
+                accessibilityRole="button"
+                style={[styles.mealRow, index === todayMeals.length - 1 && styles.mealRowLast]}
+              >
+                <Text style={styles.mealTypeLabel}>{MEAL_TYPE_LABELS[entry.mealType]}</Text>
+                <Text style={styles.mealRecipeName}>{recipe ? recipe.name : entry.recipeId}</Text>
+              </Pressable>
+            );
+          })}
+        </Card>
+      ) : (
+        <Card style={styles.mealsCard}>
+          <Text style={styles.mealsEmptyText}>
+            Pas de plan pour aujourd'hui. Génère ton plan de la semaine pour voir tes repas ici.
+          </Text>
+        </Card>
+      )}
+
       <View style={styles.signOut}>
         <Button title="Se déconnecter" variant="secondary" onPress={signOut} />
       </View>
@@ -135,8 +193,21 @@ function createStyles(colors: ThemeColors) {
     macroFat: { color: colors.macroFat },
     macroCarbs: { color: colors.macroCarbs },
     macroLabel: { ...typography.overline, color: colors.textSecondary, marginTop: spacing.xs },
-    actionsRow: { flexDirection: 'row', gap: spacing.sm },
+    actionsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
     actionButton: { flex: 1 },
+    mealsCard: { marginBottom: spacing.lg },
+    mealRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.sm + 1,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.divider,
+    },
+    mealRowLast: { borderBottomWidth: 0 },
+    mealTypeLabel: { ...typography.caption, width: 80, color: colors.textSecondary },
+    mealRecipeName: { ...typography.bodyStrong, flex: 1, color: colors.textPrimary, textAlign: 'right' },
+    mealsEmptyText: { ...typography.body, color: colors.textSecondary },
     signOut: { marginTop: spacing.xl },
   });
 }
