@@ -8,6 +8,7 @@ import { ChoiceGroup } from '../../components/ChoiceGroup';
 import { homeWorkoutProgram, getLevelProgram } from '../../lib/homeWorkoutProgram';
 import type { Session } from '../../lib/homeWorkoutProgram';
 import { Card } from '../../components/ui/Card';
+import { PressableScale } from '../../components/ui/PressableScale';
 import { centeredContent, radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
@@ -159,9 +160,14 @@ function SessionDetail({ session, styles }: { session: Session; styles: Styles }
           {session.recoveryLabel}.
         </Text>
         {session.exercises.map((exercise) => (
-          <Text key={exercise} style={styles.exerciseLine}>
-            • {exercise}
-          </Text>
+          <PressableScale
+            key={exercise.name}
+            onPress={() => router.push(`/exercise/${exercise.exerciseId}`)}
+            accessibilityRole="link"
+            hitSlop={4}
+          >
+            <Text style={styles.exerciseLine}>• {exercise.name}</Text>
+          </PressableScale>
         ))}
       </View>
     );
@@ -171,9 +177,16 @@ function SessionDetail({ session, styles }: { session: Session; styles: Styles }
     <View style={styles.sessionDetail}>
       <Text style={styles.sessionMeta}>En séries, {session.restLabel}.</Text>
       {session.exercises.map((exercise) => (
-        <Text key={exercise.name} style={styles.exerciseLine}>
-          • {exercise.name} : {exercise.detail}
-        </Text>
+        <PressableScale
+          key={exercise.name}
+          onPress={() => router.push(`/exercise/${exercise.exerciseId}`)}
+          accessibilityRole="link"
+          hitSlop={4}
+        >
+          <Text style={styles.exerciseLine}>
+            • {exercise.name} : {exercise.detail}
+          </Text>
+        </PressableScale>
       ))}
     </View>
   );

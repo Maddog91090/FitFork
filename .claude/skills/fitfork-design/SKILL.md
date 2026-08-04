@@ -293,3 +293,24 @@ the session's signature move in a plain home living room — mat or rug over a
 wood floor, natural window light, no gym equipment, no mirrors, no branding —
 so it reads as "you could do this in your own living room," the same
 achievable ethos as the recipe photos, translated to training.
+
+**Exercise detail pages — shipped, 21/21 unique exercises.** Tapping any
+exercise name inside an expanded session card (now a `PressableScale`, not
+plain text) opens `exercise/[id].tsx` — name, two demonstration photos side
+by side ("Position de départ" / "Position finale"), and numbered French
+how-to steps, mirroring `recipe/[id].tsx`'s photo-then-numbered-steps layout.
+Same architecture call as the session photos: `src/lib/exercises.ts` is a
+static catalog (`Exercise` type, `id`/`name`/`instructions`/two
+`require()`'d images), bundled under `assets/images/exercises/`, because the
+workout program has no DB table to hang it on. The ~30 raw exercise strings
+across all 9 sessions collapse to 21 unique movements (e.g. "Squats",
+"Squats complets", and "Squats à vide" are all the same bodyweight squat);
+each `CircuitExercise`/`SeriesExercise` entry in `homeWorkoutProgram.ts`
+carries an `exerciseId` pointing at the catalog, cross-checked at generation
+time so every id actually resolves. Two photos per exercise (not one, unlike
+recipes/sessions) specifically to show the movement's start and end position.
+Same "achievable home workout" house style as session photos; the exercise
+rows deliberately do **not** turn red to signal tappability — red is scarce
+in this system (one primary action per screen), and the session cards they
+live inside already establish "tap for more" via press feedback alone, not
+color.

@@ -1,6 +1,11 @@
 import type { ImageSourcePropType } from 'react-native';
 import type { ExperienceLevel } from './profile';
 
+export type CircuitExercise = {
+  name: string;
+  exerciseId: string;
+};
+
 export type CircuitSession = {
   type: 'circuit';
   name: string;
@@ -9,12 +14,13 @@ export type CircuitSession = {
   restSeconds: number;
   rounds: number;
   recoveryLabel: string;
-  exercises: string[];
+  exercises: CircuitExercise[];
 };
 
 export type SeriesExercise = {
   name: string;
   detail: string;
+  exerciseId: string;
 };
 
 export type SeriesSession = {
@@ -92,11 +98,11 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           rounds: 2,
           recoveryLabel: '2 min de récup entre les tours',
           exercises: [
-            'Squats sur chaise (assis-debout, lent)',
-            'Pompes contre un mur',
-            "Fentes statiques (une jambe puis l'autre, sans à-coup)",
-            'Gainage sur les genoux',
-            'Marche rapide sur place, genoux montés',
+            { name: 'Squats sur chaise (assis-debout, lent)', exerciseId: 'squat-chaise' },
+            { name: 'Pompes contre un mur', exerciseId: 'pompes-mur' },
+            { name: "Fentes statiques (une jambe puis l'autre, sans à-coup)", exerciseId: 'fentes-statiques' },
+            { name: 'Gainage sur les genoux', exerciseId: 'gainage-genoux' },
+            { name: 'Marche rapide sur place, genoux montés', exerciseId: 'montees-genoux' },
           ],
         },
         {
@@ -108,10 +114,10 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           rounds: 3,
           recoveryLabel: '2 min de récup',
           exercises: [
-            'Jumping jacks doux (sans saut : un pied écarté à la fois)',
-            'Montées de genoux sur place',
-            'Squats à vide, rythme tranquille',
-            'Talons-fesses',
+            { name: 'Jumping jacks doux (sans saut : un pied écarté à la fois)', exerciseId: 'jumping-jacks' },
+            { name: 'Montées de genoux sur place', exerciseId: 'montees-genoux' },
+            { name: 'Squats à vide, rythme tranquille', exerciseId: 'squat' },
+            { name: 'Talons-fesses', exerciseId: 'talons-fesses' },
           ],
         },
         {
@@ -120,10 +126,10 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           image: require('../../assets/images/workouts/beginner-renforcement-de-base.jpg'),
           restLabel: '45 s à 1 min de repos entre chaque',
           exercises: [
-            { name: 'Squats', detail: '3 × 12' },
-            { name: 'Pont fessier', detail: '3 × 12' },
-            { name: 'Fentes statiques', detail: '2 × 10 par jambe' },
-            { name: 'Gainage sur les genoux', detail: '3 × 20 s' },
+            { name: 'Squats', detail: '3 × 12', exerciseId: 'squat' },
+            { name: 'Pont fessier', detail: '3 × 12', exerciseId: 'pont-fessier' },
+            { name: 'Fentes statiques', detail: '2 × 10 par jambe', exerciseId: 'fentes-statiques' },
+            { name: 'Gainage sur les genoux', detail: '3 × 20 s', exerciseId: 'gainage-genoux' },
           ],
         },
       ],
@@ -143,11 +149,11 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           rounds: 3,
           recoveryLabel: '1 min 30 de récup',
           exercises: [
-            'Squats complets',
-            'Pompes (sur les genoux si besoin)',
-            'Fentes alternées',
-            'Gainage planche',
-            'Mountain climbers',
+            { name: 'Squats complets', exerciseId: 'squat' },
+            { name: 'Pompes (sur les genoux si besoin)', exerciseId: 'pompes' },
+            { name: 'Fentes alternées', exerciseId: 'fentes-alternees' },
+            { name: 'Gainage planche', exerciseId: 'gainage-planche' },
+            { name: 'Mountain climbers', exerciseId: 'mountain-climbers' },
           ],
         },
         {
@@ -159,10 +165,10 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           rounds: 4,
           recoveryLabel: '2 min de récup',
           exercises: [
-            'Jumping jacks',
-            'Burpees (version sans saut si trop dur)',
-            'Squats sautés ou squats rapides',
-            'Genoux hauts (course sur place)',
+            { name: 'Jumping jacks', exerciseId: 'jumping-jacks' },
+            { name: 'Burpees (version sans saut si trop dur)', exerciseId: 'burpees' },
+            { name: 'Squats sautés ou squats rapides', exerciseId: 'squat-saute' },
+            { name: 'Genoux hauts (course sur place)', exerciseId: 'montees-genoux' },
           ],
         },
         {
@@ -171,11 +177,11 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           image: require('../../assets/images/workouts/intermediaire-bas-du-corps-gainage.jpg'),
           restLabel: '45 s à 1 min de repos',
           exercises: [
-            { name: 'Squats', detail: '4 × 15' },
-            { name: 'Fentes arrière', detail: '3 × 12 par jambe' },
-            { name: 'Pont fessier', detail: '4 × 15' },
-            { name: 'Gainage planche', detail: '3 × 30 à 45 s' },
-            { name: 'Gainage latéral', detail: '3 × 20 s de chaque côté' },
+            { name: 'Squats', detail: '4 × 15', exerciseId: 'squat' },
+            { name: 'Fentes arrière', detail: '3 × 12 par jambe', exerciseId: 'fentes-arriere' },
+            { name: 'Pont fessier', detail: '4 × 15', exerciseId: 'pont-fessier' },
+            { name: 'Gainage planche', detail: '3 × 30 à 45 s', exerciseId: 'gainage-planche' },
+            { name: 'Gainage latéral', detail: '3 × 20 s de chaque côté', exerciseId: 'gainage-lateral' },
           ],
         },
       ],
@@ -196,11 +202,11 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           rounds: 4,
           recoveryLabel: '1 min 30 de récup',
           exercises: [
-            'Squats sautés',
-            'Pompes complètes (pieds surélevés pour durcir)',
-            'Fentes sautées alternées',
-            "Gainage planche avec touches d'épaules",
-            'Burpees',
+            { name: 'Squats sautés', exerciseId: 'squat-saute' },
+            { name: 'Pompes complètes (pieds surélevés pour durcir)', exerciseId: 'pompes-declinees' },
+            { name: 'Fentes sautées alternées', exerciseId: 'fentes-sautees' },
+            { name: "Gainage planche avec touches d'épaules", exerciseId: 'gainage-planche' },
+            { name: 'Burpees', exerciseId: 'burpees' },
           ],
         },
         {
@@ -212,11 +218,11 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           rounds: 5,
           recoveryLabel: '1 min 30 de récup',
           exercises: [
-            'Burpees avec saut',
-            'Squats sautés',
-            'Mountain climbers rapides',
-            'Fentes sautées',
-            'Sprint sur place, genoux hauts',
+            { name: 'Burpees avec saut', exerciseId: 'burpees' },
+            { name: 'Squats sautés', exerciseId: 'squat-saute' },
+            { name: 'Mountain climbers rapides', exerciseId: 'mountain-climbers' },
+            { name: 'Fentes sautées', exerciseId: 'fentes-sautees' },
+            { name: 'Sprint sur place, genoux hauts', exerciseId: 'montees-genoux' },
           ],
         },
         {
@@ -225,11 +231,11 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           image: require('../../assets/images/workouts/avance-force-gainage.jpg'),
           restLabel: '30 à 45 s de repos seulement',
           exercises: [
-            { name: 'Squats bulgares (pied arrière surélevé)', detail: '4 × 12 par jambe' },
-            { name: 'Pompes déclinées', detail: '4 × 12' },
-            { name: 'Pont fessier une jambe', detail: '3 × 12 par jambe' },
-            { name: 'Gainage planche', detail: '3 × 60 s' },
-            { name: 'Gainage latéral dynamique', detail: '3 × 15 par côté' },
+            { name: 'Squats bulgares (pied arrière surélevé)', detail: '4 × 12 par jambe', exerciseId: 'squat-bulgare' },
+            { name: 'Pompes déclinées', detail: '4 × 12', exerciseId: 'pompes-declinees' },
+            { name: 'Pont fessier une jambe', detail: '3 × 12 par jambe', exerciseId: 'pont-fessier-jambe' },
+            { name: 'Gainage planche', detail: '3 × 60 s', exerciseId: 'gainage-planche' },
+            { name: 'Gainage latéral dynamique', detail: '3 × 15 par côté', exerciseId: 'gainage-lateral' },
           ],
         },
       ],
