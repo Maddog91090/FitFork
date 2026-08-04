@@ -73,7 +73,7 @@ export default function GeneratePlanScreen() {
         return;
       }
 
-      const baseTargets = computeTargetsFromProfile(profile, trainingProfile);
+      const baseTargets = computeTargetsFromProfile(profile);
       let weightLogs: WeightLogEntry[] = [];
       try {
         weightLogs = await fetchRecentWeightLogs(session.user.id);

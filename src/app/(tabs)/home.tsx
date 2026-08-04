@@ -39,7 +39,7 @@ export default function HomeScreen() {
           return;
         }
 
-        setMacros(computeTargetsFromProfile(profile, trainingProfile));
+        setMacros(computeTargetsFromProfile(profile));
       } catch (err) {
         if (!cancelled) {
           setLoadError(err instanceof Error ? err.message : 'Erreur de chargement du profil.');

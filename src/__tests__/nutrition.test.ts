@@ -1,10 +1,4 @@
-import {
-  calculateBMR,
-  calculateTDEE,
-  calculateTrainingCaloriesPerSession,
-  calculateTargetCalories,
-  calculateMacroTargets,
-} from '../lib/nutrition';
+import { calculateBMR, calculateTDEE, calculateTargetCalories, calculateMacroTargets } from '../lib/nutrition';
 
 describe('calculateBMR', () => {
   it('computes male BMR via Mifflin-St Jeor', () => {
@@ -18,47 +12,21 @@ describe('calculateBMR', () => {
   });
 });
 
-describe('calculateTrainingCaloriesPerSession', () => {
-  it('scales with MET and duration for each level, at a given bodyweight', () => {
-    // beginner: 4.5 MET * 70kg * (40/60)h = 210
-    expect(calculateTrainingCaloriesPerSession('beginner', 70)).toBeCloseTo(210, 5);
-    // intermediate: 6 MET * 70kg * (50/60)h = 350
-    expect(calculateTrainingCaloriesPerSession('intermediate', 70)).toBeCloseTo(350, 5);
-    // advanced: 8 MET * 70kg * (57.5/60)h = 536.666...
-    expect(calculateTrainingCaloriesPerSession('advanced', 70)).toBeCloseTo(536.6666667, 5);
-  });
-
-  it('scales linearly with bodyweight — a heavier person burns more for the same session', () => {
-    const at70kg = calculateTrainingCaloriesPerSession('intermediate', 70);
-    const at140kg = calculateTrainingCaloriesPerSession('intermediate', 140);
-    expect(at140kg).toBeCloseTo(at70kg * 2, 5);
-  });
-});
-
 describe('calculateTDEE', () => {
-  it('combines the lifestyle multiplier with a weekly-averaged training contribution', () => {
-    // lifestyle: 1780 * 1.25 (moderate) = 2225
-    // training: (6 MET * 80kg * (50/60)h = 400 kcal/session) * 4 days/week / 7 = 228.571...
-    expect(calculateTDEE(1780, 'moderate', 'intermediate', 80, 4)).toBeCloseTo(2225 + 1600 / 7, 5);
+  it('applies the activity multiplier — a single number covering the whole week, workouts included', () => {
+    expect(calculateTDEE(1780, 'moderate')).toBeCloseTo(1780 * 1.55, 5);
   });
 
-  it('reduces to lifestyle-only calories with zero training days', () => {
-    // 1395.25 * 1.2 (light) + 0 = 1674.3
-    expect(calculateTDEE(1395.25, 'light', 'beginner', 65, 0)).toBeCloseTo(1674.3, 5);
+  it('uses the sedentary multiplier (1.2)', () => {
+    expect(calculateTDEE(1000, 'sedentary')).toBeCloseTo(1200, 5);
   });
 
-  it('averages a full 7-day training week down to exactly one session per day', () => {
-    // training every day of the week: the weekly total divided by 7 is just one session's calories
-    const perSession = calculateTrainingCaloriesPerSession('intermediate', 70);
-    expect(calculateTDEE(1500, 'sedentary', 'intermediate', 70, 7)).toBeCloseTo(1500 * 1.15 + perSession, 5);
+  it('uses the light multiplier (1.375)', () => {
+    expect(calculateTDEE(1395.25, 'light')).toBeCloseTo(1918.46875, 5);
   });
 
-  it('uses the lifestyle-only sedentary multiplier (1.15)', () => {
-    expect(calculateTDEE(1000, 'sedentary', 'beginner', 70, 0)).toBeCloseTo(1150, 5);
-  });
-
-  it('uses the lifestyle-only very_active multiplier (1.35)', () => {
-    expect(calculateTDEE(1000, 'very_active', 'beginner', 70, 0)).toBeCloseTo(1350, 5);
+  it('uses the very_active multiplier (1.9)', () => {
+    expect(calculateTDEE(1000, 'very_active')).toBeCloseTo(1900, 5);
   });
 });
 

@@ -228,7 +228,9 @@ export default function OnboardingScreen() {
           <>
             <Text style={styles.label}>Niveau d'activité quotidienne</Text>
             <Text style={styles.hint}>
-              Hors séances de sport — ton quotidien : travail assis ou debout, marche, trajets.
+              Sport inclus. Sédentaire : peu ou pas de sport. Légère : 1 à 3 jours/semaine. Modérée : 3 à 5
+              jours/semaine. Active : 6 à 7 jours/semaine. Très active : sport quotidien intense ou métier
+              physique.
             </Text>
             <ChoiceGroup options={ACTIVITY_OPTIONS} value={activityLevel} onChange={setActivityLevel} />
             <Text style={styles.label}>Objectif</Text>
