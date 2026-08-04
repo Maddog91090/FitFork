@@ -227,6 +227,9 @@ export default function OnboardingScreen() {
         {step === 1 && (
           <>
             <Text style={styles.label}>Niveau d'activité quotidienne</Text>
+            <Text style={styles.hint}>
+              Hors séances de sport — ton quotidien : travail assis ou debout, marche, trajets.
+            </Text>
             <ChoiceGroup options={ACTIVITY_OPTIONS} value={activityLevel} onChange={setActivityLevel} />
             <Text style={styles.label}>Objectif</Text>
             <ChoiceGroup options={GOAL_OPTIONS} value={goal} onChange={setGoal} />
@@ -370,6 +373,7 @@ function createStyles(colors: ThemeColors) {
       marginBottom: spacing.sm,
       marginTop: spacing.sm,
     },
+    hint: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.sm },
     error: { ...typography.body, color: colors.error, marginTop: spacing.md },
     footer: { padding: spacing.lg },
     backLink: { alignSelf: 'flex-start', marginBottom: spacing.md },

@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
-import type { Sex, ActivityLevel, Goal } from './nutrition';
+import type { Sex, ActivityLevel, Goal, ExperienceLevel } from './nutrition';
 
-export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
+export type { ExperienceLevel } from './nutrition';
 export type Equipment = 'full_gym' | 'home_limited' | 'bodyweight';
 
 export type Profile = {

@@ -16,15 +16,18 @@ describe('computeTargetsFromProfile', () => {
       equipment: 'full_gym' as const,
     };
 
-    // BMR = 1780, TDEE = 1780*1.55 + 4*200 = 3559, maintain -> 3559 unchanged
-    // protein 160g/640kcal, fat 0.28*3559=996.52kcal->111g, carbs (3559-640-996.52)/4->481g
+    // BMR = 1780
+    // lifestyle: 1780 * 1.25 (moderate) = 2225
+    // training: 6 MET * 80kg * (50/60)h = 400 kcal/session, * 4 days/week / 7 = 228.57...
+    // TDEE = 2225 + 1600/7 = 17175/7 = 2453.571... , maintain -> unchanged
+    // protein 160g/640kcal, fat 0.28*(17175/7)=687kcal->76g, carbs (17175/7-640-687)/4=1126.57.../4->282g
     const result = computeTargetsFromProfile(profile, trainingProfile);
 
     expect(result).toEqual({
-      calories: 3559,
+      calories: 2454,
       proteinG: 160,
-      fatG: 111,
-      carbsG: 481,
+      fatG: 76,
+      carbsG: 282,
     });
   });
 });

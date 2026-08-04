@@ -14,7 +14,13 @@ export function computeTargetsFromProfile(
   trainingProfile: TrainingProfile
 ): MacroTargets {
   const bmr = calculateBMR(profile.sex, profile.weightKg, profile.heightCm, profile.age);
-  const tdee = calculateTDEE(bmr, profile.activityLevel, trainingProfile.daysPerWeek);
+  const tdee = calculateTDEE(
+    bmr,
+    profile.activityLevel,
+    trainingProfile.experienceLevel,
+    profile.weightKg,
+    trainingProfile.daysPerWeek
+  );
   const targetCalories = calculateTargetCalories(tdee, profile.goal);
   return calculateMacroTargets(targetCalories, profile.weightKg);
 }
