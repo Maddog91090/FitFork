@@ -102,6 +102,46 @@ describe('generateWeeklyPlan', () => {
     expect(result[0].recipeId).toBe('lean');
   });
 
+  it('prefers the recipe that reuses more of the week\'s ingredients when macro fit is tied', () => {
+    const breakfastOnly: RecipeOption[] = [
+      { id: 'b1', mealType: 'breakfast', baseCalories: 400, baseProteinG: 20, baseFatG: 10, baseCarbsG: 50, ingredientNames: ['Œufs', 'Pain complet'] },
+    ];
+    // Same macro split, so this is a pure ingredient-overlap decision:
+    // l1 shares "Œufs" with the breakfast already picked (1 new ingredient),
+    // l2 shares nothing (3 new ingredients).
+    const lunchOptions: RecipeOption[] = [
+      { id: 'l1', mealType: 'lunch', baseCalories: 600, baseProteinG: 30, baseFatG: 15, baseCarbsG: 70, ingredientNames: ['Œufs', 'Salade', 'Tomate'] },
+      { id: 'l2', mealType: 'lunch', baseCalories: 600, baseProteinG: 30, baseFatG: 15, baseCarbsG: 70, ingredientNames: ['Riz', 'Poisson', 'Citron'] },
+    ];
+    const slots: MealSlot[] = [
+      { dayIndex: 0, mealType: 'breakfast' },
+      { dayIndex: 0, mealType: 'lunch' },
+    ];
+    const result = generateWeeklyPlan(TARGETS, slots, [...breakfastOnly, ...lunchOptions]);
+    const lunch = result.find((e) => e.mealType === 'lunch')!;
+    expect(lunch.recipeId).toBe('l1');
+  });
+
+  it('never picks a clearly worse macro fit just because it shares more ingredients', () => {
+    const highProteinTargets: DailyMacroTargets = { calories: 2000, proteinG: 200, fatG: 25, carbsG: 245 };
+    const breakfastOnly: RecipeOption[] = [
+      { id: 'b1', mealType: 'breakfast', baseCalories: 400, baseProteinG: 20, baseFatG: 10, baseCarbsG: 50, ingredientNames: ['Poulet', 'Riz'] },
+    ];
+    const lunchOptions: RecipeOption[] = [
+      // Far from the target split, but shares both ingredients with breakfast.
+      { id: 'fatty', mealType: 'lunch', baseCalories: 600, baseProteinG: 15, baseFatG: 35, baseCarbsG: 45, ingredientNames: ['Poulet', 'Riz'] },
+      // Matches the target split closely, but shares nothing with breakfast.
+      { id: 'lean', mealType: 'lunch', baseCalories: 600, baseProteinG: 60, baseFatG: 7, baseCarbsG: 74, ingredientNames: ['Saumon', 'Épinards'] },
+    ];
+    const slots: MealSlot[] = [
+      { dayIndex: 0, mealType: 'breakfast' },
+      { dayIndex: 0, mealType: 'lunch' },
+    ];
+    const result = generateWeeklyPlan(highProteinTargets, slots, [...breakfastOnly, ...lunchOptions]);
+    const lunch = result.find((e) => e.mealType === 'lunch')!;
+    expect(lunch.recipeId).toBe('lean');
+  });
+
   it('breaks macro-fit ties by picking the least-used recipe', () => {
     const evenTargets: DailyMacroTargets = { calories: 2000, proteinG: 100, fatG: 55, carbsG: 250 };
     // b1 and b2 have identical macro splits, so the tie should go to whichever was used less.

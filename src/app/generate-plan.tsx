@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../lib/profile';
 import { computeTargetsFromProfile } from '../lib/targets';
-import { fetchRecipes, saveWeeklyPlan } from '../lib/mealPlanData';
+import { fetchRecipes, fetchRecipeIngredients, saveWeeklyPlan } from '../lib/mealPlanData';
 import { fetchRecentWeightLogs, type WeightLogEntry } from '../lib/weightLogData';
 import { computeAdjustedTargets } from '../lib/progressTracking';
 import { generateWeeklyPlan, type MealSlot, type MealType } from '../lib/mealPlan';
@@ -84,6 +84,13 @@ export default function GeneratePlanScreen() {
       }
       const targets = computeAdjustedTargets(baseTargets, profile.goal, profile.weightKg, weightLogs);
       const recipes = await fetchRecipes();
+      const allIngredients = await fetchRecipeIngredients(recipes.map((r) => r.id));
+      const ingredientNamesByRecipe = new Map<string, string[]>();
+      for (const ingredient of allIngredients) {
+        const names = ingredientNamesByRecipe.get(ingredient.recipeId) ?? [];
+        names.push(ingredient.ingredientName);
+        ingredientNamesByRecipe.set(ingredient.recipeId, names);
+      }
       const recipeOptions = recipes.map((r) => ({
         id: r.id,
         mealType: r.mealType,
@@ -91,6 +98,7 @@ export default function GeneratePlanScreen() {
         baseProteinG: r.baseProteinG,
         baseFatG: r.baseFatG,
         baseCarbsG: r.baseCarbsG,
+        ingredientNames: ingredientNamesByRecipe.get(r.id) ?? [],
       }));
 
       const slots: MealSlot[] = [];
