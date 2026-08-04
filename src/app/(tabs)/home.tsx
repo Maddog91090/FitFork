@@ -5,7 +5,7 @@ import { useAuth } from '../../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
 import { getCurrentPlan, fetchRecipes, type Recipe, type SavedPlanEntry } from '../../lib/mealPlanData';
-import type { MealType } from '../../lib/mealPlan';
+import { todayDayIndex, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
@@ -17,11 +17,6 @@ const MEAL_TYPE_LABELS: Record<MealType, string> = {
   dinner: 'Dîner',
 };
 const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'snack', 'dinner'];
-
-/** App's day-index convention is Monday=0..Sunday=6 (see plan.tsx's DAY_LABELS); JS's getDay() is Sunday=0. */
-function todayDayIndex(): number {
-  return (new Date().getDay() + 6) % 7;
-}
 
 export default function HomeScreen() {
   const colors = useThemeColors();

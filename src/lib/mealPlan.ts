@@ -1,5 +1,12 @@
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
+export const DAY_LABELS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+
+/** App's day-index convention is Monday=0..Sunday=6; JS's Date#getDay() is Sunday=0. */
+export function todayDayIndex(): number {
+  return (new Date().getDay() + 6) % 7;
+}
+
 export type RecipeOption = {
   id: string;
   mealType: MealType;
