@@ -5,7 +5,7 @@ import HomeScreen from '../app/(tabs)/home';
 import { useAuth } from '../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../lib/profile';
 import { getCurrentPlan, fetchRecipes } from '../lib/mealPlanData';
-import { fetchMyCompletions } from '../lib/workoutCompletionsData';
+import { loadGamificationStats } from '../lib/loadGamificationStats';
 
 jest.mock('../lib/auth-context', () => ({
   useAuth: jest.fn(),
@@ -21,8 +21,8 @@ jest.mock('../lib/mealPlanData', () => ({
   fetchRecipes: jest.fn(),
 }));
 
-jest.mock('../lib/workoutCompletionsData', () => ({
-  fetchMyCompletions: jest.fn(),
+jest.mock('../lib/loadGamificationStats', () => ({
+  loadGamificationStats: jest.fn(),
 }));
 
 const mockPush = jest.fn();
@@ -66,10 +66,20 @@ describe('HomeScreen Progression card', () => {
   });
 
   it('shows the streak/level/week summary and navigates to /progression on press', async () => {
-    (fetchMyCompletions as jest.Mock).mockResolvedValue([
-      { id: 'c1', sessionIndex: 0, completedDate: '2026-08-03' },
-      { id: 'c2', sessionIndex: 1, completedDate: '2026-08-04' },
-    ]);
+    (loadGamificationStats as jest.Mock).mockResolvedValue({
+      stats: {
+        totalCompletions: 2,
+        streak: 0,
+        thisWeekDays: 2,
+        totalPoints: 20,
+        level: 1,
+        teamBonusCount: 0,
+        teamBonusStreak: 0,
+      },
+      friendBonuses: [],
+      friends: [],
+      friendsError: null,
+    });
 
     const { findByText, getByText } = await render(<HomeScreen />);
 
@@ -81,7 +91,7 @@ describe('HomeScreen Progression card', () => {
   });
 
   it('keeps macros and today’s meals when the completions fetch fails', async () => {
-    (fetchMyCompletions as jest.Mock).mockRejectedValue(new Error('network'));
+    (loadGamificationStats as jest.Mock).mockRejectedValue(new Error('network'));
 
     const { findByText, queryByText } = await render(<HomeScreen />);
 

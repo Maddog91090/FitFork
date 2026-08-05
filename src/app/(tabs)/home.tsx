@@ -5,8 +5,8 @@ import { useAuth } from '../../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
 import { getCurrentPlan, fetchRecipes, type Recipe, type SavedPlanEntry } from '../../lib/mealPlanData';
-import { fetchMyCompletions } from '../../lib/workoutCompletionsData';
-import { computeStats, type GamificationStats } from '../../lib/workoutGamification';
+import { loadGamificationStats } from '../../lib/loadGamificationStats';
+import type { GamificationStats } from '../../lib/workoutGamification';
 import { todayDayIndex, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -77,12 +77,8 @@ export default function HomeScreen() {
     // disparaître les macros et les repas du jour, qui ne dépendent pas
     // d'elle. En cas d'échec, la carte Progression ne s'affiche simplement pas.
     try {
-      const myCompletions = await fetchMyCompletions(userId);
-      // Bonus d'équipe volontairement désactivé : sans système de binôme
-      // (demande d'ami), on ne sait pas qui est le partenaire, et n'importe
-      // quel autre compte serait compté comme tel. Réactivable en repassant
-      // les semaines bonus ici une fois ce système en place.
-      setGamification(computeStats(myCompletions, [], new Date().toISOString().slice(0, 10)));
+      const { stats } = await loadGamificationStats(userId, new Date().toISOString().slice(0, 10));
+      setGamification(stats);
     } catch {
       // Pas de carte Progression plutôt qu'un accueil vide.
     }
