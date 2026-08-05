@@ -7,9 +7,16 @@ import type { ExperienceLevel, TrainingProfile } from '../../lib/profile';
 import { ChoiceGroup } from '../../components/ChoiceGroup';
 import { homeWorkoutProgram, getLevelProgram } from '../../lib/homeWorkoutProgram';
 import type { Session } from '../../lib/homeWorkoutProgram';
+import {
+  logSessionCompletion,
+  undoSessionCompletion,
+  fetchCompletionForToday,
+  type WorkoutCompletionRow,
+} from '../../lib/workoutCompletionsData';
 import { Card } from '../../components/ui/Card';
 import { PressableScale } from '../../components/ui/PressableScale';
-import { centeredContent, radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+import { Button } from '../../components/ui/Button';
+import { centeredContent, radius, spacing, state, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
 
@@ -17,6 +24,10 @@ const SESSION_TAB_OPTIONS = homeWorkoutProgram.levels[0].sessions.map((_, index)
   value: String(index),
   label: `Séance ${index + 1}`,
 }));
+
+function todayDateString(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 export default function WorkoutScreen() {
   const colors = useThemeColors();
@@ -27,6 +38,8 @@ export default function WorkoutScreen() {
   const [savingLevel, setSavingLevel] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeSessionIndex, setActiveSessionIndex] = useState(0);
+  const [todayCompletion, setTodayCompletion] = useState<WorkoutCompletionRow | null>(null);
+  const [loggingCompletion, setLoggingCompletion] = useState(false);
 
   const load = useCallback(async () => {
     if (!session) return;
@@ -46,6 +59,17 @@ export default function WorkoutScreen() {
     }
   }, [session]);
 
+  const loadTodayCompletion = useCallback(async () => {
+    if (!session) return;
+    try {
+      const completion = await fetchCompletionForToday(session.user.id, activeSessionIndex, todayDateString());
+      setTodayCompletion(completion);
+    } catch {
+      // Non-blocking: the button just falls back to its "not completed" state.
+      setTodayCompletion(null);
+    }
+  }, [session, activeSessionIndex]);
+
   const handleLevelChange = async (level: ExperienceLevel) => {
     if (!session || !trainingProfile || level === trainingProfile.experienceLevel) return;
     const previous = trainingProfile;
@@ -64,6 +88,44 @@ export default function WorkoutScreen() {
     }
   };
 
+  const handleToggleCompletion = async () => {
+    if (!session) return;
+    setError(null);
+
+    if (todayCompletion) {
+      const previous = todayCompletion;
+      setTodayCompletion(null);
+      setLoggingCompletion(true);
+      try {
+        await undoSessionCompletion(session.user.id, activeSessionIndex, previous.completedDate);
+      } catch (err) {
+        setTodayCompletion(previous);
+        setError(err instanceof Error ? err.message : "Erreur lors de l'annulation.");
+      } finally {
+        setLoggingCompletion(false);
+      }
+      return;
+    }
+
+    const optimistic: WorkoutCompletionRow = {
+      id: 'optimistic',
+      sessionIndex: activeSessionIndex,
+      completedDate: todayDateString(),
+    };
+    setTodayCompletion(optimistic);
+    setLoggingCompletion(true);
+    try {
+      await logSessionCompletion(session.user.id, activeSessionIndex);
+      const completion = await fetchCompletionForToday(session.user.id, activeSessionIndex, todayDateString());
+      setTodayCompletion(completion);
+    } catch (err) {
+      setTodayCompletion(null);
+      setError(err instanceof Error ? err.message : "Erreur lors de l'enregistrement.");
+    } finally {
+      setLoggingCompletion(false);
+    }
+  };
+
   useEffect(() => {
     if (!loading && !session) {
       router.replace('/login');
@@ -74,6 +136,12 @@ export default function WorkoutScreen() {
     useCallback(() => {
       load();
     }, [load])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      loadTodayCompletion();
+    }, [loadTodayCompletion])
   );
 
   if (loading || !session || checking || !trainingProfile) {
@@ -124,6 +192,29 @@ export default function WorkoutScreen() {
               Séance {index + 1} — {sessionItem.name}
             </Text>
             <SessionDetail session={sessionItem} styles={styles} />
+            <View style={styles.completionRow}>
+              {todayCompletion ? (
+                <>
+                  <View style={styles.completionDoneBadge}>
+                    <Text style={styles.completionDoneText}>Fait aujourd'hui ✓</Text>
+                  </View>
+                  <PressableScale
+                    onPress={handleToggleCompletion}
+                    disabled={loggingCompletion}
+                    hitSlop={state.hitSlop}
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.completionUndoLink}>Annuler</Text>
+                  </PressableScale>
+                </>
+              ) : (
+                <Button
+                  title="Marquer comme terminée"
+                  onPress={handleToggleCompletion}
+                  loading={loggingCompletion}
+                />
+              )}
+            </View>
           </Card>
         );
       })}
@@ -231,6 +322,20 @@ function createStyles(colors: ThemeColors) {
     exerciseLine: { ...typography.bodyStrong, color: colors.textPrimary },
     exerciseDetail: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
     coachNote: { ...typography.body, marginBottom: spacing.xs, color: colors.textSecondary },
+    completionRow: {
+      marginTop: spacing.md,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    completionDoneBadge: {
+      backgroundColor: colors.successSoft,
+      borderRadius: radius.pill,
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.md,
+    },
+    completionDoneText: { ...typography.captionStrong, color: colors.success },
+    completionUndoLink: { ...typography.caption, color: colors.accentRedDeep },
     error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
   });
 }
