@@ -203,6 +203,8 @@ export default function WorkoutScreen() {
                     disabled={loggingCompletion}
                     hitSlop={state.hitSlop}
                     accessibilityRole="button"
+                    accessibilityState={{ disabled: loggingCompletion }}
+                    style={styles.completionUndoTouchable}
                   >
                     <Text style={styles.completionUndoLink}>Annuler</Text>
                   </PressableScale>
@@ -335,6 +337,11 @@ function createStyles(colors: ThemeColors) {
       paddingHorizontal: spacing.md,
     },
     completionDoneText: { ...typography.captionStrong, color: colors.success },
+    completionUndoTouchable: {
+      minHeight: state.minTouchSize,
+      paddingHorizontal: spacing.sm,
+      justifyContent: 'center',
+    },
     completionUndoLink: { ...typography.caption, color: colors.accentRedDeep },
     error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
   });
