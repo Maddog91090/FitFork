@@ -3,15 +3,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { View, Text, Image, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
-import { fetchMyCompletions, fetchTeamWeekProgress } from '../lib/workoutCompletionsData';
-import {
-  computeStats,
-  computeTeamBonusWeeks,
-  groupByWeek,
-  partnerWeeks,
-  getWeekStart,
-  type GamificationStats,
-} from '../lib/workoutGamification';
+import { fetchMyCompletions } from '../lib/workoutCompletionsData';
+import { computeStats, type GamificationStats } from '../lib/workoutGamification';
 import { BADGES, unlockedBadgeIds } from '../lib/workoutBadges';
 import { Card } from '../components/ui/Card';
 import {
@@ -30,33 +23,20 @@ export default function ProgressionScreen() {
   const { session, loading } = useAuth();
   const [checking, setChecking] = useState(true);
   const [stats, setStats] = useState<GamificationStats | null>(null);
-  const [partnerThisWeekDays, setPartnerThisWeekDays] = useState(0);
-  const [teamError, setTeamError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!session) return;
     setChecking(true);
     setError(null);
-    setTeamError(null);
     try {
       const myCompletions = await fetchMyCompletions(session.user.id);
-      const myWeeks = groupByWeek(myCompletions);
       const today = new Date().toISOString().slice(0, 10);
-      const currentWeekStart = getWeekStart(today);
-
-      let teamBonusWeeks: string[] = [];
-      try {
-        const teamRows = await fetchTeamWeekProgress();
-        const otherWeeks = partnerWeeks(teamRows, session.user.id);
-        teamBonusWeeks = computeTeamBonusWeeks(myWeeks, otherWeeks);
-        const partnerThisWeek = otherWeeks.find((w) => w.weekStart === currentWeekStart);
-        setPartnerThisWeekDays(Math.min(partnerThisWeek?.days ?? 0, 3));
-      } catch {
-        setTeamError('Impossible de charger la progression du binôme.');
-      }
-
-      setStats(computeStats(myCompletions, teamBonusWeeks, today));
+      // Bonus d'équipe volontairement désactivé : sans système de binôme
+      // (demande d'ami), n'importe quel autre compte serait compté comme
+      // partenaire. Les badges « Esprit d'équipe » et « Duo en or » restent
+      // donc verrouillés jusqu'à ce que ce système existe.
+      setStats(computeStats(myCompletions, [], today));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur de chargement.');
     } finally {
@@ -121,17 +101,6 @@ export default function ProgressionScreen() {
         <Text style={styles.weekText}>{stats.thisWeekDays}/3 séances cette semaine</Text>
       </Card>
 
-      <Text style={styles.sectionLabel}>Bonus d'équipe</Text>
-      <Card style={styles.teamCard}>
-        {teamError ? (
-          <Text style={styles.teamError}>{teamError}</Text>
-        ) : (
-          <Text style={styles.teamText}>
-            Vous deux : {stats.thisWeekDays + partnerThisWeekDays}/6 séances cette semaine — bonus à 6/6
-          </Text>
-        )}
-      </Card>
-
       <Text style={styles.sectionLabel}>Badges</Text>
       <View style={styles.badgeGrid}>
         {BADGES.map((badge) => {
@@ -183,9 +152,6 @@ function createStyles(colors: ThemeColors) {
     },
     dayDotDone: { backgroundColor: colors.accentRed, borderColor: colors.accentRed },
     weekText: { ...typography.body, color: colors.textSecondary },
-    teamCard: {},
-    teamText: { ...typography.body, color: colors.textSecondary },
-    teamError: { ...typography.body, color: colors.textTertiary },
     badgeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
     badgeItem: { width: '30%', alignItems: 'center' },
     badgeImage: { width: 64, height: 64, marginBottom: spacing.xs },

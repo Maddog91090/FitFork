@@ -5,7 +5,7 @@ import HomeScreen from '../app/(tabs)/home';
 import { useAuth } from '../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../lib/profile';
 import { getCurrentPlan, fetchRecipes } from '../lib/mealPlanData';
-import { fetchMyCompletions, fetchTeamWeekProgress } from '../lib/workoutCompletionsData';
+import { fetchMyCompletions } from '../lib/workoutCompletionsData';
 
 jest.mock('../lib/auth-context', () => ({
   useAuth: jest.fn(),
@@ -23,12 +23,15 @@ jest.mock('../lib/mealPlanData', () => ({
 
 jest.mock('../lib/workoutCompletionsData', () => ({
   fetchMyCompletions: jest.fn(),
-  fetchTeamWeekProgress: jest.fn(),
 }));
 
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   router: { replace: jest.fn(), push: (...args: unknown[]) => mockPush(...args) },
+  useFocusEffect: (effect: () => void) => {
+    const { useEffect } = require('react');
+    useEffect(effect, []);
+  },
 }));
 
 describe('HomeScreen Progression card', () => {
@@ -67,7 +70,6 @@ describe('HomeScreen Progression card', () => {
       { id: 'c1', sessionIndex: 0, completedDate: '2026-08-03' },
       { id: 'c2', sessionIndex: 1, completedDate: '2026-08-04' },
     ]);
-    (fetchTeamWeekProgress as jest.Mock).mockResolvedValue([]);
 
     const { findByText, getByText } = await render(<HomeScreen />);
 
@@ -78,14 +80,17 @@ describe('HomeScreen Progression card', () => {
     expect(mockPush).toHaveBeenCalledWith('/progression');
   });
 
-  it('still shows personal stats when the team-progress fetch fails', async () => {
-    (fetchMyCompletions as jest.Mock).mockResolvedValue([
-      { id: 'c1', sessionIndex: 0, completedDate: '2026-08-03' },
-    ]);
-    (fetchTeamWeekProgress as jest.Mock).mockRejectedValue(new Error('network'));
+  it('keeps macros and today’s meals when the completions fetch fails', async () => {
+    (fetchMyCompletions as jest.Mock).mockRejectedValue(new Error('network'));
 
-    const { findByText } = await render(<HomeScreen />);
+    const { findByText, queryByText } = await render(<HomeScreen />);
 
-    expect(await findByText('1/3')).toBeTruthy();
+    // La gamification est isolée du chargement principal : son échec ne doit
+    // pas faire disparaître les macros ni les repas du jour.
+    expect(await findByText('Objectifs du jour')).toBeTruthy();
+    expect(queryByText('Repas du jour')).toBeTruthy();
+    expect(queryByText('network')).toBeNull();
+    // Dégradation propre : la carte Progression n'est simplement pas rendue.
+    expect(queryByText('Progression')).toBeNull();
   });
 });

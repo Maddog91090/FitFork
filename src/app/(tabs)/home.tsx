@@ -1,18 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, StyleSheet, Pressable } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
 import { getCurrentPlan, fetchRecipes, type Recipe, type SavedPlanEntry } from '../../lib/mealPlanData';
-import { fetchMyCompletions, fetchTeamWeekProgress } from '../../lib/workoutCompletionsData';
-import {
-  computeStats,
-  computeTeamBonusWeeks,
-  groupByWeek,
-  partnerWeeks,
-  type GamificationStats,
-} from '../../lib/workoutGamification';
+import { fetchMyCompletions } from '../../lib/workoutCompletionsData';
+import { computeStats, type GamificationStats } from '../../lib/workoutGamification';
 import { todayDayIndex, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -38,67 +32,70 @@ export default function HomeScreen() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [gamification, setGamification] = useState<GamificationStats | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(async () => {
     if (!loading && !session) {
       router.replace('/login');
       return;
     }
     if (!session) return;
 
-    let cancelled = false;
+    const userId = session.user.id;
+    setLoadError(null);
 
-    (async () => {
-      try {
-        const [profile, trainingProfile, plan, recipes, myCompletions] = await Promise.all([
-          getProfile(session.user.id),
-          getTrainingProfile(session.user.id),
-          getCurrentPlan(session.user.id),
-          fetchRecipes(),
-          fetchMyCompletions(session.user.id),
-        ]);
+    try {
+      const [profile, trainingProfile, plan, recipes] = await Promise.all([
+        getProfile(userId),
+        getTrainingProfile(userId),
+        getCurrentPlan(userId),
+        fetchRecipes(),
+      ]);
 
-        if (cancelled) return;
-
-        if (!profile || !trainingProfile) {
-          router.replace('/onboarding');
-          return;
-        }
-
-        setMacros(computeTargetsFromProfile(profile));
-        setRecipesById(new Map(recipes.map((r) => [r.id, r])));
-        if (plan) {
-          const dayIndex = todayDayIndex();
-          const entriesToday = plan.entries
-            .filter((e) => e.dayIndex === dayIndex)
-            .sort((a, b) => MEAL_ORDER.indexOf(a.mealType) - MEAL_ORDER.indexOf(b.mealType));
-          setTodayMeals(entriesToday);
-        }
-
-        let teamBonusWeeks: string[] = [];
-        try {
-          const teamRows = await fetchTeamWeekProgress();
-          teamBonusWeeks = computeTeamBonusWeeks(
-            groupByWeek(myCompletions),
-            partnerWeeks(teamRows, session.user.id)
-          );
-        } catch {
-          // Team progress is a cooperative bonus on top of personal stats —
-          // if it fails to load, still show the user's own streak/level below.
-        }
-        setGamification(computeStats(myCompletions, teamBonusWeeks, new Date().toISOString().slice(0, 10)));
-      } catch (err) {
-        if (!cancelled) {
-          setLoadError(err instanceof Error ? err.message : 'Erreur de chargement du profil.');
-        }
-      } finally {
-        if (!cancelled) setCheckingProfile(false);
+      if (!profile || !trainingProfile) {
+        router.replace('/onboarding');
+        return;
       }
-    })();
 
-    return () => {
-      cancelled = true;
-    };
+      setMacros(computeTargetsFromProfile(profile));
+      setRecipesById(new Map(recipes.map((r) => [r.id, r])));
+      if (plan) {
+        const dayIndex = todayDayIndex();
+        const entriesToday = plan.entries
+          .filter((e) => e.dayIndex === dayIndex)
+          .sort((a, b) => MEAL_ORDER.indexOf(a.mealType) - MEAL_ORDER.indexOf(b.mealType));
+        setTodayMeals(entriesToday);
+      } else {
+        setTodayMeals([]);
+      }
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Erreur de chargement du profil.');
+    } finally {
+      setCheckingProfile(false);
+    }
+
+    // La gamification est un bonus par-dessus l'accueil : elle est chargée
+    // hors du Promise.all ci-dessus pour qu'un échec ici ne fasse pas
+    // disparaître les macros et les repas du jour, qui ne dépendent pas
+    // d'elle. En cas d'échec, la carte Progression ne s'affiche simplement pas.
+    try {
+      const myCompletions = await fetchMyCompletions(userId);
+      // Bonus d'équipe volontairement désactivé : sans système de binôme
+      // (demande d'ami), on ne sait pas qui est le partenaire, et n'importe
+      // quel autre compte serait compté comme tel. Réactivable en repassant
+      // les semaines bonus ici une fois ce système en place.
+      setGamification(computeStats(myCompletions, [], new Date().toISOString().slice(0, 10)));
+    } catch {
+      // Pas de carte Progression plutôt qu'un accueil vide.
+    }
   }, [loading, session]);
+
+  // useFocusEffect plutôt que useEffect : les écrans d'onglets restent montés,
+  // donc sans ça l'accueil afficherait encore la série et les repas d'avant en
+  // revenant de l'onglet Sport où l'on vient justement de valider une séance.
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
   if (loading || !session || checkingProfile) {
     return (

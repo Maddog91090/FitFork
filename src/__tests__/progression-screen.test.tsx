@@ -3,7 +3,7 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import ProgressionScreen from '../app/progression';
 import { useAuth } from '../lib/auth-context';
-import { fetchMyCompletions, fetchTeamWeekProgress } from '../lib/workoutCompletionsData';
+import { fetchMyCompletions } from '../lib/workoutCompletionsData';
 
 jest.mock('../lib/auth-context', () => ({
   useAuth: jest.fn(),
@@ -11,7 +11,6 @@ jest.mock('../lib/auth-context', () => ({
 
 jest.mock('../lib/workoutCompletionsData', () => ({
   fetchMyCompletions: jest.fn(),
-  fetchTeamWeekProgress: jest.fn(),
 }));
 
 jest.mock('expo-router', () => ({
@@ -36,21 +35,24 @@ describe('ProgressionScreen', () => {
     jest.useRealTimers();
   });
 
-  it('shows streak, level, points, this-week progress, team bonus and all seven badge labels', async () => {
+  it('shows streak, level, points, this-week progress and all seven badge labels', async () => {
     (fetchMyCompletions as jest.Mock).mockResolvedValue([
       { id: 'c1', sessionIndex: 0, completedDate: '2026-08-03' },
       { id: 'c2', sessionIndex: 1, completedDate: '2026-08-04' },
       { id: 'c3', sessionIndex: 2, completedDate: '2026-08-05' },
     ]);
-    (fetchTeamWeekProgress as jest.Mock).mockResolvedValue([
-      { userId: 'partner-1', weekStart: '2026-08-03', days: 2 },
-    ]);
 
-    const { findByText, getByText } = await render(<ProgressionScreen />);
+    const { findByText, getByText, queryByText } = await render(<ProgressionScreen />);
 
     expect(await findByText('3/3 séances cette semaine')).toBeTruthy();
     expect(getByText('Niv. 1')).toBeTruthy();
-    expect(getByText('Vous deux : 5/6 séances cette semaine — bonus à 6/6')).toBeTruthy();
+    expect(getByText('🔥 1')).toBeTruthy();
+    // 3 séances x 10 pts + 20 pts d'objectif hebdo atteint, sans bonus d'équipe.
+    expect(getByText('50')).toBeTruthy();
+
+    // Le bonus d'équipe est désactivé tant qu'il n'y a pas de vrai système de
+    // binôme : la section ne doit plus être rendue du tout.
+    expect(queryByText("Bonus d'équipe")).toBeNull();
 
     for (const label of [
       'Première séance',
@@ -65,13 +67,24 @@ describe('ProgressionScreen', () => {
     }
   });
 
-  it('shows a localized error and still renders personal stats when the team fetch fails', async () => {
+  it('renders an empty-but-valid state when there are no completions yet', async () => {
     (fetchMyCompletions as jest.Mock).mockResolvedValue([]);
-    (fetchTeamWeekProgress as jest.Mock).mockRejectedValue(new Error('network'));
+
+    const { findByText, getByText } = await render(<ProgressionScreen />);
+
+    expect(await findByText('0/3 séances cette semaine')).toBeTruthy();
+    expect(getByText('🔥 0')).toBeTruthy();
+    expect(getByText('Niv. 1')).toBeTruthy();
+    // Les 7 badges restent affichés (verrouillés) même sans aucune séance.
+    expect(getByText('Première séance')).toBeTruthy();
+    expect(getByText("Esprit d'équipe")).toBeTruthy();
+  });
+
+  it('surfaces an error when the completions fetch fails', async () => {
+    (fetchMyCompletions as jest.Mock).mockRejectedValue(new Error('network'));
 
     const { findByText } = await render(<ProgressionScreen />);
 
-    expect(await findByText('Impossible de charger la progression du binôme.')).toBeTruthy();
-    expect(await findByText('0/3 séances cette semaine')).toBeTruthy();
+    expect(await findByText('network')).toBeTruthy();
   });
 });
