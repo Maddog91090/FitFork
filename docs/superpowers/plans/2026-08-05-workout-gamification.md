@@ -52,6 +52,23 @@ pattern already in this codebase.
 | `src/app/progression.tsx` | New: streak/level/points, this week, team bonus, badge grid |
 | `src/__tests__/workoutGamification.test.ts` | Tests for the pure math module |
 | `src/__tests__/workoutBadges.test.ts` | Tests for badge unlock rules |
+| `src/__tests__/workoutCompletionsData.test.ts` | Tests for the Supabase I/O layer (mocked client) |
+| `src/__tests__/workout-completion.test.tsx` | Tests for the completion button on the Sport screen |
+| `src/__tests__/home-progression-card.test.tsx` | Tests for the Progression card on Home |
+| `src/__tests__/progression-screen.test.tsx` | Tests for the Progression detail screen |
+
+Every task gets a real Jest test, including the Supabase I/O layer and the
+three UI touch points — this project already has precedent for both
+(`src/__tests__/weightLogData.test.ts` mocks the Supabase client and
+asserts on the query chain; `src/__tests__/onboarding-wizard.test.tsx`
+renders a full screen with `@testing-library/react-native`, mocking
+`useAuth` and the lib functions it calls). `@testing-library/react-native`
+is already a devDependency. Each new UI test follows the same shape:
+mock `useAuth` and every lib call the screen makes, freeze the system
+clock with `jest.useFakeTimers()` / `jest.setSystemTime(...)` so
+`computeStats`'s date-dependent output is deterministic regardless of
+when the suite actually runs, then assert on rendered text and, where
+relevant, on `fireEvent.press` outcomes.
 
 This splits pure calculation from Supabase I/O into two files (rather than
 the single file sketched in the design doc) to match this codebase's own
@@ -898,6 +915,7 @@ EOF
 
 **Files:**
 - Create: `src/lib/workoutCompletionsData.ts`
+- Create: `src/__tests__/workoutCompletionsData.test.ts`
 
 **Interfaces:**
 - Consumes: `supabase` client from `src/lib/supabase.ts`; `WorkoutCompletion`, `TeamWeekRow` types from `src/lib/workoutGamification.ts` (Task 2); the `workout_completions` table and `team_week_progress` RPC from Task 1.
@@ -909,12 +927,167 @@ EOF
   - `fetchMyCompletions(userId: string): Promise<WorkoutCompletionRow[]>`
   - `fetchTeamWeekProgress(weeksBack?: number): Promise<TeamWeekRow[]>`
 
-No dedicated Jest test file for this task — this codebase has no test
-file for its sibling I/O module (`weightLogData.ts` has no
-`weightLogData.test.ts`), only pure-logic modules are unit tested here.
-Verification is `npx tsc --noEmit` plus a manual smoke check (Step 3).
+The test mocks the Supabase client the same way
+`src/__tests__/weightLogData.test.ts` already does for its sibling
+weight-tracking I/O module: `jest.mock('../lib/supabase', ...)`, then a
+`from`/`select`/`eq`/`order`/`rpc` chain built out of `jest.fn()` per test.
 
-- [ ] **Step 1: Implement the module**
+- [ ] **Step 1: Write the failing test file**
+
+```typescript
+// src/__tests__/workoutCompletionsData.test.ts
+import {
+  logSessionCompletion,
+  undoSessionCompletion,
+  fetchCompletionForToday,
+  fetchMyCompletions,
+  fetchTeamWeekProgress,
+} from '../lib/workoutCompletionsData';
+import { supabase } from '../lib/supabase';
+
+jest.mock('../lib/supabase', () => ({
+  supabase: { from: jest.fn(), rpc: jest.fn() },
+}));
+
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+
+describe('logSessionCompletion', () => {
+  it('inserts a completion row for the user and session', async () => {
+    const insert = jest.fn().mockResolvedValue({ error: null });
+    (supabase.from as jest.Mock).mockReturnValue({ insert });
+
+    await logSessionCompletion('user-1', 1);
+
+    expect(supabase.from).toHaveBeenCalledWith('workout_completions');
+    expect(insert).toHaveBeenCalledWith({ user_id: 'user-1', session_index: 1 });
+  });
+
+  it('throws on a Supabase error', async () => {
+    const insert = jest.fn().mockResolvedValue({ error: new Error('boom') });
+    (supabase.from as jest.Mock).mockReturnValue({ insert });
+
+    await expect(logSessionCompletion('user-1', 1)).rejects.toThrow('boom');
+  });
+});
+
+describe('undoSessionCompletion', () => {
+  it('deletes the matching row by user, session and date', async () => {
+    const eq3 = jest.fn().mockResolvedValue({ error: null });
+    const eq2 = jest.fn().mockReturnValue({ eq: eq3 });
+    const eq1 = jest.fn().mockReturnValue({ eq: eq2 });
+    const del = jest.fn().mockReturnValue({ eq: eq1 });
+    (supabase.from as jest.Mock).mockReturnValue({ delete: del });
+
+    await undoSessionCompletion('user-1', 1, '2026-08-05');
+
+    expect(supabase.from).toHaveBeenCalledWith('workout_completions');
+    expect(eq1).toHaveBeenCalledWith('user_id', 'user-1');
+    expect(eq2).toHaveBeenCalledWith('session_index', 1);
+    expect(eq3).toHaveBeenCalledWith('completed_date', '2026-08-05');
+  });
+});
+
+describe('fetchCompletionForToday', () => {
+  it('maps a found row to WorkoutCompletionRow', async () => {
+    const maybeSingle = jest.fn().mockResolvedValue({
+      data: { id: 'c1', session_index: 1, completed_date: '2026-08-05' },
+      error: null,
+    });
+    const eq3 = jest.fn().mockReturnValue({ maybeSingle });
+    const eq2 = jest.fn().mockReturnValue({ eq: eq3 });
+    const eq1 = jest.fn().mockReturnValue({ eq: eq2 });
+    const select = jest.fn().mockReturnValue({ eq: eq1 });
+    (supabase.from as jest.Mock).mockReturnValue({ select });
+
+    const result = await fetchCompletionForToday('user-1', 1, '2026-08-05');
+
+    expect(result).toEqual({ id: 'c1', sessionIndex: 1, completedDate: '2026-08-05' });
+  });
+
+  it('returns null when no row matches', async () => {
+    const maybeSingle = jest.fn().mockResolvedValue({ data: null, error: null });
+    const eq3 = jest.fn().mockReturnValue({ maybeSingle });
+    const eq2 = jest.fn().mockReturnValue({ eq: eq3 });
+    const eq1 = jest.fn().mockReturnValue({ eq: eq2 });
+    const select = jest.fn().mockReturnValue({ eq: eq1 });
+    (supabase.from as jest.Mock).mockReturnValue({ select });
+
+    const result = await fetchCompletionForToday('user-1', 1, '2026-08-05');
+
+    expect(result).toBeNull();
+  });
+});
+
+describe('fetchMyCompletions', () => {
+  it('maps all rows for the user, ordered by date', async () => {
+    const order = jest.fn().mockResolvedValue({
+      data: [
+        { id: 'c1', session_index: 0, completed_date: '2026-08-03' },
+        { id: 'c2', session_index: 1, completed_date: '2026-08-04' },
+      ],
+      error: null,
+    });
+    const eq = jest.fn().mockReturnValue({ order });
+    const select = jest.fn().mockReturnValue({ eq });
+    (supabase.from as jest.Mock).mockReturnValue({ select });
+
+    const result = await fetchMyCompletions('user-1');
+
+    expect(result).toEqual([
+      { id: 'c1', sessionIndex: 0, completedDate: '2026-08-03' },
+      { id: 'c2', sessionIndex: 1, completedDate: '2026-08-04' },
+    ]);
+    expect(eq).toHaveBeenCalledWith('user_id', 'user-1');
+    expect(order).toHaveBeenCalledWith('completed_date', { ascending: true });
+  });
+
+  it('throws on a Supabase error', async () => {
+    const order = jest.fn().mockResolvedValue({ data: null, error: new Error('boom') });
+    const eq = jest.fn().mockReturnValue({ order });
+    const select = jest.fn().mockReturnValue({ eq });
+    (supabase.from as jest.Mock).mockReturnValue({ select });
+
+    await expect(fetchMyCompletions('user-1')).rejects.toThrow('boom');
+  });
+});
+
+describe('fetchTeamWeekProgress', () => {
+  it('calls the RPC with weeksBack and maps rows to TeamWeekRow', async () => {
+    (supabase.rpc as jest.Mock).mockResolvedValue({
+      data: [{ user_id: 'user-1', week_start: '2026-08-03', days_that_week: 3 }],
+      error: null,
+    });
+
+    const result = await fetchTeamWeekProgress(12);
+
+    expect(supabase.rpc).toHaveBeenCalledWith('team_week_progress', { weeks_back: 12 });
+    expect(result).toEqual([{ userId: 'user-1', weekStart: '2026-08-03', days: 3 }]);
+  });
+
+  it('defaults weeksBack to 26', async () => {
+    (supabase.rpc as jest.Mock).mockResolvedValue({ data: [], error: null });
+
+    await fetchTeamWeekProgress();
+
+    expect(supabase.rpc).toHaveBeenCalledWith('team_week_progress', { weeks_back: 26 });
+  });
+
+  it('throws on a Supabase error', async () => {
+    (supabase.rpc as jest.Mock).mockResolvedValue({ data: null, error: new Error('boom') });
+
+    await expect(fetchTeamWeekProgress()).rejects.toThrow('boom');
+  });
+});
+```
+
+- [ ] **Step 2: Run the test file to verify it fails**
+
+Run: `npx jest src/__tests__/workoutCompletionsData.test.ts`
+Expected: FAIL — `Cannot find module '../lib/workoutCompletionsData'`.
+
+- [ ] **Step 3: Implement the module**
 
 ```typescript
 // src/lib/workoutCompletionsData.ts
@@ -996,12 +1169,17 @@ export async function fetchTeamWeekProgress(weeksBack = 26): Promise<TeamWeekRow
 }
 ```
 
-- [ ] **Step 2: Type-check**
+- [ ] **Step 4: Run the test file to verify it passes**
+
+Run: `npx jest src/__tests__/workoutCompletionsData.test.ts`
+Expected: PASS, all `it` blocks green.
+
+- [ ] **Step 5: Type-check**
 
 Run: `npx tsc --noEmit`
 Expected: no new errors introduced by this file.
 
-- [ ] **Step 3: Manual smoke check against the live schema**
+- [ ] **Step 6: Manual smoke check against the live schema**
 
 Via the Supabase MCP `execute_sql` tool (not the app), confirm the shapes
 this module expects actually match what Task 1 created:
@@ -1019,17 +1197,19 @@ Expected: columns `id (uuid)`, `user_id (uuid)`, `session_index
 (date)`; and `team_week_progress` present with `prosecdef = true`
 (security definer).
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add src/lib/workoutCompletionsData.ts
+git add src/lib/workoutCompletionsData.ts src/__tests__/workoutCompletionsData.test.ts
 git commit -m "$(cat <<'EOF'
 Add Supabase I/O for workout completions
 
 Thin wrapper around workout_completions and team_week_progress — no
 business logic here, that all lives in workoutGamification.ts. Mirrors
 weightLogData.ts's shape (plain async functions, snake_case-to-camelCase
-row mapping, throw on error) for the sibling weight-tracking domain.
+row mapping, throw on error) for the sibling weight-tracking domain, and
+its test mocks the Supabase client the same way
+weightLogData.test.ts does.
 
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01A84UXHq4U5d7vWS4RiASmU
@@ -1043,6 +1223,7 @@ EOF
 
 **Files:**
 - Modify: `src/app/(tabs)/workout.tsx`
+- Create: `src/__tests__/workout-completion.test.tsx`
 
 **Interfaces:**
 - Consumes: `logSessionCompletion`, `undoSessionCompletion`,
@@ -1050,11 +1231,120 @@ EOF
   `src/lib/workoutCompletionsData.ts` (Task 5).
 - Produces: nothing consumed by later tasks — this is a leaf UI change.
 
-No new automated test (this codebase has no test file for any screen
-component). Verification is `npx tsc --noEmit` plus a manual pass with
-`npx expo start --web`.
+The test renders the real screen with
+`@testing-library/react-native`, following
+`src/__tests__/onboarding-wizard.test.tsx`'s shape: mock `useAuth`,
+mock every lib call the screen makes, mock `expo-router`. This screen
+also uses `useFocusEffect` (which `onboarding-wizard.test.tsx`'s subject
+does not), so the `expo-router` mock replaces it with a plain
+`useEffect(effect, [])`, the standard shim for testing focus-effect
+screens without a real navigation container.
 
-- [ ] **Step 1: Add the new imports**
+- [ ] **Step 1: Write the failing test file**
+
+```tsx
+// src/__tests__/workout-completion.test.tsx
+import React from 'react';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import WorkoutScreen from '../app/(tabs)/workout';
+import { useAuth } from '../lib/auth-context';
+import { getTrainingProfile } from '../lib/profile';
+import {
+  logSessionCompletion,
+  undoSessionCompletion,
+  fetchCompletionForToday,
+} from '../lib/workoutCompletionsData';
+
+jest.mock('../lib/auth-context', () => ({
+  useAuth: jest.fn(),
+}));
+
+jest.mock('../lib/profile', () => ({
+  getTrainingProfile: jest.fn(),
+  upsertTrainingProfile: jest.fn(),
+}));
+
+jest.mock('../lib/workoutCompletionsData', () => ({
+  logSessionCompletion: jest.fn(),
+  undoSessionCompletion: jest.fn(),
+  fetchCompletionForToday: jest.fn(),
+}));
+
+jest.mock('expo-router', () => ({
+  router: { replace: jest.fn(), push: jest.fn() },
+  useFocusEffect: (effect: () => void) => {
+    const { useEffect } = require('react');
+    useEffect(effect, []);
+  },
+}));
+
+describe('WorkoutScreen completion button', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-08-05T12:00:00Z'));
+    jest.clearAllMocks();
+    (useAuth as jest.Mock).mockReturnValue({
+      session: { user: { id: 'user-1' } },
+      loading: false,
+    });
+    (getTrainingProfile as jest.Mock).mockResolvedValue({
+      daysPerWeek: 3,
+      experienceLevel: 'beginner',
+      equipment: 'bodyweight',
+    });
+    (fetchCompletionForToday as jest.Mock).mockResolvedValue(null);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('shows the button, then the done pill after marking the session complete', async () => {
+    (logSessionCompletion as jest.Mock).mockResolvedValue(undefined);
+    const { getByText, findByText, queryByText } = await render(<WorkoutScreen />);
+
+    await findByText('Marquer comme terminée');
+
+    (fetchCompletionForToday as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      sessionIndex: 0,
+      completedDate: '2026-08-05',
+    });
+    await fireEvent.press(getByText('Marquer comme terminée'));
+
+    await waitFor(() => expect(logSessionCompletion).toHaveBeenCalledWith('user-1', 0));
+    expect(await findByText("Fait aujourd'hui ✓")).toBeTruthy();
+    expect(queryByText('Marquer comme terminée')).toBeNull();
+  });
+
+  it('reverts to the button after pressing "Annuler"', async () => {
+    (fetchCompletionForToday as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      sessionIndex: 0,
+      completedDate: '2026-08-05',
+    });
+    (undoSessionCompletion as jest.Mock).mockResolvedValue(undefined);
+    const { findByText, getByText, queryByText } = await render(<WorkoutScreen />);
+
+    await findByText("Fait aujourd'hui ✓");
+
+    (fetchCompletionForToday as jest.Mock).mockResolvedValue(null);
+    await fireEvent.press(getByText('Annuler'));
+
+    await waitFor(() => expect(undoSessionCompletion).toHaveBeenCalledWith('user-1', 0, '2026-08-05'));
+    expect(await findByText('Marquer comme terminée')).toBeTruthy();
+    expect(queryByText("Fait aujourd'hui ✓")).toBeNull();
+  });
+});
+```
+
+- [ ] **Step 2: Run the test file to verify it fails**
+
+Run: `npx jest src/__tests__/workout-completion.test.tsx`
+Expected: FAIL — the button text "Marquer comme terminée" does not exist
+yet anywhere in `workout.tsx`.
+
+- [ ] **Step 3: Add the new imports**
 
 In `src/app/(tabs)/workout.tsx`, change:
 
@@ -1106,7 +1396,7 @@ import { PressableScale } from '../../components/ui/PressableScale';
 import { Button } from '../../components/ui/Button';
 ```
 
-- [ ] **Step 2: Add the today-date helper**
+- [ ] **Step 4: Add the today-date helper**
 
 Right after the `SESSION_TAB_OPTIONS` constant, add:
 
@@ -1116,7 +1406,7 @@ function todayDateString(): string {
 }
 ```
 
-- [ ] **Step 3: Add completion state and loading logic**
+- [ ] **Step 5: Add completion state and loading logic**
 
 Inside `WorkoutScreen`, right after this existing line:
 
@@ -1167,7 +1457,7 @@ add:
   );
 ```
 
-- [ ] **Step 4: Add the toggle handler**
+- [ ] **Step 6: Add the toggle handler**
 
 Right after `handleLevelChange`'s closing brace, add:
 
@@ -1211,7 +1501,7 @@ Right after `handleLevelChange`'s closing brace, add:
   };
 ```
 
-- [ ] **Step 5: Add the button to the session card**
+- [ ] **Step 7: Add the button to the session card**
 
 Change:
 
@@ -1256,7 +1546,7 @@ to:
           </Card>
 ```
 
-- [ ] **Step 6: Add the new styles**
+- [ ] **Step 8: Add the new styles**
 
 Inside `createStyles`, right after the existing `coachNote` entry, add:
 
@@ -1277,12 +1567,17 @@ Inside `createStyles`, right after the existing `coachNote` entry, add:
     completionUndoLink: { ...typography.caption, color: colors.accentRedDeep },
 ```
 
-- [ ] **Step 7: Type-check**
+- [ ] **Step 9: Run the test file to verify it passes**
+
+Run: `npx jest src/__tests__/workout-completion.test.tsx`
+Expected: PASS, both `it` blocks green.
+
+- [ ] **Step 10: Type-check**
 
 Run: `npx tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Step 8: Manual verification**
+- [ ] **Step 11: Manual verification**
 
 Run: `npx expo start --web`, open the Sport tab, confirm: the button reads
 "Marquer comme terminée" for a session not yet done today; tapping it
@@ -1291,17 +1586,19 @@ to it; tapping "Annuler" reverts to the button; switching to a different
 session tab shows that session's own independent state (not shared with
 the first).
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 12: Commit**
 
 ```bash
-git add src/app/\(tabs\)/workout.tsx
+git add src/app/\(tabs\)/workout.tsx src/__tests__/workout-completion.test.tsx
 git commit -m "$(cat <<'EOF'
 Add the session completion button to the workout screen
 
 "Marquer comme terminée" logs today's completion for the currently
 viewed session; once logged it becomes a "Fait aujourd'hui" pill with
 an undo link. Optimistic update with rollback on failure, same pattern
-already used here for the experience-level switch.
+already used here for the experience-level switch. Test renders the
+real screen with @testing-library/react-native under a frozen system
+clock, following onboarding-wizard.test.tsx's shape.
 
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01A84UXHq4U5d7vWS4RiASmU
@@ -1315,6 +1612,7 @@ EOF
 
 **Files:**
 - Modify: `src/app/(tabs)/home.tsx`
+- Create: `src/__tests__/home-progression-card.test.tsx`
 
 **Interfaces:**
 - Consumes: `fetchMyCompletions`, `fetchTeamWeekProgress` from
@@ -1324,10 +1622,113 @@ EOF
   `PressableScale` from `src/components/ui/PressableScale.tsx`.
 - Produces: nothing consumed by later tasks.
 
-No new automated test (no test file precedent for screen components).
-Verification is `npx tsc --noEmit` plus a manual pass.
+This screen has no `useFocusEffect` (its data load is a plain `useEffect`),
+so its `expo-router` mock only needs to stub `router`, not shim a focus
+hook — simpler than Task 6's.
 
-- [ ] **Step 1: Add the new imports**
+- [ ] **Step 1: Write the failing test file**
+
+```tsx
+// src/__tests__/home-progression-card.test.tsx
+import React from 'react';
+import { render, fireEvent } from '@testing-library/react-native';
+import HomeScreen from '../app/(tabs)/home';
+import { useAuth } from '../lib/auth-context';
+import { getProfile, getTrainingProfile } from '../lib/profile';
+import { getCurrentPlan, fetchRecipes } from '../lib/mealPlanData';
+import { fetchMyCompletions, fetchTeamWeekProgress } from '../lib/workoutCompletionsData';
+
+jest.mock('../lib/auth-context', () => ({
+  useAuth: jest.fn(),
+}));
+
+jest.mock('../lib/profile', () => ({
+  getProfile: jest.fn(),
+  getTrainingProfile: jest.fn(),
+}));
+
+jest.mock('../lib/mealPlanData', () => ({
+  getCurrentPlan: jest.fn(),
+  fetchRecipes: jest.fn(),
+}));
+
+jest.mock('../lib/workoutCompletionsData', () => ({
+  fetchMyCompletions: jest.fn(),
+  fetchTeamWeekProgress: jest.fn(),
+}));
+
+const push = jest.fn();
+jest.mock('expo-router', () => ({
+  router: { replace: jest.fn(), push: (...args: unknown[]) => push(...args) },
+}));
+
+describe('HomeScreen Progression card', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-08-05T12:00:00Z'));
+    jest.clearAllMocks();
+    (useAuth as jest.Mock).mockReturnValue({
+      session: { user: { id: 'user-1', email: 'test@example.com' } },
+      loading: false,
+      signOut: jest.fn(),
+    });
+    (getProfile as jest.Mock).mockResolvedValue({
+      sex: 'male',
+      age: 30,
+      heightCm: 180,
+      weightKg: 80,
+      activityLevel: 'moderate',
+      goal: 'maintain',
+    });
+    (getTrainingProfile as jest.Mock).mockResolvedValue({
+      daysPerWeek: 3,
+      experienceLevel: 'beginner',
+      equipment: 'bodyweight',
+    });
+    (getCurrentPlan as jest.Mock).mockResolvedValue(null);
+    (fetchRecipes as jest.Mock).mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('shows the streak/level/week summary and navigates to /progression on press', async () => {
+    (fetchMyCompletions as jest.Mock).mockResolvedValue([
+      { id: 'c1', sessionIndex: 0, completedDate: '2026-08-03' },
+      { id: 'c2', sessionIndex: 1, completedDate: '2026-08-04' },
+    ]);
+    (fetchTeamWeekProgress as jest.Mock).mockResolvedValue([]);
+
+    const { findByText, getByText } = await render(<HomeScreen />);
+
+    expect(await findByText('2/3')).toBeTruthy();
+    expect(getByText('Niv. 1')).toBeTruthy();
+
+    await fireEvent.press(getByText('Progression'));
+    expect(push).toHaveBeenCalledWith('/progression');
+  });
+
+  it('still shows personal stats when the team-progress fetch fails', async () => {
+    (fetchMyCompletions as jest.Mock).mockResolvedValue([
+      { id: 'c1', sessionIndex: 0, completedDate: '2026-08-03' },
+    ]);
+    (fetchTeamWeekProgress as jest.Mock).mockRejectedValue(new Error('network'));
+
+    const { findByText } = await render(<HomeScreen />);
+
+    expect(await findByText('1/3')).toBeTruthy();
+  });
+});
+```
+
+- [ ] **Step 2: Run the test file to verify it fails**
+
+Run: `npx jest src/__tests__/home-progression-card.test.tsx`
+Expected: FAIL — the text "Progression" (and "2/3") does not exist yet
+anywhere in `home.tsx`.
+
+- [ ] **Step 3: Add the new imports**
 
 Change:
 
@@ -1363,7 +1764,7 @@ import { Button } from '../../components/ui/Button';
 import { PressableScale } from '../../components/ui/PressableScale';
 ```
 
-- [ ] **Step 2: Add gamification state**
+- [ ] **Step 4: Add gamification state**
 
 Right after:
 
@@ -1377,7 +1778,7 @@ add:
   const [gamification, setGamification] = useState<GamificationStats | null>(null);
 ```
 
-- [ ] **Step 3: Fetch and compute stats in the load effect**
+- [ ] **Step 5: Fetch and compute stats in the load effect**
 
 Change:
 
@@ -1420,7 +1821,7 @@ the effect's `} catch (err) {`), add:
         setGamification(computeStats(myCompletions, teamBonusWeeks, new Date().toISOString().slice(0, 10)));
 ```
 
-- [ ] **Step 4: Add the card, right after the macros Card**
+- [ ] **Step 6: Add the card, right after the macros Card**
 
 Change:
 
@@ -1472,7 +1873,7 @@ its closing `)}`):
 (The `...` above stands for the macros Card's existing, unmodified body —
 do not actually write literal `...` in the file.)
 
-- [ ] **Step 5: Add the new styles**
+- [ ] **Step 7: Add the new styles**
 
 Inside `createStyles`, right after the existing `macroCard` entry, add:
 
@@ -1483,29 +1884,35 @@ Inside `createStyles`, right after the existing `macroCard` entry, add:
     gamificationValue: { ...typography.title, color: colors.textPrimary },
 ```
 
-- [ ] **Step 6: Type-check**
+- [ ] **Step 8: Run the test file to verify it passes**
+
+Run: `npx jest src/__tests__/home-progression-card.test.tsx`
+Expected: PASS, both `it` blocks green.
+
+- [ ] **Step 9: Type-check**
 
 Run: `npx tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Step 7: Manual verification**
+- [ ] **Step 10: Manual verification**
 
 Run: `npx expo start --web`, open Home, confirm the "Progression" card
 renders below the macro card with a streak, a level, and "X/3 cette
 semaine", and that tapping it navigates to `/progression` (a blank/loading
 screen is expected until Task 8 ships it).
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 11: Commit**
 
 ```bash
-git add src/app/\(tabs\)/home.tsx
+git add src/app/\(tabs\)/home.tsx src/__tests__/home-progression-card.test.tsx
 git commit -m "$(cat <<'EOF'
 Add the Progression card to the Home screen
 
 Compact streak/level/this-week summary, tappable through to the new
 /progression detail screen. Team-bonus fetch is wrapped in its own
 try/catch, same tolerance-for-partial-failure pattern already used for
-the weight-log fallback in generate-plan.tsx.
+the weight-log fallback in generate-plan.tsx. Test renders the real
+screen with @testing-library/react-native under a frozen system clock.
 
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01A84UXHq4U5d7vWS4RiASmU
@@ -1519,6 +1926,7 @@ EOF
 
 **Files:**
 - Create: `src/app/progression.tsx`
+- Create: `src/__tests__/progression-screen.test.tsx`
 
 **Interfaces:**
 - Consumes: everything from Task 2, Task 4, Task 5 (`computeStats`,
@@ -1528,10 +1936,94 @@ EOF
   `fetchTeamWeekProgress` from `workoutCompletionsData.ts`).
 - Produces: nothing — this is the terminal screen for this feature.
 
-No new automated test. Verification is `npx tsc --noEmit` plus a manual
-pass.
+- [ ] **Step 1: Write the failing test file**
 
-- [ ] **Step 1: Create the file**
+```tsx
+// src/__tests__/progression-screen.test.tsx
+import React from 'react';
+import { render } from '@testing-library/react-native';
+import ProgressionScreen from '../app/progression';
+import { useAuth } from '../lib/auth-context';
+import { fetchMyCompletions, fetchTeamWeekProgress } from '../lib/workoutCompletionsData';
+
+jest.mock('../lib/auth-context', () => ({
+  useAuth: jest.fn(),
+}));
+
+jest.mock('../lib/workoutCompletionsData', () => ({
+  fetchMyCompletions: jest.fn(),
+  fetchTeamWeekProgress: jest.fn(),
+}));
+
+jest.mock('expo-router', () => ({
+  useFocusEffect: (effect: () => void) => {
+    const { useEffect } = require('react');
+    useEffect(effect, []);
+  },
+}));
+
+describe('ProgressionScreen', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-08-05T12:00:00Z'));
+    jest.clearAllMocks();
+    (useAuth as jest.Mock).mockReturnValue({
+      session: { user: { id: 'user-1' } },
+      loading: false,
+    });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('shows streak, level, points, this-week progress, team bonus and all seven badge labels', async () => {
+    (fetchMyCompletions as jest.Mock).mockResolvedValue([
+      { id: 'c1', sessionIndex: 0, completedDate: '2026-08-03' },
+      { id: 'c2', sessionIndex: 1, completedDate: '2026-08-04' },
+      { id: 'c3', sessionIndex: 2, completedDate: '2026-08-05' },
+    ]);
+    (fetchTeamWeekProgress as jest.Mock).mockResolvedValue([
+      { userId: 'partner-1', weekStart: '2026-08-03', days: 2 },
+    ]);
+
+    const { findByText, getByText } = await render(<ProgressionScreen />);
+
+    expect(await findByText('3/3 séances cette semaine')).toBeTruthy();
+    expect(getByText('Niv. 1')).toBeTruthy();
+    expect(getByText('Vous deux : 5/6 séances cette semaine — bonus à 6/6')).toBeTruthy();
+
+    for (const label of [
+      'Première séance',
+      'Habitué',
+      'Vétéran',
+      'Un mois sans faute',
+      'Sur la durée',
+      "Esprit d'équipe",
+      'Duo en or',
+    ]) {
+      expect(getByText(label)).toBeTruthy();
+    }
+  });
+
+  it('shows a localized error and still renders personal stats when the team fetch fails', async () => {
+    (fetchMyCompletions as jest.Mock).mockResolvedValue([]);
+    (fetchTeamWeekProgress as jest.Mock).mockRejectedValue(new Error('network'));
+
+    const { findByText } = await render(<ProgressionScreen />);
+
+    expect(await findByText('Impossible de charger la progression du binôme.')).toBeTruthy();
+    expect(await findByText('0/3 séances cette semaine')).toBeTruthy();
+  });
+});
+```
+
+- [ ] **Step 2: Run the test file to verify it fails**
+
+Run: `npx jest src/__tests__/progression-screen.test.tsx`
+Expected: FAIL — `Cannot find module '../app/progression'`.
+
+- [ ] **Step 3: Create the file**
 
 ```tsx
 // src/app/progression.tsx
@@ -1732,12 +2224,17 @@ function createStyles(colors: ThemeColors) {
 }
 ```
 
-- [ ] **Step 2: Type-check**
+- [ ] **Step 4: Run the test file to verify it passes**
+
+Run: `npx jest src/__tests__/progression-screen.test.tsx`
+Expected: PASS, both `it` blocks green.
+
+- [ ] **Step 5: Type-check**
 
 Run: `npx tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Step 3: Manual verification**
+- [ ] **Step 6: Manual verification**
 
 Run: `npx expo start --web`, navigate to `/progression` (via the Home
 card from Task 7), confirm: header shows streak/level/points; the "Cette
@@ -1746,16 +2243,19 @@ combined X/6 text (or the localized error text if the RPC is
 unreachable); the badge grid shows all 7 medals, locked ones visibly
 dimmed, unlocked ones at full opacity.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add src/app/progression.tsx
+git add src/app/progression.tsx src/__tests__/progression-screen.test.tsx
 git commit -m "$(cat <<'EOF'
 Add the Progression detail screen
 
 Streak, level, points, this week's progress, the cooperative team
 bonus, and the full badge grid (locked badges dimmed via the existing
-disabledOpacity token). Reached from the new Home card.
+disabledOpacity token). Reached from the new Home card. Test renders
+the real screen with @testing-library/react-native under a frozen
+system clock, covering both the happy path and the team-fetch-failure
+fallback.
 
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01A84UXHq4U5d7vWS4RiASmU
@@ -1780,6 +2280,19 @@ into Task 6 and Task 7/8 respectively.
 
 **Placeholder scan:** none found — every step carries real code, real SQL,
 or a concrete verification command.
+
+**Test coverage decision (resolved in the pre-flight scan, before Task 1
+dispatch):** the first draft of this plan had no Jest test for six of the
+eight tasks, reasoning (incorrectly) that this codebase doesn't test I/O
+wrappers or screens. That premise was wrong —
+`src/__tests__/weightLogData.test.ts` and
+`src/__tests__/onboarding-wizard.test.tsx` already do exactly that, and
+`@testing-library/react-native` is already a devDependency. Corrected:
+every task from Task 5 onward now has a real test file following those
+two existing files' conventions. Task 1 (SQL migration) and Task 3 (medal
+image generation) remain test-free — there's no code in either to unit
+test, only a schema and static assets, verified by the SQL checks and the
+file-existence/visual approval already in their steps.
 
 **Type consistency:** `WorkoutCompletion`, `WeekDayCount`, `TeamWeekRow`,
 `GamificationStats` are defined once in Task 2 and imported by name
