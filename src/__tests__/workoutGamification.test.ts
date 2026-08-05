@@ -5,7 +5,8 @@ import {
   calculatePoints,
   calculateLevel,
   computeTeamBonusWeeks,
-  partnerWeeks,
+  weeksForFriend,
+  weeksStreak,
   computeStats,
   type WorkoutCompletion,
   type TeamWeekRow,
@@ -137,18 +138,37 @@ describe('computeTeamBonusWeeks', () => {
   });
 });
 
-describe('partnerWeeks', () => {
-  it('filters out my own rows and maps the rest to WeekDayCount', () => {
+describe('weeksForFriend', () => {
+  it("returns only the given friend's rows, mapped to WeekDayCount", () => {
     const teamRows: TeamWeekRow[] = [
-      { userId: 'me', weekStart: '2026-07-27', days: 3 },
-      { userId: 'partner', weekStart: '2026-07-27', days: 2 },
+      { userId: 'friend-a', weekStart: '2026-07-27', days: 3 },
+      { userId: 'friend-b', weekStart: '2026-07-27', days: 1 },
+      { userId: 'friend-a', weekStart: '2026-08-03', days: 2 },
     ];
-    expect(partnerWeeks(teamRows, 'me')).toEqual([{ weekStart: '2026-07-27', days: 2 }]);
+    expect(weeksForFriend(teamRows, 'friend-a')).toEqual([
+      { weekStart: '2026-07-27', days: 3 },
+      { weekStart: '2026-08-03', days: 2 },
+    ]);
+  });
+
+  it('returns an empty list when the friend has no rows', () => {
+    expect(weeksForFriend([], 'friend-a')).toEqual([]);
+  });
+});
+
+describe('weeksStreak', () => {
+  it('is exported and computes a consecutive-week streak from a qualifying set', () => {
+    const qualifying = new Set(['2026-07-27', '2026-08-03']);
+    expect(weeksStreak(qualifying, '2026-08-05')).toBe(2);
+  });
+
+  it('returns 0 for an empty qualifying set', () => {
+    expect(weeksStreak(new Set(), '2026-08-05')).toBe(0);
   });
 });
 
 describe('computeStats', () => {
-  it('combines streak, points, level and team-bonus streak', () => {
+  it('combines streak, points, level, and the team-bonus streak it is given', () => {
     const completions: WorkoutCompletion[] = [
       { sessionIndex: 0, completedDate: '2026-07-27' },
       { sessionIndex: 1, completedDate: '2026-07-29' },
@@ -158,7 +178,7 @@ describe('computeStats', () => {
       { sessionIndex: 2, completedDate: '2026-08-05' },
     ];
     const teamBonusWeekStarts = ['2026-07-27', '2026-08-03'];
-    const stats = computeStats(completions, teamBonusWeekStarts, '2026-08-05');
+    const stats = computeStats(completions, teamBonusWeekStarts, 2, '2026-08-05');
     expect(stats.totalCompletions).toBe(6);
     expect(stats.streak).toBe(2);
     expect(stats.thisWeekDays).toBe(3);
@@ -167,5 +187,18 @@ describe('computeStats', () => {
     // 6*10 + 2*20 (both weeks qualify) + 2*15 (both team bonus weeks) = 130
     expect(stats.totalPoints).toBe(130);
     expect(stats.level).toBe(2);
+  });
+
+  it('uses the supplied teamBonusStreak verbatim, independent of teamBonusWeekStarts', () => {
+    // A caller can legitimately pass a teamBonusStreak that doesn't match a
+    // naive re-derivation from teamBonusWeekStarts — e.g. when the streak
+    // is the max across several independent friendships, not a walk over the
+    // (duplicate-containing) union of every friendship's bonus weeks.
+    const completions: WorkoutCompletion[] = [
+      { sessionIndex: 0, completedDate: '2026-08-03' },
+    ];
+    const stats = computeStats(completions, ['2026-08-03', '2026-08-03'], 5, '2026-08-05');
+    expect(stats.teamBonusStreak).toBe(5);
+    expect(stats.teamBonusCount).toBe(2);
   });
 });

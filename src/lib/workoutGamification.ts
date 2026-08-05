@@ -63,7 +63,7 @@ export function groupByWeek(completions: WorkoutCompletion[]): WeekDayCount[] {
  * the most recent fully-elapsed week. Shared by the personal streak and
  * the team-bonus streak — same rule, different qualifying set.
  */
-function weeksStreak(qualifyingWeekStarts: Set<string>, todayStr: string): number {
+export function weeksStreak(qualifyingWeekStarts: Set<string>, todayStr: string): number {
   const currentWeekStart = getWeekStart(todayStr);
   let cursor = qualifyingWeekStarts.has(currentWeekStart)
     ? currentWeekStart
@@ -114,15 +114,16 @@ export function computeTeamBonusWeeks(myWeeks: WeekDayCount[], partnerWeeksList:
     .sort();
 }
 
-export function partnerWeeks(teamRows: TeamWeekRow[], myUserId: string): WeekDayCount[] {
+export function weeksForFriend(teamRows: TeamWeekRow[], friendUserId: string): WeekDayCount[] {
   return teamRows
-    .filter((row) => row.userId !== myUserId)
+    .filter((row) => row.userId === friendUserId)
     .map((row) => ({ weekStart: row.weekStart, days: row.days }));
 }
 
 export function computeStats(
   completions: WorkoutCompletion[],
   teamBonusWeekStarts: string[],
+  teamBonusStreak: number,
   todayStr: string
 ): GamificationStats {
   const { streak, thisWeekDays } = calculateStreak(completions, todayStr);
@@ -134,6 +135,6 @@ export function computeStats(
     totalPoints,
     level: calculateLevel(totalPoints),
     teamBonusCount: teamBonusWeekStarts.length,
-    teamBonusStreak: weeksStreak(new Set(teamBonusWeekStarts), todayStr),
+    teamBonusStreak,
   };
 }
