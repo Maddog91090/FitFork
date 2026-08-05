@@ -40,9 +40,6 @@ export async function fetchMyFriends(): Promise<Friend[]> {
 }
 
 export async function removeFriendship(friendUserId: string): Promise<void> {
-  const { error } = await supabase
-    .from('friendships')
-    .delete()
-    .or(`user_id_a.eq.${friendUserId},user_id_b.eq.${friendUserId}`);
+  const { error } = await supabase.rpc('remove_friendship', { friend_user_id: friendUserId });
   if (error) throw error;
 }

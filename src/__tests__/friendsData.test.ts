@@ -76,22 +76,16 @@ describe('fetchMyFriends', () => {
 });
 
 describe('removeFriendship', () => {
-  it('deletes the friendship row matching the given friend', async () => {
-    const or = jest.fn().mockResolvedValue({ error: null });
-    const del = jest.fn().mockReturnValue({ or });
-    (supabase.from as jest.Mock).mockReturnValue({ delete: del });
+  it('calls the remove_friendship RPC with the friend id', async () => {
+    (supabase.rpc as jest.Mock).mockResolvedValue({ data: null, error: null });
 
     await removeFriendship('user-2');
 
-    expect(supabase.from).toHaveBeenCalledWith('friendships');
-    expect(or).toHaveBeenCalledWith('user_id_a.eq.user-2,user_id_b.eq.user-2');
+    expect(supabase.rpc).toHaveBeenCalledWith('remove_friendship', { friend_user_id: 'user-2' });
   });
 
   it('throws on a Supabase error', async () => {
-    const or = jest.fn().mockResolvedValue({ error: new Error('boom') });
-    const del = jest.fn().mockReturnValue({ or });
-    (supabase.from as jest.Mock).mockReturnValue({ delete: del });
-
+    (supabase.rpc as jest.Mock).mockResolvedValue({ data: null, error: new Error('boom') });
     await expect(removeFriendship('user-2')).rejects.toThrow('boom');
   });
 });

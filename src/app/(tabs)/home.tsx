@@ -31,6 +31,7 @@ export default function HomeScreen() {
   const [recipesById, setRecipesById] = useState<Map<string, Recipe>>(new Map());
   const [loadError, setLoadError] = useState<string | null>(null);
   const [gamification, setGamification] = useState<GamificationStats | null>(null);
+  const [gamificationDegraded, setGamificationDegraded] = useState(false);
 
   const load = useCallback(async () => {
     if (!loading && !session) {
@@ -77,8 +78,9 @@ export default function HomeScreen() {
     // disparaître les macros et les repas du jour, qui ne dépendent pas
     // d'elle. En cas d'échec, la carte Progression ne s'affiche simplement pas.
     try {
-      const { stats } = await loadGamificationStats(userId, new Date().toISOString().slice(0, 10));
+      const { stats, friendsError } = await loadGamificationStats(userId, new Date().toISOString().slice(0, 10));
       setGamification(stats);
+      setGamificationDegraded(friendsError !== null);
     } catch {
       // Pas de carte Progression plutôt qu'un accueil vide.
     }
@@ -150,6 +152,7 @@ export default function HomeScreen() {
                 <Text style={styles.macroLabel}>Cette semaine</Text>
               </View>
             </View>
+            {gamificationDegraded && <Text style={styles.gamificationDegradedNote}>Amis indisponibles</Text>}
           </Card>
         </PressableScale>
       )}
@@ -215,6 +218,9 @@ function createStyles(colors: ThemeColors) {
     gamificationRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
     gamificationItem: { alignItems: 'center', flex: 1 },
     gamificationValue: { ...typography.title, color: colors.textPrimary },
+    // Le bonus d'équipe n'a pas pu être chargé : le niveau affiché ici est
+    // calculé sans lui. Mention discrète plutôt qu'un chiffre faux et muet.
+    gamificationDegradedNote: { ...typography.caption, color: colors.textTertiary, marginTop: spacing.xs },
     sectionLabel: {
       ...typography.overline,
       color: colors.textSecondary,

@@ -90,6 +90,29 @@ describe('HomeScreen Progression card', () => {
     expect(mockPush).toHaveBeenCalledWith('/progression');
   });
 
+  it('flags the card as degraded when the friends fetch failed', async () => {
+    (loadGamificationStats as jest.Mock).mockResolvedValue({
+      stats: {
+        totalCompletions: 2,
+        streak: 0,
+        thisWeekDays: 2,
+        totalPoints: 20,
+        level: 1,
+        teamBonusCount: 0,
+        teamBonusStreak: 0,
+      },
+      friendBonuses: [],
+      friends: [],
+      friendsError: 'Impossible de charger tes amis.',
+    });
+
+    const { findByText } = await render(<HomeScreen />);
+
+    // Le niveau affiché est calculé sans le bonus d'équipe : on le dit,
+    // plutôt que de montrer un chiffre différent de celui de Progression.
+    expect(await findByText('Amis indisponibles')).toBeTruthy();
+  });
+
   it('keeps macros and today’s meals when the completions fetch fails', async () => {
     (loadGamificationStats as jest.Mock).mockRejectedValue(new Error('network'));
 

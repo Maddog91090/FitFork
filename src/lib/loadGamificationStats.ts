@@ -25,7 +25,10 @@ export async function loadGamificationStats(userId: string, todayStr: string): P
 
   try {
     friends = await fetchMyFriends();
-    const teamRows = await fetchTeamWeekProgress();
+    // Fenêtre volontairement illimitée (~10 ans) : les points et badges sont
+    // acquis définitivement, la fenêtre de 26 semaines par défaut ferait
+    // silencieusement disparaître un bonus d'équipe gagné il y a plus longtemps.
+    const teamRows = await fetchTeamWeekProgress(520);
     friendBonuses = computeFriendBonuses(
       myWeeks,
       friends.map((f) => ({ friendUserId: f.friendUserId, weeks: weeksForFriend(teamRows, f.friendUserId) })),
