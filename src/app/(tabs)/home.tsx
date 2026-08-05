@@ -5,9 +5,18 @@ import { useAuth } from '../../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
 import { getCurrentPlan, fetchRecipes, type Recipe, type SavedPlanEntry } from '../../lib/mealPlanData';
+import { fetchMyCompletions, fetchTeamWeekProgress } from '../../lib/workoutCompletionsData';
+import {
+  computeStats,
+  computeTeamBonusWeeks,
+  groupByWeek,
+  partnerWeeks,
+  type GamificationStats,
+} from '../../lib/workoutGamification';
 import { todayDayIndex, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
+import { PressableScale } from '../../components/ui/PressableScale';
 import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -27,6 +36,7 @@ export default function HomeScreen() {
   const [todayMeals, setTodayMeals] = useState<SavedPlanEntry[]>([]);
   const [recipesById, setRecipesById] = useState<Map<string, Recipe>>(new Map());
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [gamification, setGamification] = useState<GamificationStats | null>(null);
 
   useEffect(() => {
     if (!loading && !session) {
@@ -39,11 +49,12 @@ export default function HomeScreen() {
 
     (async () => {
       try {
-        const [profile, trainingProfile, plan, recipes] = await Promise.all([
+        const [profile, trainingProfile, plan, recipes, myCompletions] = await Promise.all([
           getProfile(session.user.id),
           getTrainingProfile(session.user.id),
           getCurrentPlan(session.user.id),
           fetchRecipes(),
+          fetchMyCompletions(session.user.id),
         ]);
 
         if (cancelled) return;
@@ -62,6 +73,19 @@ export default function HomeScreen() {
             .sort((a, b) => MEAL_ORDER.indexOf(a.mealType) - MEAL_ORDER.indexOf(b.mealType));
           setTodayMeals(entriesToday);
         }
+
+        let teamBonusWeeks: string[] = [];
+        try {
+          const teamRows = await fetchTeamWeekProgress();
+          teamBonusWeeks = computeTeamBonusWeeks(
+            groupByWeek(myCompletions),
+            partnerWeeks(teamRows, session.user.id)
+          );
+        } catch {
+          // Team progress is a cooperative bonus on top of personal stats —
+          // if it fails to load, still show the user's own streak/level below.
+        }
+        setGamification(computeStats(myCompletions, teamBonusWeeks, new Date().toISOString().slice(0, 10)));
       } catch (err) {
         if (!cancelled) {
           setLoadError(err instanceof Error ? err.message : 'Erreur de chargement du profil.');
@@ -113,6 +137,28 @@ export default function HomeScreen() {
             </View>
           </View>
         </Card>
+      )}
+
+      {gamification && (
+        <PressableScale onPress={() => router.push('/progression')} accessibilityRole="button">
+          <Card style={styles.gamificationCard}>
+            <Text style={styles.sectionLabel}>Progression</Text>
+            <View style={styles.gamificationRow}>
+              <View style={styles.gamificationItem}>
+                <Text style={styles.gamificationValue}>🔥 {gamification.streak}</Text>
+                <Text style={styles.macroLabel}>Série</Text>
+              </View>
+              <View style={styles.gamificationItem}>
+                <Text style={styles.gamificationValue}>Niv. {gamification.level}</Text>
+                <Text style={styles.macroLabel}>Niveau</Text>
+              </View>
+              <View style={styles.gamificationItem}>
+                <Text style={styles.gamificationValue}>{gamification.thisWeekDays}/3</Text>
+                <Text style={styles.macroLabel}>Cette semaine</Text>
+              </View>
+            </View>
+          </Card>
+        </PressableScale>
       )}
 
       <Text style={styles.sectionLabel}>Actions rapides</Text>
@@ -172,6 +218,10 @@ function createStyles(colors: ThemeColors) {
     name: { ...typography.hero, color: colors.textPrimary, marginBottom: spacing.lg },
     error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
     macroCard: { marginBottom: spacing.lg },
+    gamificationCard: { marginBottom: spacing.lg },
+    gamificationRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
+    gamificationItem: { alignItems: 'center', flex: 1 },
+    gamificationValue: { ...typography.title, color: colors.textPrimary },
     sectionLabel: {
       ...typography.overline,
       color: colors.textSecondary,
