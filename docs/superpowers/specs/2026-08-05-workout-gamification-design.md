@@ -135,7 +135,7 @@ type Badge = {
 | Un mois sans faute | streak ≥ 4 semaines |
 | Sur la durée | streak ≥ 12 semaines |
 | Esprit d'équipe | 1er bonus d'équipe déclenché |
-| Duo en or | bonus d'équipe 4 semaines calendaires d'affilée |
+| Duo en or | bonus d'équipe 4 semaines calendaires d'affilée (même logique de comptage que le streak personnel : semaines entièrement écoulées, plus la semaine en cours comptée provisoirement si elle a déjà atteint 3/3 des deux côtés) |
 
 Ajouter un badge plus tard = ajouter une entrée dans ce tableau, sans
 migration ni nouvelle table.
