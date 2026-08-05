@@ -1063,12 +1063,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Image } from 'react-native';
 ```
 
-to:
-
-```typescript
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Image, Pressable } from 'react-native';
-```
+This file's `Image, Pressable` set does not need to change — the
+"Annuler" link below uses `PressableScale` (already imported), not a bare
+`Pressable`, so every tappable element on this screen keeps a visible
+pressed state per the Global Constraints.
 
 And change:
 
@@ -1238,14 +1236,14 @@ to:
                   <View style={styles.completionDoneBadge}>
                     <Text style={styles.completionDoneText}>Fait aujourd'hui ✓</Text>
                   </View>
-                  <Pressable
+                  <PressableScale
                     onPress={handleToggleCompletion}
                     disabled={loggingCompletion}
                     hitSlop={state.hitSlop}
                     accessibilityRole="button"
                   >
                     <Text style={styles.completionUndoLink}>Annuler</Text>
-                  </Pressable>
+                  </PressableScale>
                 </>
               ) : (
                 <Button
