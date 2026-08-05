@@ -1,19 +1,22 @@
 // src/__tests__/progression-screen.test.tsx
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import ProgressionScreen from '../app/progression';
 import { useAuth } from '../lib/auth-context';
-import { fetchMyCompletions } from '../lib/workoutCompletionsData';
+import { loadGamificationStats } from '../lib/loadGamificationStats';
 
 jest.mock('../lib/auth-context', () => ({
   useAuth: jest.fn(),
 }));
 
-jest.mock('../lib/workoutCompletionsData', () => ({
-  fetchMyCompletions: jest.fn(),
+jest.mock('../lib/loadGamificationStats', () => ({
+  loadGamificationStats: jest.fn(),
 }));
 
+const mockPush = jest.fn();
+
 jest.mock('expo-router', () => ({
+  router: { push: (...args: unknown[]) => mockPush(...args) },
   useFocusEffect: (effect: () => void) => {
     const { useEffect } = require('react');
     useEffect(effect, []);
@@ -35,24 +38,33 @@ describe('ProgressionScreen', () => {
     jest.useRealTimers();
   });
 
-  it('shows streak, level, points, this-week progress and all seven badge labels', async () => {
-    (fetchMyCompletions as jest.Mock).mockResolvedValue([
-      { id: 'c1', sessionIndex: 0, completedDate: '2026-08-03' },
-      { id: 'c2', sessionIndex: 1, completedDate: '2026-08-04' },
-      { id: 'c3', sessionIndex: 2, completedDate: '2026-08-05' },
-    ]);
+  it('shows streak, level, points, this-week progress, per-friend bonuses and all seven badge labels', async () => {
+    (loadGamificationStats as jest.Mock).mockResolvedValue({
+      stats: {
+        totalCompletions: 3,
+        streak: 1,
+        thisWeekDays: 3,
+        totalPoints: 50,
+        level: 1,
+        teamBonusCount: 0,
+        teamBonusStreak: 0,
+      },
+      friendBonuses: [
+        { friendUserId: 'friend-a', bonusWeekStarts: [], bonusStreak: 0, thisWeekCombinedDays: 5 },
+      ],
+      friends: [{ friendUserId: 'friend-a', friendEmail: 'a@example.com', friendedAt: '2026-07-01T00:00:00Z' }],
+      friendsError: null,
+    });
 
-    const { findByText, getByText, queryByText } = await render(<ProgressionScreen />);
+    const { findByText, getByText } = await render(<ProgressionScreen />);
 
     expect(await findByText('3/3 séances cette semaine')).toBeTruthy();
     expect(getByText('Niv. 1')).toBeTruthy();
     expect(getByText('🔥 1')).toBeTruthy();
-    // 3 séances x 10 pts + 20 pts d'objectif hebdo atteint, sans bonus d'équipe.
     expect(getByText('50')).toBeTruthy();
 
-    // Le bonus d'équipe est désactivé tant qu'il n'y a pas de vrai système de
-    // binôme : la section ne doit plus être rendue du tout.
-    expect(queryByText("Bonus d'équipe")).toBeNull();
+    expect(getByText("Bonus d'équipe")).toBeTruthy();
+    expect(getByText('Avec a@example.com : 5/6 cette semaine — bonus à 6/6')).toBeTruthy();
 
     for (const label of [
       'Première séance',
@@ -67,8 +79,44 @@ describe('ProgressionScreen', () => {
     }
   });
 
+  it('navigates to /friends when the bonus d’équipe section is pressed', async () => {
+    (loadGamificationStats as jest.Mock).mockResolvedValue({
+      stats: {
+        totalCompletions: 0,
+        streak: 0,
+        thisWeekDays: 0,
+        totalPoints: 0,
+        level: 1,
+        teamBonusCount: 0,
+        teamBonusStreak: 0,
+      },
+      friendBonuses: [],
+      friends: [],
+      friendsError: null,
+    });
+
+    const { findByText, getByText } = await render(<ProgressionScreen />);
+    await findByText('Gérer mes amis');
+
+    await fireEvent.press(getByText('Gérer mes amis'));
+    expect(mockPush).toHaveBeenCalledWith('/friends');
+  });
+
   it('renders an empty-but-valid state when there are no completions yet', async () => {
-    (fetchMyCompletions as jest.Mock).mockResolvedValue([]);
+    (loadGamificationStats as jest.Mock).mockResolvedValue({
+      stats: {
+        totalCompletions: 0,
+        streak: 0,
+        thisWeekDays: 0,
+        totalPoints: 0,
+        level: 1,
+        teamBonusCount: 0,
+        teamBonusStreak: 0,
+      },
+      friendBonuses: [],
+      friends: [],
+      friendsError: null,
+    });
 
     const { findByText, getByText } = await render(<ProgressionScreen />);
 
@@ -81,7 +129,7 @@ describe('ProgressionScreen', () => {
   });
 
   it('surfaces an error when the completions fetch fails', async () => {
-    (fetchMyCompletions as jest.Mock).mockRejectedValue(new Error('network'));
+    (loadGamificationStats as jest.Mock).mockRejectedValue(new Error('network'));
 
     const { findByText } = await render(<ProgressionScreen />);
 

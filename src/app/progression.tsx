@@ -1,12 +1,14 @@
 // src/app/progression.tsx
 import { useCallback, useMemo, useState } from 'react';
 import { View, Text, Image, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
-import { fetchMyCompletions } from '../lib/workoutCompletionsData';
-import { computeStats, type GamificationStats } from '../lib/workoutGamification';
+import { loadGamificationStats } from '../lib/loadGamificationStats';
+import type { GamificationStats } from '../lib/workoutGamification';
+import type { FriendBonusSummary } from '../lib/friendGamification';
 import { BADGES, unlockedBadgeIds } from '../lib/workoutBadges';
 import { Card } from '../components/ui/Card';
+import { PressableScale } from '../components/ui/PressableScale';
 import {
   centeredContent,
   radius,
@@ -23,6 +25,9 @@ export default function ProgressionScreen() {
   const { session, loading } = useAuth();
   const [checking, setChecking] = useState(true);
   const [stats, setStats] = useState<GamificationStats | null>(null);
+  const [friendBonuses, setFriendBonuses] = useState<FriendBonusSummary[]>([]);
+  const [friendsError, setFriendsError] = useState<string | null>(null);
+  const [friendEmailById, setFriendEmailById] = useState<Map<string, string>>(new Map());
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -30,13 +35,12 @@ export default function ProgressionScreen() {
     setChecking(true);
     setError(null);
     try {
-      const myCompletions = await fetchMyCompletions(session.user.id);
       const today = new Date().toISOString().slice(0, 10);
-      // Bonus d'équipe volontairement désactivé : sans système de binôme
-      // (demande d'ami), n'importe quel autre compte serait compté comme
-      // partenaire. Les badges « Esprit d'équipe » et « Duo en or » restent
-      // donc verrouillés jusqu'à ce que ce système existe.
-      setStats(computeStats(myCompletions, [], today));
+      const result = await loadGamificationStats(session.user.id, today);
+      setStats(result.stats);
+      setFriendBonuses(result.friendBonuses);
+      setFriendsError(result.friendsError);
+      setFriendEmailById(new Map(result.friends.map((f) => [f.friendUserId, f.friendEmail])));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur de chargement.');
     } finally {
@@ -101,6 +105,25 @@ export default function ProgressionScreen() {
         <Text style={styles.weekText}>{stats.thisWeekDays}/3 séances cette semaine</Text>
       </Card>
 
+      <Text style={styles.sectionLabel}>Bonus d'équipe</Text>
+      <PressableScale onPress={() => router.push('/friends')} accessibilityRole="button">
+        <Card style={styles.teamCard}>
+          {friendsError ? (
+            <Text style={styles.teamError}>{friendsError}</Text>
+          ) : friendBonuses.length === 0 ? (
+            <Text style={styles.teamText}>Ajoute un ami pour débloquer le bonus d'équipe.</Text>
+          ) : (
+            friendBonuses.map((friend) => (
+              <Text key={friend.friendUserId} style={styles.teamText}>
+                Avec {friendEmailById.get(friend.friendUserId) ?? 'ton ami'} : {friend.thisWeekCombinedDays}/6 cette
+                semaine — bonus à 6/6
+              </Text>
+            ))
+          )}
+          <Text style={styles.teamManageLink}>Gérer mes amis</Text>
+        </Card>
+      </PressableScale>
+
       <Text style={styles.sectionLabel}>Badges</Text>
       <View style={styles.badgeGrid}>
         {BADGES.map((badge) => {
@@ -152,6 +175,10 @@ function createStyles(colors: ThemeColors) {
     },
     dayDotDone: { backgroundColor: colors.accentRed, borderColor: colors.accentRed },
     weekText: { ...typography.body, color: colors.textSecondary },
+    teamCard: {},
+    teamText: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.xs },
+    teamError: { ...typography.body, color: colors.textTertiary, marginBottom: spacing.xs },
+    teamManageLink: { ...typography.caption, color: colors.accentRedDeep, marginTop: spacing.xs },
     badgeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
     badgeItem: { width: '30%', alignItems: 'center' },
     badgeImage: { width: 64, height: 64, marginBottom: spacing.xs },
