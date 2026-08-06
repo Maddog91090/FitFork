@@ -11,6 +11,8 @@ export type Recipe = {
   baseCarbsG: number;
   baseServingG: number;
   imageUrl: string | null;
+  prepTimeMinutes: number | null;
+  tags: string[];
 };
 
 export type RecipeIngredient = {
@@ -37,7 +39,9 @@ export type SavedPlan = {
 export async function fetchRecipes(): Promise<Recipe[]> {
   const { data, error } = await supabase
     .from('recipes')
-    .select('id, name, meal_type, base_calories, base_protein_g, base_fat_g, base_carbs_g, base_serving_g, image_url')
+    .select(
+      'id, name, meal_type, base_calories, base_protein_g, base_fat_g, base_carbs_g, base_serving_g, image_url, prep_time_minutes, recipe_tags(tag)'
+    )
     .order('id');
 
   if (error) throw error;
@@ -52,6 +56,8 @@ export async function fetchRecipes(): Promise<Recipe[]> {
     baseCarbsG: row.base_carbs_g,
     baseServingG: row.base_serving_g,
     imageUrl: row.image_url,
+    prepTimeMinutes: row.prep_time_minutes,
+    tags: (row.recipe_tags ?? []).map((t: any) => t.tag),
   }));
 }
 
