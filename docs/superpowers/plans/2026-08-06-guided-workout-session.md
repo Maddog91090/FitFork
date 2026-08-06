@@ -501,77 +501,86 @@ describe('useStepTimer', () => {
     jest.useRealTimers();
   });
 
-  it('counts down from the given total and calls onComplete at zero', () => {
+  it('counts down from the given total and calls onComplete at zero', async () => {
     const onComplete = jest.fn();
-    const { result } = renderHook(() => useStepTimer(3, onComplete));
+    const { result } = await renderHook(() => useStepTimer(3, onComplete));
 
     expect(result.current.remainingSeconds).toBe(3);
 
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(1000);
     });
     expect(result.current.remainingSeconds).toBe(2);
 
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(1000);
     });
     expect(result.current.remainingSeconds).toBe(1);
     expect(onComplete).not.toHaveBeenCalled();
 
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(1000);
     });
     expect(result.current.remainingSeconds).toBe(0);
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 
-  it('stops counting down while paused, and resumes from the paused value', () => {
+  it('stops counting down while paused, and resumes from the paused value', async () => {
     const onComplete = jest.fn();
-    const { result } = renderHook(() => useStepTimer(5, onComplete));
+    const { result } = await renderHook(() => useStepTimer(5, onComplete));
 
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(2000);
     });
     expect(result.current.remainingSeconds).toBe(3);
 
-    act(() => {
+    await act(() => {
       result.current.pause();
     });
     expect(result.current.isPaused).toBe(true);
 
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(3000);
     });
     expect(result.current.remainingSeconds).toBe(3);
 
-    act(() => {
+    await act(() => {
       result.current.resume();
     });
     expect(result.current.isPaused).toBe(false);
 
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(3000);
     });
     expect(result.current.remainingSeconds).toBe(0);
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 
-  it('resets to the new total when totalSeconds changes', () => {
+  it('resets to the new total when totalSeconds changes', async () => {
     const onComplete = jest.fn();
-    const { result, rerender } = renderHook(({ seconds }) => useStepTimer(seconds, onComplete), {
+    const { result, rerender } = await renderHook(({ seconds }) => useStepTimer(seconds, onComplete), {
       initialProps: { seconds: 3 },
     });
 
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(2000);
     });
     expect(result.current.remainingSeconds).toBe(1);
 
-    rerender({ seconds: 10 });
+    await rerender({ seconds: 10 });
     expect(result.current.remainingSeconds).toBe(10);
   });
 });
 ```
+
+**Environment note (verified against the installed package, not assumed):**
+in this repo's installed `@testing-library/react-native` version, `renderHook`,
+`act`, and the `rerender` function `renderHook` returns are all `async` —
+every call must be `await`ed, even when the callback passed to `act()` is
+itself synchronous. Skipping `await` leaves state updates un-flushed by the
+time the next assertion runs (stale or `null` `result.current`). This is
+why every `renderHook(...)`, `act(...)`, and `rerender(...)` call above is
+awaited — do not remove any of these `await`s when transcribing.
 
 - [ ] **Step 2: Run the test to verify it fails**
 
