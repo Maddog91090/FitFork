@@ -28,7 +28,7 @@ function stepKindLabel(step: SessionStep): string {
   return 'Récupération';
 }
 
-function stepHeadline(step: SessionStep): string {
+function stepHeadline(step: Exclude<SessionStep, { kind: 'manual' }>): string {
   if (step.kind === 'work') return step.exerciseName;
   if (step.kind === 'rest') return `Ensuite : ${step.nextExerciseName}`;
   return `Ensuite : ${step.nextRoundLabel}`;
