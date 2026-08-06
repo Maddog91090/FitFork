@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import { PressableScale } from './ui/PressableScale';
 import type { ChoiceOption } from './ChoiceGroup';
-import { radius, shadow, spacing, state, typography, useThemeColors, type ThemeColors } from '../theme/tokens';
+import { useThemeColors } from '../theme/tokens';
+import { createPillStyles } from './choicePillStyles';
 
 type TagFilterGroupProps<T extends string> = {
   options: ChoiceOption<T>[];
@@ -12,7 +13,7 @@ type TagFilterGroupProps<T extends string> = {
 
 export function TagFilterGroup<T extends string>({ options, value, onChange }: TagFilterGroupProps<T>) {
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createPillStyles(colors), [colors]);
 
   const toggle = (optionValue: T) => {
     if (value.includes(optionValue)) {
@@ -40,26 +41,4 @@ export function TagFilterGroup<T extends string>({ options, value, onChange }: T
       })}
     </View>
   );
-}
-
-function createStyles(colors: ThemeColors) {
-  return StyleSheet.create({
-    row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
-    pill: {
-      borderRadius: radius.pill,
-      paddingVertical: spacing.sm + 2,
-      paddingHorizontal: spacing.md + 2,
-      minHeight: state.minTouchSize,
-      justifyContent: 'center',
-      backgroundColor: colors.bgSurface,
-      ...shadow.card,
-    },
-    pillSelected: {
-      backgroundColor: colors.accentRed,
-      shadowColor: colors.accentRed,
-      shadowOpacity: 0.25,
-    },
-    label: { ...typography.subheading, color: colors.textPrimary },
-    labelSelected: { ...typography.subheading, color: colors.textOnAccent },
-  });
 }

@@ -10,7 +10,8 @@ alter table public.recipes
 create table if not exists public.recipe_tags (
   id uuid primary key default gen_random_uuid(),
   recipe_id uuid not null references public.recipes(id) on delete cascade,
-  tag text not null
+  tag text not null,
+  unique (recipe_id, tag)
 );
 
 alter table public.recipe_tags enable row level security;
@@ -214,4 +215,5 @@ from (values
   ('Escalope milanaise revisitée au four', 'poulet'),
   ('Boulettes de bœuf à la sauce arrabbiata', 'boeuf')
 ) as v(name, tag)
-join public.recipes r on r.name = v.name;
+join public.recipes r on r.name = v.name
+on conflict (recipe_id, tag) do nothing;
