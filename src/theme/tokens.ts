@@ -256,7 +256,13 @@ export const motion = {
   },
   spring: {
     gentle: { damping: 18, stiffness: 180, mass: 1 },
-    snappy: { damping: 14, stiffness: 320, mass: 0.8 },
+    /** Base of the "chips and cells" press pattern — visibly bouncy now, not
+     *  just snappy. This is the default feel for everyday taps in Coral Rush. */
+    snappy: { damping: 10, stiffness: 260, mass: 0.9 },
+    /** Reward moments only: milestones, streaks, the mascot showing up to
+     *  celebrate. Pronounced overshoot — do not use this for routine taps,
+     *  it would read as exhausting rather than delightful. */
+    celebrate: { damping: 6, stiffness: 220, mass: 1 },
   },
 } as const;
 

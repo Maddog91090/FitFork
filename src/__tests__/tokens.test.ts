@@ -1,4 +1,4 @@
-import { fontFamily, lightColors } from '../theme/tokens';
+import { fontFamily, lightColors, motion } from '../theme/tokens';
 
 function srgbToLinear(c: number): number {
   const cs = c / 255;
@@ -48,5 +48,17 @@ describe('fontFamily', () => {
   it('has no leftover Fraunces reference', () => {
     const values = Object.values(fontFamily);
     expect(values.some((v) => v.includes('Fraunces'))).toBe(false);
+  });
+});
+
+describe('motion.spring', () => {
+  it('snappy has more bounce than Soft Neutral (lower damping, higher stiffness)', () => {
+    expect(motion.spring.snappy.damping).toBeLessThanOrEqual(10);
+    expect(motion.spring.snappy.stiffness).toBeGreaterThanOrEqual(240);
+  });
+
+  it('celebrate exists for reward moments and bounces more than snappy', () => {
+    expect(motion.spring.celebrate).toBeDefined();
+    expect(motion.spring.celebrate.damping).toBeLessThan(motion.spring.snappy.damping);
   });
 });
