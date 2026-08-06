@@ -17,18 +17,18 @@ describe('useStepTimer', () => {
 
     expect(result.current.remainingSeconds).toBe(3);
 
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(1000);
     });
     expect(result.current.remainingSeconds).toBe(2);
 
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(1000);
     });
     expect(result.current.remainingSeconds).toBe(1);
     expect(onComplete).not.toHaveBeenCalled();
 
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(1000);
     });
     expect(result.current.remainingSeconds).toBe(0);
@@ -39,27 +39,27 @@ describe('useStepTimer', () => {
     const onComplete = jest.fn();
     const { result } = await renderHook(() => useStepTimer(5, onComplete));
 
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(2000);
     });
     expect(result.current.remainingSeconds).toBe(3);
 
-    act(() => {
+    await act(() => {
       result.current.pause();
     });
     expect(result.current.isPaused).toBe(true);
 
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(3000);
     });
     expect(result.current.remainingSeconds).toBe(3);
 
-    act(() => {
+    await act(() => {
       result.current.resume();
     });
     expect(result.current.isPaused).toBe(false);
 
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(3000);
     });
     expect(result.current.remainingSeconds).toBe(0);
@@ -72,12 +72,12 @@ describe('useStepTimer', () => {
       initialProps: { seconds: 3 },
     });
 
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(2000);
     });
     expect(result.current.remainingSeconds).toBe(1);
 
-    rerender({ seconds: 10 });
+    await rerender({ seconds: 10 });
     expect(result.current.remainingSeconds).toBe(10);
   });
 });
