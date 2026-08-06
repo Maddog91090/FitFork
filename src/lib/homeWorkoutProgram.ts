@@ -14,6 +14,7 @@ export type CircuitSession = {
   restSeconds: number;
   rounds: number;
   recoveryLabel: string;
+  recoverySeconds: number;
   exercises: CircuitExercise[];
 };
 
@@ -28,6 +29,7 @@ export type SeriesSession = {
   name: string;
   image: ImageSourcePropType;
   restLabel: string;
+  restSeconds: number;
   exercises: SeriesExercise[];
 };
 
@@ -97,6 +99,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           restSeconds: 30,
           rounds: 2,
           recoveryLabel: '2 min de récup entre les tours',
+          recoverySeconds: 120,
           exercises: [
             { name: 'Squats sur chaise (assis-debout, lent)', exerciseId: 'squat-chaise' },
             { name: 'Pompes contre un mur', exerciseId: 'pompes-mur' },
@@ -113,6 +116,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           restSeconds: 30,
           rounds: 3,
           recoveryLabel: '2 min de récup',
+          recoverySeconds: 120,
           exercises: [
             { name: 'Jumping jacks doux (sans saut : un pied écarté à la fois)', exerciseId: 'jumping-jacks' },
             { name: 'Montées de genoux sur place', exerciseId: 'montees-genoux' },
@@ -125,6 +129,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           name: 'Renforcement de base',
           image: require('../../assets/images/workouts/beginner-renforcement-de-base.jpg'),
           restLabel: '45 s à 1 min de repos entre chaque',
+          restSeconds: 60,
           exercises: [
             { name: 'Squats', detail: '3 × 12', exerciseId: 'squat' },
             { name: 'Pont fessier', detail: '3 × 12', exerciseId: 'pont-fessier' },
@@ -148,6 +153,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           restSeconds: 20,
           rounds: 3,
           recoveryLabel: '1 min 30 de récup',
+          recoverySeconds: 90,
           exercises: [
             { name: 'Squats complets', exerciseId: 'squat' },
             { name: 'Pompes (sur les genoux si besoin)', exerciseId: 'pompes' },
@@ -164,6 +170,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           restSeconds: 30,
           rounds: 4,
           recoveryLabel: '2 min de récup',
+          recoverySeconds: 120,
           exercises: [
             { name: 'Jumping jacks', exerciseId: 'jumping-jacks' },
             { name: 'Burpees (version sans saut si trop dur)', exerciseId: 'burpees' },
@@ -176,6 +183,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           name: 'Bas du corps + gainage',
           image: require('../../assets/images/workouts/intermediaire-bas-du-corps-gainage.jpg'),
           restLabel: '45 s à 1 min de repos',
+          restSeconds: 60,
           exercises: [
             { name: 'Squats', detail: '4 × 15', exerciseId: 'squat' },
             { name: 'Fentes arrière', detail: '3 × 12 par jambe', exerciseId: 'fentes-arriere' },
@@ -201,6 +209,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           restSeconds: 15,
           rounds: 4,
           recoveryLabel: '1 min 30 de récup',
+          recoverySeconds: 90,
           exercises: [
             { name: 'Squats sautés', exerciseId: 'squat-saute' },
             { name: 'Pompes complètes (pieds surélevés pour durcir)', exerciseId: 'pompes-declinees' },
@@ -217,6 +226,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           restSeconds: 20,
           rounds: 5,
           recoveryLabel: '1 min 30 de récup',
+          recoverySeconds: 90,
           exercises: [
             { name: 'Burpees avec saut', exerciseId: 'burpees' },
             { name: 'Squats sautés', exerciseId: 'squat-saute' },
@@ -230,6 +240,7 @@ export const homeWorkoutProgram: HomeWorkoutProgram = {
           name: 'Force + gainage',
           image: require('../../assets/images/workouts/avance-force-gainage.jpg'),
           restLabel: '30 à 45 s de repos seulement',
+          restSeconds: 45,
           exercises: [
             { name: 'Squats bulgares (pied arrière surélevé)', detail: '4 × 12 par jambe', exerciseId: 'squat-bulgare' },
             { name: 'Pompes déclinées', detail: '4 × 12', exerciseId: 'pompes-declinees' },
