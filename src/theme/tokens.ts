@@ -76,8 +76,8 @@ export function useThemeColors(): ThemeColors {
  * never pair these with `fontWeight`.
  */
 export const fontFamily = {
-  displaySemiBold: 'Fraunces_600SemiBold',
-  displayBold: 'Fraunces_700Bold',
+  displaySemiBold: 'SpaceGrotesk_600SemiBold',
+  displayBold: 'SpaceGrotesk_700Bold',
   bodyRegular: 'PlusJakartaSans_400Regular',
   bodyMedium: 'PlusJakartaSans_500Medium',
   bodySemiBold: 'PlusJakartaSans_600SemiBold',
@@ -87,8 +87,8 @@ export const fontFamily = {
 /**
  * Type scale. Spread a whole entry into a style — `...typography.title` — rather
  * than picking sizes off it, so family, size, leading and tracking stay
- * together. Fraunces (serif) carries titles and numbers; Plus Jakarta Sans
- * carries everything the user reads or taps.
+ * together. Space Grotesk carries titles, hero text and numbers; Plus Jakarta
+ * Sans carries everything the user reads or taps.
  */
 export const typography = {
   hero: {
@@ -109,7 +109,7 @@ export const typography = {
     lineHeight: 26,
     letterSpacing: -0.2,
   },
-  /** Big numbers: weight, calories, sets. Serif gives them presence. */
+  /** Big numbers: weight, calories, sets. Space Grotesk gives them presence. */
   metric: {
     fontFamily: fontFamily.displayBold,
     fontSize: 28,

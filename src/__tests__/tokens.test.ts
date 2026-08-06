@@ -1,4 +1,4 @@
-import { lightColors } from '../theme/tokens';
+import { fontFamily, lightColors } from '../theme/tokens';
 
 function srgbToLinear(c: number): number {
   const cs = c / 255;
@@ -35,5 +35,18 @@ describe('lightColors contrast (WCAG AA, 4.5:1)', () => {
 
   it('textTertiary intentionally fails AA on bgBase (decorative use only)', () => {
     expect(contrastRatio(lightColors.textTertiary, lightColors.bgBase)).toBeLessThan(4.5);
+  });
+});
+
+describe('fontFamily', () => {
+  it('uses Space Grotesk for display weights and keeps Plus Jakarta Sans for body', () => {
+    expect(fontFamily.displayBold).toBe('SpaceGrotesk_700Bold');
+    expect(fontFamily.displaySemiBold).toBe('SpaceGrotesk_600SemiBold');
+    expect(fontFamily.bodyRegular).toBe('PlusJakartaSans_400Regular');
+  });
+
+  it('has no leftover Fraunces reference', () => {
+    const values = Object.values(fontFamily);
+    expect(values.some((v) => v.includes('Fraunces'))).toBe(false);
   });
 });
