@@ -1,11 +1,12 @@
 import { useCallback, useMemo, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet, Pressable } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet, Pressable, Switch } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
 import { getCurrentPlan, fetchRecipes, type Recipe, type SavedPlanEntry } from '../../lib/mealPlanData';
 import { fetchMyCompletions } from '../../lib/workoutCompletionsData';
+import { getNotificationStatus, enableNotifications, disableNotifications } from '../../lib/pushNotifications';
 import { computeStats, type GamificationStats } from '../../lib/workoutGamification';
 import { todayDayIndex, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
@@ -31,6 +32,8 @@ export default function HomeScreen() {
   const [recipesById, setRecipesById] = useState<Map<string, Recipe>>(new Map());
   const [loadError, setLoadError] = useState<string | null>(null);
   const [gamification, setGamification] = useState<GamificationStats | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationsBusy, setNotificationsBusy] = useState(false);
 
   const load = useCallback(async () => {
     if (!loading && !session) {
@@ -86,6 +89,13 @@ export default function HomeScreen() {
     } catch {
       // Pas de carte Progression plutôt qu'un accueil vide.
     }
+
+    try {
+      const status = await getNotificationStatus(userId);
+      setNotificationsEnabled(status.enabled);
+    } catch {
+      // Toggle just stays in its last known state rather than blocking the screen.
+    }
   }, [loading, session]);
 
   // useFocusEffect plutôt que useEffect : les écrans d'onglets restent montés,
@@ -96,6 +106,24 @@ export default function HomeScreen() {
       load();
     }, [load])
   );
+
+  const handleToggleNotifications = async (value: boolean) => {
+    if (!session) return;
+    setNotificationsBusy(true);
+    try {
+      if (value) {
+        const granted = await enableNotifications(session.user.id);
+        setNotificationsEnabled(granted);
+      } else {
+        await disableNotifications(session.user.id);
+        setNotificationsEnabled(false);
+      }
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Erreur avec les notifications.');
+    } finally {
+      setNotificationsBusy(false);
+    }
+  };
 
   if (loading || !session || checkingProfile) {
     return (
@@ -199,6 +227,17 @@ export default function HomeScreen() {
         </Card>
       )}
 
+      <View style={styles.notificationsRow}>
+        <Text style={styles.notificationsLabel}>Notifications</Text>
+        <Switch
+          value={notificationsEnabled}
+          onValueChange={handleToggleNotifications}
+          disabled={notificationsBusy}
+          trackColor={{ true: colors.accentRed, false: colors.border }}
+          thumbColor={colors.bgSurface}
+        />
+      </View>
+
       <View style={styles.signOut}>
         <Button title="Se déconnecter" variant="secondary" onPress={signOut} />
       </View>
@@ -250,6 +289,13 @@ function createStyles(colors: ThemeColors) {
     mealTypeLabel: { ...typography.caption, width: 80, color: colors.textSecondary },
     mealRecipeName: { ...typography.bodyStrong, flex: 1, color: colors.textPrimary, textAlign: 'right' },
     mealsEmptyText: { ...typography.body, color: colors.textSecondary },
+    notificationsRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: spacing.xl,
+    },
+    notificationsLabel: { ...typography.bodyStrong, color: colors.textPrimary },
     signOut: { marginTop: spacing.xl },
   });
 }
