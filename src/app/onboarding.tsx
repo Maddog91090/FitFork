@@ -11,6 +11,7 @@ import Animated, {
 import { router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { upsertProfile, upsertTrainingProfile } from '../lib/profile';
+import { enableNotifications } from '../lib/pushNotifications';
 import type { ExperienceLevel, Equipment } from '../lib/profile';
 import { ChoiceGroup } from '../components/ChoiceGroup';
 import { TextField } from '../components/ui/TextField';
@@ -108,6 +109,8 @@ export default function OnboardingScreen() {
   const [equipment, setEquipment] = useState<Equipment | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
+  const [requestingNotifications, setRequestingNotifications] = useState(false);
 
   useEffect(() => {
     if (!loading && !session) {
@@ -164,7 +167,7 @@ export default function OnboardingScreen() {
         experienceLevel: experienceLevel!,
         equipment: equipment!,
       });
-      router.replace('/home');
+      setShowNotificationPrompt(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue.');
     } finally {
@@ -172,8 +175,45 @@ export default function OnboardingScreen() {
     }
   };
 
+  const handleEnableNotifications = async () => {
+    if (!session) return;
+    setRequestingNotifications(true);
+    try {
+      await enableNotifications(session.user.id);
+    } finally {
+      setRequestingNotifications(false);
+      router.replace('/home');
+    }
+  };
+
+  const handleSkipNotifications = () => {
+    router.replace('/home');
+  };
+
   if (loading || !session) {
     return null;
+  }
+
+  if (showNotificationPrompt) {
+    return (
+      <View style={styles.screen}>
+        <View style={styles.content}>
+          <View style={styles.notificationPrompt}>
+            <Text style={styles.title}>Activer les notifications ?</Text>
+            <View style={styles.notificationActions}>
+              <Button
+                title="Activer les notifications"
+                onPress={handleEnableNotifications}
+                loading={requestingNotifications}
+              />
+              <Pressable onPress={handleSkipNotifications} style={styles.backLink}>
+                <Text style={styles.backLinkText}>Plus tard</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
   }
 
   return (
@@ -378,6 +418,8 @@ function createStyles(colors: ThemeColors) {
     hint: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.sm },
     error: { ...typography.body, color: colors.error, marginTop: spacing.md },
     footer: { padding: spacing.lg },
+    notificationPrompt: { flex: 1, justifyContent: 'center', padding: spacing.lg },
+    notificationActions: { gap: spacing.md, alignItems: 'center' },
     backLink: { alignSelf: 'flex-start', marginBottom: spacing.md },
     backLinkText: { ...typography.subheading, color: colors.textSecondary },
     recapGroup: {
