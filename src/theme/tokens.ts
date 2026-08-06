@@ -6,30 +6,39 @@
  * See `.claude/skills/fitfork-design/SKILL.md` for the rules behind these values.
  */
 export const lightColors = {
-  // Surfaces — warm off-white base, pure white for raised content.
-  bgBase: '#F7F5F2',
+  // Surfaces — warm peach base, pure white for raised content.
+  bgBase: '#FFF5F2',
   bgSurface: '#FFFFFF',
-  bgSunken: '#EFEBE5',
+  bgSunken: '#FFE8E1',
 
-  // Text — textSecondary is AA-compliant on bgBase (4.9:1).
+  // Text — textSecondary is AA-compliant on bgBase and bgSurface (~4.8:1 / ~5.2:1).
   // textTertiary fails AA on purpose: decorative/redundant text only.
-  textPrimary: '#1E1B18',
-  textSecondary: '#6F6A61',
-  textTertiary: '#9A958D',
+  textPrimary: '#3A3A5C',
+  textSecondary: '#6B6B85',
+  textTertiary: '#B89A93',
   textOnAccent: '#FFFFFF',
 
-  // Brand accent. accentRed is for fills and large type only (4.4:1 on bgBase).
-  // For red text or icons at body size, use accentRedDeep (6.0:1).
-  accentRed: '#DC2626',
-  accentRedDeep: '#B91C1C',
-  accentRedSoft: '#FBEAE7',
+  // Brand accent — Coral Rush. Key names kept from Soft Neutral (accentRed*)
+  // so every existing consumer picks up the new brand color for free.
+  // accentRed is for fills and large type (~4.8:1 on bgBase, ~4.8:1 white-on-fill).
+  // For red text or icons at body size, use accentRedDeep (~6.4:1).
+  accentRed: '#CF3D26',
+  accentRedDeep: '#A82D1A',
+  accentRedSoft: '#FFEAE5',
+
+  // Secondary accent — turquoise. Badges and secondary elements only, never
+  // a primary action (see fitfork-design's "red is scarce" rule, same logic
+  // now applies to teal being scarcer still).
+  accentTeal: '#4ECDC4',
+  accentTealDeep: '#1B7A73',
+  accentTealSoft: '#E3F7F5',
 
   // Lines. divider = inside a surface, border = around one.
-  divider: '#F0ECE3',
-  border: '#E8E2D8',
-  borderStrong: '#D8D0C3',
+  divider: '#FFEDE7',
+  border: '#F5DDD3',
+  borderStrong: '#E8C9BC',
 
-  // Status
+  // Status — unchanged by this DA (no spec requirement to touch these).
   error: '#DC2626',
   errorSoft: '#FBEAE7',
   success: '#15803D',
@@ -37,15 +46,15 @@ export const lightColors = {
   warning: '#B45309',
   warningSoft: '#FBF0E2',
 
-  // Domain vocabulary — macros and training intensity. Every value is AA on
-  // bgBase and hue-separated enough to stay readable in charts and legends.
+  // Domain vocabulary — macros and training intensity. Unchanged: still AA on
+  // bgBase and hue-separated, and the spec never asked to touch them.
   macroProtein: '#C2410C',
   macroCarbs: '#0F766E',
   macroFat: '#4338CA',
   effort: '#DC2626',
   rest: '#0369A1',
 
-  overlay: 'rgba(30, 27, 24, 0.45)',
+  overlay: 'rgba(58, 58, 92, 0.45)',
 } as const;
 
 export const colors = lightColors;
@@ -217,7 +226,7 @@ export const shadow = {
     elevation: 6,
   },
   button: {
-    shadowColor: '#DC2626',
+    shadowColor: '#CF3D26',
     shadowOpacity: 0.25,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 4 },
