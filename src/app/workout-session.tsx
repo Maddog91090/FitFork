@@ -10,7 +10,8 @@ import { buildSessionSteps, type SessionStep } from '../lib/sessionSteps';
 import { useStepTimer } from '../lib/useStepTimer';
 import { logSessionCompletion } from '../lib/workoutCompletionsData';
 import { Button } from '../components/ui/Button';
-import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../theme/tokens';
+import { PressableScale } from '../components/ui/PressableScale';
+import { centeredContent, spacing, state, typography, useThemeColors, type ThemeColors } from '../theme/tokens';
 
 const VALID_LEVELS: ExperienceLevel[] = ['beginner', 'intermediate', 'advanced'];
 
@@ -22,7 +23,7 @@ function resolveSession(level: string | undefined, sessionIndexParam: string | u
   return getLevelProgram(level as ExperienceLevel).sessions[index];
 }
 
-function stepKindLabel(step: SessionStep): string {
+function stepKindLabel(step: Exclude<SessionStep, { kind: 'manual' }>): string {
   if (step.kind === 'work') return step.roundLabel;
   if (step.kind === 'rest') return 'Repos';
   return 'Récupération';
@@ -48,6 +49,7 @@ export default function WorkoutSessionScreen() {
 
   const [stepIndex, setStepIndex] = useState(0);
   const [finishing, setFinishing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const currentStep: SessionStep | undefined = steps[stepIndex];
   const finished = steps.length > 0 && stepIndex >= steps.length;
 
@@ -55,7 +57,7 @@ export default function WorkoutSessionScreen() {
 
   const isTimed = currentStep?.kind === 'work' || currentStep?.kind === 'rest' || currentStep?.kind === 'recovery';
   const timerSeconds = isTimed && currentStep ? currentStep.seconds : 999999;
-  const timer = useStepTimer(timerSeconds, advance);
+  const timer = useStepTimer(timerSeconds, advance, stepIndex);
 
   useEffect(() => {
     if (!isTimed) return;
@@ -73,11 +75,13 @@ export default function WorkoutSessionScreen() {
 
   const handleFinish = async () => {
     if (!session) return;
+    setError(null);
     setFinishing(true);
     try {
       await logSessionCompletion(session.user.id, sessionIndex);
       router.replace('/(tabs)/workout');
-    } finally {
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur lors de l'enregistrement.");
       setFinishing(false);
     }
   };
@@ -99,6 +103,7 @@ export default function WorkoutSessionScreen() {
       <View style={styles.screen}>
         <View style={styles.finishedContainer}>
           <Text style={styles.finishedTitle}>Séance terminée 🎉</Text>
+          {error && <Text style={styles.error}>{error}</Text>}
           <Button title="Marquer la séance comme terminée" onPress={handleFinish} loading={finishing} />
         </View>
       </View>
@@ -111,6 +116,16 @@ export default function WorkoutSessionScreen() {
 
   return (
     <View style={styles.screen}>
+      <View style={styles.exitRow}>
+        <PressableScale
+          onPress={() => router.replace('/(tabs)/workout')}
+          accessibilityRole="button"
+          hitSlop={state.hitSlop}
+          style={styles.exitTouchable}
+        >
+          <Text style={styles.exitLabel}>Quitter</Text>
+        </PressableScale>
+      </View>
       {currentStep.kind === 'manual' ? (
         <View style={styles.stepContainer}>
           <Text style={styles.exerciseName}>{currentStep.exerciseName}</Text>
@@ -147,6 +162,9 @@ function createStyles(colors: ThemeColors) {
       padding: spacing.lg,
     },
     error: { ...typography.body, color: colors.error },
+    exitRow: { paddingTop: spacing.lg, paddingHorizontal: spacing.lg, alignItems: 'flex-start' },
+    exitTouchable: { minHeight: state.minTouchSize, justifyContent: 'center' },
+    exitLabel: { ...typography.caption, color: colors.textSecondary },
     stepContainer: {
       flex: 1,
       justifyContent: 'center',

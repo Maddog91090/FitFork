@@ -7,7 +7,7 @@ export type StepTimer = {
   resume: () => void;
 };
 
-export function useStepTimer(totalSeconds: number, onComplete: () => void): StepTimer {
+export function useStepTimer(totalSeconds: number, onComplete: () => void, stepKey: number | string): StepTimer {
   const [remainingSeconds, setRemainingSeconds] = useState(totalSeconds);
   const [isPaused, setIsPaused] = useState(false);
   const deadlineRef = useRef(Date.now() + totalSeconds * 1000);
@@ -20,7 +20,7 @@ export function useStepTimer(totalSeconds: number, onComplete: () => void): Step
     pausedRemainingRef.current = totalSeconds;
     setRemainingSeconds(totalSeconds);
     setIsPaused(false);
-  }, [totalSeconds]);
+  }, [totalSeconds, stepKey]);
 
   useEffect(() => {
     if (isPaused) return undefined;
@@ -36,7 +36,7 @@ export function useStepTimer(totalSeconds: number, onComplete: () => void): Step
     }, 200);
 
     return () => clearInterval(interval);
-  }, [isPaused]);
+  }, [isPaused, stepKey]);
 
   const pause = useCallback(() => {
     pausedRemainingRef.current = Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000));
