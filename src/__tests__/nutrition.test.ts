@@ -1,9 +1,4 @@
-import {
-  calculateBMR,
-  calculateTDEE,
-  calculateTargetCalories,
-  calculateMacroTargets,
-} from '../lib/nutrition';
+import { calculateBMR, calculateTDEE, calculateTargetCalories, calculateMacroTargets } from '../lib/nutrition';
 
 describe('calculateBMR', () => {
   it('computes male BMR via Mifflin-St Jeor', () => {
@@ -18,22 +13,20 @@ describe('calculateBMR', () => {
 });
 
 describe('calculateTDEE', () => {
-  it('applies the activity multiplier and adds 200 kcal per training day', () => {
-    // 1780 * 1.55 + 4*200 = 2759 + 800 = 3559
-    expect(calculateTDEE(1780, 'moderate', 4)).toBeCloseTo(3559, 5);
-  });
-
-  it('adds nothing extra with zero training days', () => {
-    // 1395.25 * 1.375 + 0 = 1918.46875
-    expect(calculateTDEE(1395.25, 'light', 0)).toBeCloseTo(1918.46875, 5);
+  it('applies the activity multiplier — a single number covering the whole week, workouts included', () => {
+    expect(calculateTDEE(1780, 'moderate')).toBeCloseTo(1780 * 1.55, 5);
   });
 
   it('uses the sedentary multiplier (1.2)', () => {
-    expect(calculateTDEE(1000, 'sedentary', 0)).toBeCloseTo(1200, 5);
+    expect(calculateTDEE(1000, 'sedentary')).toBeCloseTo(1200, 5);
+  });
+
+  it('uses the light multiplier (1.375)', () => {
+    expect(calculateTDEE(1395.25, 'light')).toBeCloseTo(1918.46875, 5);
   });
 
   it('uses the very_active multiplier (1.9)', () => {
-    expect(calculateTDEE(1000, 'very_active', 0)).toBeCloseTo(1900, 5);
+    expect(calculateTDEE(1000, 'very_active')).toBeCloseTo(1900, 5);
   });
 });
 

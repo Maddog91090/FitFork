@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Image } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getTrainingProfile, upsertTrainingProfile } from '../../lib/profile';
@@ -7,30 +7,39 @@ import type { ExperienceLevel, TrainingProfile } from '../../lib/profile';
 import { ChoiceGroup } from '../../components/ChoiceGroup';
 import { homeWorkoutProgram, getLevelProgram } from '../../lib/homeWorkoutProgram';
 import type { Session } from '../../lib/homeWorkoutProgram';
+import {
+  logSessionCompletion,
+  undoSessionCompletion,
+  fetchCompletionForToday,
+  type WorkoutCompletionRow,
+} from '../../lib/workoutCompletionsData';
 import { Card } from '../../components/ui/Card';
-import { colors, spacing } from '../../theme/tokens';
+import { PressableScale } from '../../components/ui/PressableScale';
+import { Button } from '../../components/ui/Button';
+import { centeredContent, radius, spacing, state, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
 
+const SESSION_TAB_OPTIONS = homeWorkoutProgram.levels[0].sessions.map((_, index) => ({
+  value: String(index),
+  label: `Séance ${index + 1}`,
+}));
+
+function todayDateString(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 export default function WorkoutScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { session, loading } = useAuth();
   const [trainingProfile, setTrainingProfile] = useState<TrainingProfile | null>(null);
   const [checking, setChecking] = useState(true);
   const [savingLevel, setSavingLevel] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<Set<number>>(new Set());
-
-  const toggleSession = (index: number) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
-      return next;
-    });
-  };
+  const [activeSessionIndex, setActiveSessionIndex] = useState(0);
+  const [todayCompletion, setTodayCompletion] = useState<WorkoutCompletionRow | null>(null);
+  const [loggingCompletion, setLoggingCompletion] = useState(false);
 
   const load = useCallback(async () => {
     if (!session) return;
@@ -50,11 +59,23 @@ export default function WorkoutScreen() {
     }
   }, [session]);
 
+  const loadTodayCompletion = useCallback(async () => {
+    if (!session) return;
+    try {
+      const completion = await fetchCompletionForToday(session.user.id, activeSessionIndex, todayDateString());
+      setTodayCompletion(completion);
+    } catch {
+      // Non-blocking: the button just falls back to its "not completed" state.
+      setTodayCompletion(null);
+    }
+  }, [session, activeSessionIndex]);
+
   const handleLevelChange = async (level: ExperienceLevel) => {
     if (!session || !trainingProfile || level === trainingProfile.experienceLevel) return;
     const previous = trainingProfile;
     const next = { ...trainingProfile, experienceLevel: level };
     setTrainingProfile(next);
+    setActiveSessionIndex(0);
     setSavingLevel(true);
     setError(null);
     try {
@@ -64,6 +85,52 @@ export default function WorkoutScreen() {
       setError(err instanceof Error ? err.message : 'Erreur lors du changement de niveau.');
     } finally {
       setSavingLevel(false);
+    }
+  };
+
+  const handleStartSession = (index: number) => {
+    if (!trainingProfile) return;
+    router.push({
+      pathname: '/workout-session',
+      params: { level: trainingProfile.experienceLevel, sessionIndex: String(index) },
+    });
+  };
+
+  const handleToggleCompletion = async () => {
+    if (!session) return;
+    setError(null);
+
+    if (todayCompletion) {
+      const previous = todayCompletion;
+      setTodayCompletion(null);
+      setLoggingCompletion(true);
+      try {
+        await undoSessionCompletion(session.user.id, activeSessionIndex, previous.completedDate);
+      } catch (err) {
+        setTodayCompletion(previous);
+        setError(err instanceof Error ? err.message : "Erreur lors de l'annulation.");
+      } finally {
+        setLoggingCompletion(false);
+      }
+      return;
+    }
+
+    const optimistic: WorkoutCompletionRow = {
+      id: 'optimistic',
+      sessionIndex: activeSessionIndex,
+      completedDate: todayDateString(),
+    };
+    setTodayCompletion(optimistic);
+    setLoggingCompletion(true);
+    try {
+      await logSessionCompletion(session.user.id, activeSessionIndex);
+      const completion = await fetchCompletionForToday(session.user.id, activeSessionIndex, todayDateString());
+      setTodayCompletion(completion);
+    } catch (err) {
+      setTodayCompletion(null);
+      setError(err instanceof Error ? err.message : "Erreur lors de l'enregistrement.");
+    } finally {
+      setLoggingCompletion(false);
     }
   };
 
@@ -77,6 +144,12 @@ export default function WorkoutScreen() {
     useCallback(() => {
       load();
     }, [load])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      loadTodayCompletion();
+    }, [loadTodayCompletion])
   );
 
   if (loading || !session || checking || !trainingProfile) {
@@ -110,17 +183,52 @@ export default function WorkoutScreen() {
       <Text style={styles.levelSummary}>{levelProgram.summary}</Text>
       <Text style={styles.levelDuration}>Durée par séance : {levelProgram.sessionDurationLabel}</Text>
 
+      <ChoiceGroup
+        options={SESSION_TAB_OPTIONS}
+        value={String(activeSessionIndex)}
+        onChange={(value) => setActiveSessionIndex(Number(value))}
+      />
+
       {levelProgram.sessions.map((sessionItem, index) => {
-        const isExpanded = expanded.has(index);
+        if (index !== activeSessionIndex) return null;
         return (
-          <Pressable key={sessionItem.name} onPress={() => toggleSession(index)}>
-            <Card style={styles.sessionCard}>
-              <Text style={styles.sessionTitle}>
-                Séance {index + 1} — {sessionItem.name}
-              </Text>
-              {isExpanded && <SessionDetail session={sessionItem} />}
-            </Card>
-          </Pressable>
+          <Card key={sessionItem.name} style={styles.sessionCard}>
+            <View style={styles.sessionPhotoFrame}>
+              <Image source={sessionItem.image} style={styles.sessionPhoto} accessibilityLabel={sessionItem.name} />
+            </View>
+            <Text style={styles.sessionTitle}>
+              Séance {index + 1} — {sessionItem.name}
+            </Text>
+            <View style={styles.startRow}>
+              <Button title="Commencer" onPress={() => handleStartSession(index)} />
+            </View>
+            <SessionDetail session={sessionItem} styles={styles} />
+            <View style={styles.completionRow}>
+              {todayCompletion ? (
+                <>
+                  <View style={styles.completionDoneBadge}>
+                    <Text style={styles.completionDoneText}>Fait aujourd'hui ✓</Text>
+                  </View>
+                  <PressableScale
+                    onPress={handleToggleCompletion}
+                    disabled={loggingCompletion}
+                    hitSlop={state.hitSlop}
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: loggingCompletion }}
+                    style={styles.completionUndoTouchable}
+                  >
+                    <Text style={styles.completionUndoLink}>Annuler</Text>
+                  </PressableScale>
+                </>
+              ) : (
+                <Button
+                  title="Marquer comme terminée"
+                  onPress={handleToggleCompletion}
+                  loading={loggingCompletion}
+                />
+              )}
+            </View>
+          </Card>
         );
       })}
 
@@ -143,18 +251,27 @@ export default function WorkoutScreen() {
   );
 }
 
-function SessionDetail({ session }: { session: Session }) {
+type Styles = ReturnType<typeof createStyles>;
+
+function SessionDetail({ session, styles }: { session: Session; styles: Styles }) {
   if (session.type === 'circuit') {
     return (
       <View style={styles.sessionDetail}>
+        <Text style={styles.exerciseListLabel}>Aperçu des exercices</Text>
         <Text style={styles.sessionMeta}>
           Circuit : {session.workSeconds} s d'effort / {session.restSeconds} s de repos. {session.rounds} tours,{' '}
           {session.recoveryLabel}.
         </Text>
         {session.exercises.map((exercise) => (
-          <Text key={exercise} style={styles.exerciseLine}>
-            • {exercise}
-          </Text>
+          <PressableScale
+            key={exercise.name}
+            onPress={() => router.push(`/exercise/${exercise.exerciseId}`)}
+            accessibilityRole="link"
+            hitSlop={4}
+            style={styles.exerciseCard}
+          >
+            <Text style={styles.exerciseLine}>{exercise.name}</Text>
+          </PressableScale>
         ))}
       </View>
     );
@@ -162,32 +279,85 @@ function SessionDetail({ session }: { session: Session }) {
 
   return (
     <View style={styles.sessionDetail}>
+      <Text style={styles.exerciseListLabel}>Aperçu des exercices</Text>
       <Text style={styles.sessionMeta}>En séries, {session.restLabel}.</Text>
       {session.exercises.map((exercise) => (
-        <Text key={exercise.name} style={styles.exerciseLine}>
-          • {exercise.name} : {exercise.detail}
-        </Text>
+        <PressableScale
+          key={exercise.name}
+          onPress={() => router.push(`/exercise/${exercise.exerciseId}`)}
+          accessibilityRole="link"
+          hitSlop={4}
+          style={styles.exerciseCard}
+        >
+          <Text style={styles.exerciseLine}>{exercise.name}</Text>
+          <Text style={styles.exerciseDetail}>{exercise.detail}</Text>
+        </PressableScale>
       ))}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
-  container: { padding: spacing.lg },
-  title: { fontSize: 18, fontWeight: '800', color: colors.textPrimary },
-  subtitle: { fontSize: 13, color: colors.textSecondary, marginBottom: spacing.lg },
-  block: { marginVertical: spacing.lg },
-  blockTitle: { fontSize: 14, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.xs },
-  blockText: { color: colors.textSecondary, fontSize: 13 },
-  levelSummary: { marginTop: spacing.sm, color: colors.textSecondary, fontSize: 13 },
-  levelDuration: { marginBottom: spacing.lg, color: colors.textSecondary, fontSize: 12, fontStyle: 'italic' },
-  sessionCard: { marginBottom: spacing.sm },
-  sessionTitle: { fontSize: 13, fontWeight: '700', color: colors.textPrimary },
-  sessionDetail: { marginTop: spacing.sm, marginLeft: spacing.md },
-  sessionMeta: { color: colors.textSecondary, fontSize: 12, marginBottom: spacing.xs },
-  exerciseLine: { color: colors.textPrimary, fontSize: 12, marginBottom: spacing.xs },
-  coachNote: { marginBottom: spacing.xs, color: colors.textSecondary, fontSize: 13 },
-  error: { color: colors.error, marginBottom: spacing.md },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.bgBase },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+    container: { padding: spacing.lg, ...centeredContent },
+    title: { ...typography.display, color: colors.textPrimary },
+    subtitle: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.lg },
+    block: { marginVertical: spacing.lg },
+    blockTitle: { ...typography.heading, color: colors.textPrimary, marginBottom: spacing.xs },
+    blockText: { ...typography.body, color: colors.textSecondary },
+    levelSummary: { ...typography.body, marginTop: spacing.sm, color: colors.textSecondary },
+    levelDuration: { ...typography.caption, marginBottom: spacing.lg, color: colors.textSecondary },
+    sessionCard: { marginBottom: spacing.sm },
+    sessionPhotoFrame: {
+      width: '100%',
+      aspectRatio: 4 / 3,
+      borderRadius: radius.md,
+      backgroundColor: colors.bgSunken,
+      marginBottom: spacing.sm,
+      overflow: 'hidden',
+    },
+    sessionPhoto: {
+      width: '100%',
+      height: '100%',
+    },
+    sessionTitle: { ...typography.subheading, color: colors.textPrimary },
+    startRow: { marginTop: spacing.sm, marginBottom: spacing.md },
+    exerciseListLabel: { ...typography.overline, color: colors.textTertiary, marginBottom: spacing.xs },
+    sessionDetail: { marginTop: spacing.sm },
+    sessionMeta: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.sm },
+    exerciseCard: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.sm,
+      backgroundColor: colors.bgBase,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      marginBottom: spacing.sm,
+    },
+    exerciseLine: { ...typography.bodyStrong, color: colors.textPrimary },
+    exerciseDetail: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
+    coachNote: { ...typography.body, marginBottom: spacing.xs, color: colors.textSecondary },
+    completionRow: {
+      marginTop: spacing.md,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    completionDoneBadge: {
+      backgroundColor: colors.successSoft,
+      borderRadius: radius.pill,
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.md,
+    },
+    completionDoneText: { ...typography.captionStrong, color: colors.success },
+    completionUndoTouchable: {
+      minHeight: state.minTouchSize,
+      paddingHorizontal: spacing.sm,
+      justifyContent: 'center',
+    },
+    completionUndoLink: { ...typography.caption, color: colors.accentRedDeep },
+    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
+  });
+}

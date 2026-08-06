@@ -10,21 +10,16 @@ describe('computeTargetsFromProfile', () => {
       activityLevel: 'moderate' as const,
       goal: 'maintain' as const,
     };
-    const trainingProfile = {
-      daysPerWeek: 4,
-      experienceLevel: 'intermediate' as const,
-      equipment: 'full_gym' as const,
-    };
 
-    // BMR = 1780, TDEE = 1780*1.55 + 4*200 = 3559, maintain -> 3559 unchanged
-    // protein 160g/640kcal, fat 0.28*3559=996.52kcal->111g, carbs (3559-640-996.52)/4->481g
-    const result = computeTargetsFromProfile(profile, trainingProfile);
+    // BMR = 1780, TDEE = 1780*1.55 = 2759, maintain -> 2759 unchanged
+    // protein 160g/640kcal, fat 0.28*2759=772.52kcal->86g, carbs (2759-640-772.52)/4=1346.48/4=336.62->337g
+    const result = computeTargetsFromProfile(profile);
 
     expect(result).toEqual({
-      calories: 3559,
+      calories: 2759,
       proteinG: 160,
-      fatG: 111,
-      carbsG: 481,
+      fatG: 86,
+      carbsG: 337,
     });
   });
 });

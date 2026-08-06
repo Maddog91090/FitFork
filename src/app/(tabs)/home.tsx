@@ -1,56 +1,101 @@
-import { useEffect, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet, Pressable } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
+import { getCurrentPlan, fetchRecipes, type Recipe, type SavedPlanEntry } from '../../lib/mealPlanData';
+import { fetchMyCompletions } from '../../lib/workoutCompletionsData';
+import { computeStats, type GamificationStats } from '../../lib/workoutGamification';
+import { todayDayIndex, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { colors, spacing } from '../../theme/tokens';
+import { PressableScale } from '../../components/ui/PressableScale';
+import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+
+const MEAL_TYPE_LABELS: Record<MealType, string> = {
+  breakfast: 'Petit-déj',
+  lunch: 'Déjeuner',
+  snack: 'Collation',
+  dinner: 'Dîner',
+};
+const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'snack', 'dinner'];
 
 export default function HomeScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { session, loading, signOut } = useAuth();
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [macros, setMacros] = useState<MacroTargets | null>(null);
+  const [todayMeals, setTodayMeals] = useState<SavedPlanEntry[]>([]);
+  const [recipesById, setRecipesById] = useState<Map<string, Recipe>>(new Map());
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [gamification, setGamification] = useState<GamificationStats | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(async () => {
     if (!loading && !session) {
       router.replace('/login');
       return;
     }
     if (!session) return;
 
-    let cancelled = false;
+    const userId = session.user.id;
+    setLoadError(null);
 
-    (async () => {
-      try {
-        const [profile, trainingProfile] = await Promise.all([
-          getProfile(session.user.id),
-          getTrainingProfile(session.user.id),
-        ]);
+    try {
+      const [profile, trainingProfile, plan, recipes] = await Promise.all([
+        getProfile(userId),
+        getTrainingProfile(userId),
+        getCurrentPlan(userId),
+        fetchRecipes(),
+      ]);
 
-        if (cancelled) return;
-
-        if (!profile || !trainingProfile) {
-          router.replace('/onboarding');
-          return;
-        }
-
-        setMacros(computeTargetsFromProfile(profile, trainingProfile));
-      } catch (err) {
-        if (!cancelled) {
-          setLoadError(err instanceof Error ? err.message : 'Erreur de chargement du profil.');
-        }
-      } finally {
-        if (!cancelled) setCheckingProfile(false);
+      if (!profile || !trainingProfile) {
+        router.replace('/onboarding');
+        return;
       }
-    })();
 
-    return () => {
-      cancelled = true;
-    };
+      setMacros(computeTargetsFromProfile(profile));
+      setRecipesById(new Map(recipes.map((r) => [r.id, r])));
+      if (plan) {
+        const dayIndex = todayDayIndex();
+        const entriesToday = plan.entries
+          .filter((e) => e.dayIndex === dayIndex)
+          .sort((a, b) => MEAL_ORDER.indexOf(a.mealType) - MEAL_ORDER.indexOf(b.mealType));
+        setTodayMeals(entriesToday);
+      } else {
+        setTodayMeals([]);
+      }
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Erreur de chargement du profil.');
+    } finally {
+      setCheckingProfile(false);
+    }
+
+    // La gamification est un bonus par-dessus l'accueil : elle est chargée
+    // hors du Promise.all ci-dessus pour qu'un échec ici ne fasse pas
+    // disparaître les macros et les repas du jour, qui ne dépendent pas
+    // d'elle. En cas d'échec, la carte Progression ne s'affiche simplement pas.
+    try {
+      const myCompletions = await fetchMyCompletions(userId);
+      // Bonus d'équipe volontairement désactivé : sans système de binôme
+      // (demande d'ami), on ne sait pas qui est le partenaire, et n'importe
+      // quel autre compte serait compté comme tel. Réactivable en repassant
+      // les semaines bonus ici une fois ce système en place.
+      setGamification(computeStats(myCompletions, [], new Date().toISOString().slice(0, 10)));
+    } catch {
+      // Pas de carte Progression plutôt qu'un accueil vide.
+    }
   }, [loading, session]);
+
+  // useFocusEffect plutôt que useEffect : les écrans d'onglets restent montés,
+  // donc sans ça l'accueil afficherait encore la série et les repas d'avant en
+  // revenant de l'onglet Sport où l'on vient justement de valider une séance.
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
   if (loading || !session || checkingProfile) {
     return (
@@ -76,19 +121,41 @@ export default function HomeScreen() {
               <Text style={styles.macroLabel}>kcal</Text>
             </View>
             <View style={styles.macroItem}>
-              <Text style={[styles.macroValue, styles.macroValueAccent]}>{macros.proteinG}g</Text>
+              <Text style={[styles.macroValue, styles.macroProtein]}>{macros.proteinG}g</Text>
               <Text style={styles.macroLabel}>Prot</Text>
             </View>
             <View style={styles.macroItem}>
-              <Text style={styles.macroValue}>{macros.fatG}g</Text>
+              <Text style={[styles.macroValue, styles.macroFat]}>{macros.fatG}g</Text>
               <Text style={styles.macroLabel}>Lip</Text>
             </View>
             <View style={styles.macroItem}>
-              <Text style={styles.macroValue}>{macros.carbsG}g</Text>
+              <Text style={[styles.macroValue, styles.macroCarbs]}>{macros.carbsG}g</Text>
               <Text style={styles.macroLabel}>Gluc</Text>
             </View>
           </View>
         </Card>
+      )}
+
+      {gamification && (
+        <PressableScale onPress={() => router.push('/progression')} accessibilityRole="button">
+          <Card style={styles.gamificationCard}>
+            <Text style={styles.sectionLabel}>Progression</Text>
+            <View style={styles.gamificationRow}>
+              <View style={styles.gamificationItem}>
+                <Text style={styles.gamificationValue}>🔥 {gamification.streak}</Text>
+                <Text style={styles.macroLabel}>Série</Text>
+              </View>
+              <View style={styles.gamificationItem}>
+                <Text style={styles.gamificationValue}>Niv. {gamification.level}</Text>
+                <Text style={styles.macroLabel}>Niveau</Text>
+              </View>
+              <View style={styles.gamificationItem}>
+                <Text style={styles.gamificationValue}>{gamification.thisWeekDays}/3</Text>
+                <Text style={styles.macroLabel}>Cette semaine</Text>
+              </View>
+            </View>
+          </Card>
+        </PressableScale>
       )}
 
       <Text style={styles.sectionLabel}>Actions rapides</Text>
@@ -101,6 +168,37 @@ export default function HomeScreen() {
         </View>
       </View>
 
+      <Text style={styles.sectionLabel}>Repas du jour</Text>
+      {todayMeals.length > 0 ? (
+        <Card style={styles.mealsCard}>
+          {todayMeals.map((entry, index) => {
+            const recipe = recipesById.get(entry.recipeId);
+            return (
+              <Pressable
+                key={entry.id}
+                onPress={() =>
+                  router.push({
+                    pathname: '/recipe/[id]',
+                    params: { id: entry.recipeId, portion: String(entry.portionMultiplier) },
+                  })
+                }
+                accessibilityRole="button"
+                style={[styles.mealRow, index === todayMeals.length - 1 && styles.mealRowLast]}
+              >
+                <Text style={styles.mealTypeLabel}>{MEAL_TYPE_LABELS[entry.mealType]}</Text>
+                <Text style={styles.mealRecipeName}>{recipe ? recipe.name : entry.recipeId}</Text>
+              </Pressable>
+            );
+          })}
+        </Card>
+      ) : (
+        <Card style={styles.mealsCard}>
+          <Text style={styles.mealsEmptyText}>
+            Pas de plan pour aujourd'hui. Génère ton plan de la semaine pour voir tes repas ici.
+          </Text>
+        </Card>
+      )}
+
       <View style={styles.signOut}>
         <Button title="Se déconnecter" variant="secondary" onPress={signOut} />
       </View>
@@ -108,28 +206,50 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
-  container: { padding: spacing.lg },
-  greeting: { fontSize: 12, color: colors.textSecondary },
-  name: { fontSize: 20, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
-  error: { color: colors.error, marginBottom: spacing.md },
-  macroCard: { marginBottom: spacing.lg },
-  sectionLabel: {
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-    color: colors.textSecondary,
-    fontWeight: '700',
-    marginBottom: spacing.sm,
-  },
-  macroRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
-  macroItem: { alignItems: 'center', flex: 1 },
-  macroValue: { fontSize: 16, fontWeight: '800', color: colors.textPrimary },
-  macroValueAccent: { color: colors.accentRed },
-  macroLabel: { fontSize: 9, color: colors.textSecondary, textTransform: 'uppercase', marginTop: 2 },
-  actionsRow: { flexDirection: 'row', gap: spacing.sm },
-  actionButton: { flex: 1 },
-  signOut: { marginTop: spacing.xl },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.bgBase },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+    container: { padding: spacing.lg, ...centeredContent },
+    greeting: { ...typography.caption, color: colors.textSecondary },
+    name: { ...typography.hero, color: colors.textPrimary, marginBottom: spacing.lg },
+    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
+    macroCard: { marginBottom: spacing.lg },
+    gamificationCard: { marginBottom: spacing.lg },
+    gamificationRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
+    gamificationItem: { alignItems: 'center', flex: 1 },
+    gamificationValue: { ...typography.title, color: colors.textPrimary },
+    sectionLabel: {
+      ...typography.overline,
+      color: colors.textSecondary,
+      marginBottom: spacing.sm,
+    },
+    macroRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
+    macroItem: { alignItems: 'center', flex: 1 },
+    // Calories stay neutral; each macro carries its own hue so the numbers are
+    // scannable at a glance and match the colors used elsewhere for the same macro.
+    // typography.title rather than typography.metric: four values share this row,
+    // and metric's 28px would wrap a 4-digit calorie target on narrow phones.
+    macroValue: { ...typography.title, color: colors.textPrimary },
+    macroProtein: { color: colors.macroProtein },
+    macroFat: { color: colors.macroFat },
+    macroCarbs: { color: colors.macroCarbs },
+    macroLabel: { ...typography.overline, color: colors.textSecondary, marginTop: spacing.xs },
+    actionsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
+    actionButton: { flex: 1 },
+    mealsCard: { marginBottom: spacing.lg },
+    mealRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.sm + 1,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.divider,
+    },
+    mealRowLast: { borderBottomWidth: 0 },
+    mealTypeLabel: { ...typography.caption, width: 80, color: colors.textSecondary },
+    mealRecipeName: { ...typography.bodyStrong, flex: 1, color: colors.textPrimary, textAlign: 'right' },
+    mealsEmptyText: { ...typography.body, color: colors.textSecondary },
+    signOut: { marginTop: spacing.xl },
+  });
+}

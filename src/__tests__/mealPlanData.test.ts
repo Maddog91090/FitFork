@@ -17,7 +17,7 @@ beforeEach(() => {
 });
 
 describe('fetchRecipes', () => {
-  it('maps rows to the Recipe shape', async () => {
+  it('maps rows to the Recipe shape, including tags and prep time', async () => {
     const order = jest.fn().mockResolvedValue({
       data: [
         {
@@ -29,6 +29,9 @@ describe('fetchRecipes', () => {
           base_fat_g: 8,
           base_carbs_g: 58,
           base_serving_g: 300,
+          image_url: 'https://example.com/porridge.jpg',
+          prep_time_minutes: 10,
+          recipe_tags: [{ tag: 'vegetarien' }],
         },
       ],
       error: null,
@@ -48,9 +51,43 @@ describe('fetchRecipes', () => {
         baseFatG: 8,
         baseCarbsG: 58,
         baseServingG: 300,
+        imageUrl: 'https://example.com/porridge.jpg',
+        prepTimeMinutes: 10,
+        tags: ['vegetarien'],
       },
     ]);
+    expect(select).toHaveBeenCalledWith(
+      'id, name, meal_type, base_calories, base_protein_g, base_fat_g, base_carbs_g, base_serving_g, image_url, prep_time_minutes, recipe_tags(tag)'
+    );
     expect(order).toHaveBeenCalledWith('id');
+  });
+
+  it('defaults tags to an empty array when a recipe has none', async () => {
+    const order = jest.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'r2',
+          name: 'Recette sans tag',
+          meal_type: 'snack',
+          base_calories: 100,
+          base_protein_g: 5,
+          base_fat_g: 2,
+          base_carbs_g: 10,
+          base_serving_g: 50,
+          image_url: null,
+          prep_time_minutes: null,
+          recipe_tags: [],
+        },
+      ],
+      error: null,
+    });
+    const select = jest.fn().mockReturnValue({ order });
+    (supabase.from as jest.Mock).mockReturnValue({ select });
+
+    const result = await fetchRecipes();
+
+    expect(result[0].tags).toEqual([]);
+    expect(result[0].prepTimeMinutes).toBeNull();
   });
 
   it('throws on a Supabase error', async () => {

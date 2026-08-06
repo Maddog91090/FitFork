@@ -1,16 +1,18 @@
 import { Tabs } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { KgIcon } from '../../components/icons/KgIcon';
-import { colors } from '../../theme/tokens';
+import { typography, useThemeColors } from '../../theme/tokens';
 
 export default function TabsLayout() {
+  const colors = useThemeColors();
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.accentRed,
         tabBarInactiveTintColor: colors.textSecondary,
-        tabBarStyle: { backgroundColor: colors.bgSurface, borderTopColor: colors.divider },
+        tabBarStyle: { backgroundColor: colors.bgSurface, borderTopColor: colors.border },
+        tabBarLabelStyle: { ...typography.caption, fontSize: 11 },
       }}
     >
       <Tabs.Screen
@@ -28,6 +30,15 @@ export default function TabsLayout() {
           title: 'Plan',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={22} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="recipes"
+        options={{
+          title: 'Recettes',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'restaurant' : 'restaurant-outline'} size={22} color={color} />
           ),
         }}
       />

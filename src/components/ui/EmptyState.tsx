@@ -1,46 +1,74 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Image, type ImageProps } from 'expo-image';
 import { Card } from './Card';
 import { Button } from './Button';
-import { colors, spacing } from '../../theme/tokens';
+import { spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 type EmptyStateProps = {
-  icon: React.ReactNode;
+  /** Brand illustration for this slot. Generated on bgSurface, so it sits on the card seamlessly. */
+  illustration?: ImageProps['source'];
+  /** Fallback for empty states that have no illustration of their own yet. */
+  icon?: React.ReactNode;
   title: string;
   message: string;
-  actionLabel: string;
-  onAction: () => void;
+  /** Omit both when the screen already offers the action elsewhere. */
+  actionLabel?: string;
+  onAction?: () => void;
 };
 
-export function EmptyState({ icon, title, message, actionLabel, onAction }: EmptyStateProps) {
+export function EmptyState({
+  illustration,
+  icon,
+  title,
+  message,
+  actionLabel,
+  onAction,
+}: EmptyStateProps) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const hasAction = Boolean(actionLabel && onAction);
   return (
     <Card style={styles.card}>
-      <View style={styles.icon}>{icon}</View>
+      {illustration ? (
+        <Image source={illustration} style={styles.illustration} contentFit="contain" />
+      ) : (
+        icon && <View style={styles.icon}>{icon}</View>
+      )}
       <Text style={styles.title}>{title}</Text>
-      <Text style={styles.message}>{message}</Text>
-      <Button title={actionLabel} onPress={onAction} />
+      <Text style={[styles.message, hasAction && styles.messageSpaced]}>{message}</Text>
+      {actionLabel && onAction && <Button title={actionLabel} onPress={onAction} />}
     </Card>
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    alignItems: 'center',
-    paddingVertical: spacing.xl,
-  },
-  icon: {
-    marginBottom: spacing.md,
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-    textAlign: 'center',
-  },
-  message: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    card: {
+      alignItems: 'center',
+      paddingVertical: spacing.xl,
+    },
+    illustration: {
+      width: 160,
+      height: 160,
+      marginBottom: spacing.sm,
+    },
+    icon: {
+      marginBottom: spacing.md,
+    },
+    title: {
+      ...typography.title,
+      color: colors.textPrimary,
+      marginBottom: spacing.xs,
+      textAlign: 'center',
+    },
+    message: {
+      ...typography.body,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    messageSpaced: {
+      marginBottom: spacing.lg,
+    },
+  });
+}

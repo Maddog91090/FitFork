@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getCurrentPlan, fetchRecipeIngredients } from '../../lib/mealPlanData';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { colors, spacing } from '../../theme/tokens';
+import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 type AggregatedIngredient = { name: string; quantity: number; unit: string };
 
 export default function GroceryListScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { session, loading } = useAuth();
   const [items, setItems] = useState<AggregatedIngredient[]>([]);
   const [hasPlan, setHasPlan] = useState(true);
@@ -79,7 +81,7 @@ export default function GroceryListScreen() {
     return (
       <View style={styles.centered}>
         <EmptyState
-          icon={<Text style={styles.emptyIcon}>🛒</Text>}
+          illustration={require('../../../assets/images/illustrations/empty-grocery.png')}
           title="Aucun plan pour l'instant"
           message="Génère un plan de repas pour obtenir ta liste de courses."
           actionLabel="Générer un plan"
@@ -110,27 +112,28 @@ export default function GroceryListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.bgBase,
-    padding: spacing.lg,
-  },
-  container: { padding: spacing.lg },
-  title: { fontSize: 17, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm + 1,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
-  },
-  rowLast: { borderBottomWidth: 0 },
-  name: { flex: 1, color: colors.textPrimary, fontSize: 13 },
-  quantity: { color: colors.textSecondary, fontSize: 12 },
-  error: { color: colors.error, marginBottom: spacing.md },
-  emptyIcon: { fontSize: 32 },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.bgBase },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.bgBase,
+      padding: spacing.lg,
+    },
+    container: { padding: spacing.lg, ...centeredContent },
+    title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
+    row: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.sm + 1,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.divider,
+    },
+    rowLast: { borderBottomWidth: 0 },
+    name: { ...typography.body, flex: 1, color: colors.textPrimary },
+    quantity: { ...typography.captionStrong, color: colors.textSecondary },
+    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
+  });
+}

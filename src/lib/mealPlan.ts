@@ -1,5 +1,12 @@
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
+export const DAY_LABELS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+
+/** App's day-index convention is Monday=0..Sunday=6; JS's Date#getDay() is Sunday=0. */
+export function todayDayIndex(): number {
+  return (new Date().getDay() + 6) % 7;
+}
+
 export type RecipeOption = {
   id: string;
   mealType: MealType;
@@ -7,6 +14,9 @@ export type RecipeOption = {
   baseProteinG: number;
   baseFatG: number;
   baseCarbsG: number;
+  /** Optional: when provided, the generator prefers recipes that reuse ingredients
+   * already picked for the week, to keep the grocery list from ballooning. */
+  ingredientNames?: string[];
 };
 
 export type DailyMacroTargets = {
@@ -91,25 +101,40 @@ function macroDistance(a: MacroShare, b: MacroShare): number {
   return (a.protein - b.protein) ** 2 + (a.fat - b.fat) ** 2 + (a.carbs - b.carbs) ** 2;
 }
 
-function bestMacroFit(
+// How far (in squared macro-share distance) a candidate may sit from the
+// single best macro match and still be considered "close enough" — small
+// enough that a poor macro fit (see the lean/fatty case in the tests) never
+// slips in, but wide enough that recipes with near-identical splits are
+// treated as interchangeable and the tie goes to whichever reuses more of
+// the week's ingredients so far, rather than to an arbitrary macro-score
+// rounding difference.
+const MACRO_FIT_TOLERANCE = 0.02;
+
+function normalizedIngredientNames(recipe: RecipeOption): string[] {
+  return (recipe.ingredientNames ?? []).map((name) => name.trim().toLowerCase());
+}
+
+/** How many of the recipe's ingredients aren't already on this week's list — lower is better. */
+function newIngredientCount(recipe: RecipeOption, weekIngredients: Set<string>): number {
+  const names = normalizedIngredientNames(recipe);
+  return names.filter((name) => !weekIngredients.has(name)).length;
+}
+
+function bestFit(
   candidates: RecipeOption[],
   targetShare: MacroShare,
-  usageCount: Map<string, number>
+  usageCount: Map<string, number>,
+  weekIngredients: Set<string>
 ): RecipeOption {
-  let bestScore = Infinity;
-  let bestCandidates: RecipeOption[] = [];
+  const macroScores = candidates.map((candidate) => macroDistance(macroShare(candidate), targetShare));
+  const bestMacroScore = Math.min(...macroScores);
+  const closeEnough = candidates.filter((_, index) => macroScores[index] <= bestMacroScore + MACRO_FIT_TOLERANCE);
 
-  for (const candidate of candidates) {
-    const score = macroDistance(macroShare(candidate), targetShare);
-    if (score < bestScore - 1e-9) {
-      bestScore = score;
-      bestCandidates = [candidate];
-    } else if (score <= bestScore + 1e-9) {
-      bestCandidates.push(candidate);
-    }
-  }
+  const newIngredientCounts = closeEnough.map((candidate) => newIngredientCount(candidate, weekIngredients));
+  const fewestNewIngredients = Math.min(...newIngredientCounts);
+  const mostOverlap = closeEnough.filter((_, index) => newIngredientCounts[index] === fewestNewIngredients);
 
-  return leastUsed(bestCandidates, usageCount);
+  return leastUsed(mostOverlap, usageCount);
 }
 
 export function generateWeeklyPlan(
@@ -118,6 +143,7 @@ export function generateWeeklyPlan(
   recipes: RecipeOption[]
 ): GeneratedEntry[] {
   const usageCount = new Map<string, number>();
+  const weekIngredients = new Set<string>();
   const entries: GeneratedEntry[] = [];
   const entryBaseCalories: number[] = [];
   const targetShare = macroTargetShare(dailyTargets);
@@ -128,7 +154,8 @@ export function generateWeeklyPlan(
 
     const underLimit = candidates.filter((r) => (usageCount.get(r.id) ?? 0) < MAX_REPEATS_PER_WEEK);
     const pool = underLimit.length > 0 ? underLimit : candidates;
-    const recipe = bestMacroFit(pool, targetShare, usageCount);
+    const recipe = bestFit(pool, targetShare, usageCount, weekIngredients);
+    for (const name of normalizedIngredientNames(recipe)) weekIngredients.add(name);
 
     const slotTargetCalories = dailyTargets.calories * MEAL_TYPE_RATIOS[slot.mealType];
     const portionMultiplier = clampPortionMultiplier(slotTargetCalories / recipe.baseCalories);

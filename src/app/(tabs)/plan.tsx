@@ -1,14 +1,21 @@
-import { useCallback, useEffect, useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { View, Text, Image, Pressable, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getCurrentPlan, updatePlanEntry, fetchRecipes, type Recipe, type SavedPlan } from '../../lib/mealPlanData';
-import { pickReplacementRecipe, MEAL_TYPE_RATIOS, clampPortionMultiplier, type MealType } from '../../lib/mealPlan';
+import {
+  pickReplacementRecipe,
+  MEAL_TYPE_RATIOS,
+  clampPortionMultiplier,
+  DAY_LABELS,
+  todayDayIndex,
+  type MealType,
+} from '../../lib/mealPlan';
+import { ChoiceGroup } from '../../components/ChoiceGroup';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { colors, spacing } from '../../theme/tokens';
+import { centeredContent, radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
-const DAY_LABELS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
   breakfast: 'Petit-déj',
   lunch: 'Déjeuner',
@@ -16,13 +23,18 @@ const MEAL_TYPE_LABELS: Record<MealType, string> = {
   snack: 'Collation',
 };
 
+const DAY_TAB_OPTIONS = DAY_LABELS.map((label, index) => ({ value: String(index), label }));
+
 export default function PlanScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { session, loading } = useAuth();
   const [plan, setPlan] = useState<SavedPlan | null>(null);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [checking, setChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [swappingId, setSwappingId] = useState<string | null>(null);
+  const [activeDayIndex, setActiveDayIndex] = useState(todayDayIndex());
 
   const load = useCallback(async () => {
     if (!session) return;
@@ -78,7 +90,7 @@ export default function PlanScreen() {
       await updatePlanEntry(entryId, replacement.id, newMultiplier);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de l\'échange.');
+      setError(err instanceof Error ? err.message : "Erreur lors de l'échange.");
     } finally {
       setSwappingId(null);
     }
@@ -96,7 +108,7 @@ export default function PlanScreen() {
     return (
       <View style={styles.centered}>
         <EmptyState
-          icon={<Text style={styles.emptyIcon}>📋</Text>}
+          illustration={require('../../../assets/images/illustrations/empty-plan.png')}
           title="Aucun plan pour l'instant"
           message="Génère ton premier plan de repas de la semaine."
           actionLabel="Générer un plan"
@@ -106,75 +118,89 @@ export default function PlanScreen() {
     );
   }
 
+  const dayEntries = plan.entries.filter((e) => e.dayIndex === activeDayIndex);
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       {error && <Text style={styles.error}>{error}</Text>}
-      {DAY_LABELS.map((dayLabel, dayIndex) => {
-        const dayEntries = plan.entries.filter((e) => e.dayIndex === dayIndex);
-        if (dayEntries.length === 0) return null;
-        return (
-          <View key={dayLabel} style={styles.dayBlock}>
-            <Text style={styles.dayLabel}>{dayLabel}</Text>
-            {dayEntries.map((entry) => {
-              const recipe = recipeById.get(entry.recipeId);
-              return (
-                <Card key={entry.id} style={styles.entryCard}>
-                  <View style={styles.entryRow}>
-                    <Pressable
-                      style={styles.entryInfo}
-                      onPress={() =>
-                        router.push({
-                          pathname: '/recipe/[id]',
-                          params: { id: entry.recipeId, portion: String(entry.portionMultiplier) },
-                        })
-                      }
-                    >
-                      <Text style={styles.mealTypeLabel}>{MEAL_TYPE_LABELS[entry.mealType]}</Text>
-                      <Text style={styles.recipeName}>
-                        {recipe ? recipe.name : entry.recipeId} ({Math.round(entry.portionMultiplier * 100)}%)
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      onPress={() => handleSwap(entry.id, entry.mealType, entry.recipeId)}
-                      disabled={swappingId === entry.id}
-                    >
-                      <Text style={styles.swapHint}>{swappingId === entry.id ? '...' : 'Échanger'}</Text>
-                    </Pressable>
+
+      <ChoiceGroup
+        options={DAY_TAB_OPTIONS}
+        value={String(activeDayIndex)}
+        onChange={(value) => setActiveDayIndex(Number(value))}
+      />
+
+      {dayEntries.length === 0 ? (
+        <Text style={styles.emptyDayText}>Rien de prévu ce jour-là.</Text>
+      ) : (
+        dayEntries.map((entry) => {
+          const recipe = recipeById.get(entry.recipeId);
+          return (
+            <Card key={entry.id} style={styles.entryCard}>
+              <View style={styles.entryRow}>
+                <Pressable
+                  style={styles.entryInfo}
+                  accessibilityRole="button"
+                  onPress={() =>
+                    router.push({
+                      pathname: '/recipe/[id]',
+                      params: { id: entry.recipeId, portion: String(entry.portionMultiplier) },
+                    })
+                  }
+                >
+                  <View style={styles.thumbFrame}>
+                    {recipe?.imageUrl && <Image source={{ uri: recipe.imageUrl }} style={styles.thumb} />}
                   </View>
-                </Card>
-              );
-            })}
-          </View>
-        );
-      })}
+                  <View style={styles.entryText}>
+                    <Text style={styles.mealTypeLabel}>{MEAL_TYPE_LABELS[entry.mealType]}</Text>
+                    <Text style={styles.recipeName}>
+                      {recipe ? recipe.name : entry.recipeId} ({Math.round(entry.portionMultiplier * 100)}%)
+                    </Text>
+                  </View>
+                </Pressable>
+                <Pressable
+                  onPress={() => handleSwap(entry.id, entry.mealType, entry.recipeId)}
+                  disabled={swappingId === entry.id}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.swapHint}>{swappingId === entry.id ? '...' : 'Échanger'}</Text>
+                </Pressable>
+              </View>
+            </Card>
+          );
+        })
+      )}
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bgBase },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.bgBase,
-    padding: spacing.lg,
-  },
-  container: { padding: spacing.lg },
-  dayBlock: { marginBottom: spacing.lg },
-  dayLabel: {
-    fontSize: 11,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    fontWeight: '700',
-    marginBottom: spacing.sm,
-  },
-  entryCard: { marginBottom: spacing.sm },
-  entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  entryInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  mealTypeLabel: { width: 80, color: colors.textSecondary, fontSize: 11 },
-  recipeName: { flex: 1, color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
-  swapHint: { color: colors.accentRed, marginLeft: spacing.md, fontSize: 12, fontWeight: '700' },
-  error: { color: colors.error, marginBottom: spacing.md },
-  emptyIcon: { fontSize: 32 },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.bgBase },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.bgBase,
+      padding: spacing.lg,
+    },
+    container: { padding: spacing.lg, ...centeredContent },
+    emptyDayText: { ...typography.body, color: colors.textSecondary, marginTop: spacing.md },
+    entryCard: { marginBottom: spacing.sm },
+    entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    entryInfo: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: spacing.md },
+    thumbFrame: {
+      width: 56,
+      height: 56,
+      borderRadius: radius.sm,
+      backgroundColor: colors.bgSunken,
+      overflow: 'hidden',
+    },
+    thumb: { width: '100%', height: '100%' },
+    entryText: { flex: 1 },
+    mealTypeLabel: { ...typography.caption, color: colors.textSecondary },
+    recipeName: { ...typography.bodyStrong, color: colors.textPrimary },
+    swapHint: { ...typography.captionStrong, color: colors.accentRedDeep, marginLeft: spacing.md },
+    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
+  });
+}

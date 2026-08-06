@@ -1,5 +1,8 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors, radius, shadow, spacing } from '../theme/tokens';
+import { useMemo } from 'react';
+import { View, Text } from 'react-native';
+import { PressableScale } from './ui/PressableScale';
+import { useThemeColors } from '../theme/tokens';
+import { createPillStyles } from './choicePillStyles';
 
 export type ChoiceOption<T extends string> = { value: T; label: string };
 
@@ -10,37 +13,23 @@ type ChoiceGroupProps<T extends string> = {
 };
 
 export function ChoiceGroup<T extends string>({ options, value, onChange }: ChoiceGroupProps<T>) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createPillStyles(colors), [colors]);
   return (
     <View style={styles.row}>
       {options.map((option) => (
-        <Pressable
+        <PressableScale
           key={option.value}
           onPress={() => onChange(option.value)}
+          accessibilityRole="radio"
+          accessibilityState={{ selected: value === option.value }}
           style={[styles.pill, value === option.value && styles.pillSelected]}
         >
           <Text style={value === option.value ? styles.labelSelected : styles.label}>
             {option.label}
           </Text>
-        </Pressable>
+        </PressableScale>
       ))}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
-  pill: {
-    borderRadius: radius.pill,
-    paddingVertical: spacing.sm + 2,
-    paddingHorizontal: spacing.md + 2,
-    backgroundColor: colors.bgSurface,
-    ...shadow.card,
-  },
-  pillSelected: {
-    backgroundColor: colors.accentRed,
-    shadowColor: colors.accentRed,
-    shadowOpacity: 0.25,
-  },
-  label: { color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
-  labelSelected: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
-});

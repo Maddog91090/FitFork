@@ -51,4 +51,39 @@ describe('getLevelProgram', () => {
       }
     }
   });
+
+  it('gives every circuit session a recoverySeconds matching its recoveryLabel', () => {
+    const expected: Record<string, number> = {
+      'Full body doux': 120,
+      'Cardio léger': 120,
+      'Full body en circuit': 90,
+      'Cardio HIIT': 120,
+      'Full body intense': 90,
+      'HIIT explosif': 90,
+    };
+    for (const level of levels) {
+      const program = getLevelProgram(level);
+      for (const session of program.sessions) {
+        if (session.type === 'circuit') {
+          expect(session.recoverySeconds).toBe(expected[session.name]);
+        }
+      }
+    }
+  });
+
+  it('gives every series session a restSeconds matching the upper bound of its restLabel', () => {
+    const expected: Record<string, number> = {
+      'Renforcement de base': 60,
+      'Bas du corps + gainage': 60,
+      'Force + gainage': 45,
+    };
+    for (const level of levels) {
+      const program = getLevelProgram(level);
+      for (const session of program.sessions) {
+        if (session.type === 'series') {
+          expect(session.restSeconds).toBe(expected[session.name]);
+        }
+      }
+    }
+  });
 });
