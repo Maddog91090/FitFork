@@ -1,5 +1,5 @@
 /**
- * FitPro design tokens — visual style "Soft Neutral".
+ * FitPro design tokens — visual style "Coral Rush".
  *
  * Single source of truth for the app's look. Screens and components must not
  * hardcode colors, sizes, durations or font weights — import from here.
@@ -26,9 +26,21 @@ export const lightColors = {
   accentRedDeep: '#A82D1A',
   accentRedSoft: '#FFEAE5',
 
+  // Illustration-only coral — the mascot and any future decorative
+  // illustrations use this brighter, more saturated coral. It's deliberately
+  // NOT the same as accentRed: accentRed is darkened specifically so white
+  // text clears 4.5:1 on top of it (a UI fill/text requirement), while
+  // illustration fills never carry text and can stay at the spec's original,
+  // more vivid brand coral. Never use this behind text or as a UI fill —
+  // it will not pass the button/fill contrast bar. See
+  // docs/superpowers/specs/2026-08-06-coral-rush-design-system-design.md.
+  illustrationCoral: '#FF6B5B',
+
   // Secondary accent — turquoise. Badges and secondary elements only, never
   // a primary action (see fitfork-design's "red is scarce" rule, same logic
-  // now applies to teal being scarcer still).
+  // now applies to teal being scarcer still). Text/icons on an accentTeal
+  // fill must use textPrimary or accentTealDeep — never textOnAccent (white):
+  // white on accentTeal is only ~1.93:1, well under AA.
   accentTeal: '#4ECDC4',
   accentTealDeep: '#1B7A73',
   accentTealSoft: '#E3F7F5',
