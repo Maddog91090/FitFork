@@ -1078,15 +1078,19 @@ git commit -m "feat: add guided workout session player screen"
 - No new exports — this task only changes the screen's rendering and
   navigation wiring.
 
-This task also fixes a pre-existing bug found while making this change:
-every `require('../../assets/images/workouts/...')` call in this file
-resolves to `src/assets/images/workouts/...`, which does not exist — it's
-missing one `../` for this file's actual depth (`src/app/(tabs)/`, 3
-levels below the repo root). The sibling tab screens `plan.tsx` and
-`grocery-list.tsx` (same `src/app/(tabs)/` depth) both correctly use
-`../../../assets/...` for their images. This has presumably been failing
-to bundle every session's photo since it was introduced. Fixed as part of
-this task since it touches the exact same lines being restyled.
+**Correction (found during implementation, not before):** an earlier draft
+of this plan claimed `workout.tsx` itself contained 9 broken
+`require('../../assets/images/workouts/...')` calls needing a third `../`.
+That was a planning mistake — `workout.tsx` contains no `require()` calls
+at all; it only renders `sessionItem.image`, a value pre-resolved by
+`src/lib/homeWorkoutProgram.ts`. The actual 9 `require()` calls live in
+`homeWorkoutProgram.ts` (at `src/lib/`, 2 levels below the repo root), where
+`../../assets/...` is the *correct* path — same convention as
+`src/lib/exercises.ts`. No require-path fix is needed anywhere; do not
+apply one. (The Task 7 implementer independently re-verified this by
+grepping `require(` in `workout.tsx` — zero matches — and confirming
+`assets/images/workouts/*.jpg` resolves correctly from `homeWorkoutProgram.ts`'s
+location.)
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1125,13 +1129,9 @@ Expected: FAIL — no element with text "Commencer" exists yet.
 
 In `src/app/(tabs)/workout.tsx`:
 
-1. Fix the 9 broken image require paths — change every
-   `require('../../assets/images/workouts/...')` to
-   `require('../../../assets/images/workouts/...')` (add one `../`). There
-   are 9 occurrences, one per session across the 3 levels — this is a
-   textual search-and-replace of `'../../assets/images/workouts/` to
-   `'../../../assets/images/workouts/` across the whole file (safe: no
-   other string in this file matches that prefix).
+1. ~~Fix broken image require paths~~ — **do not do this.** See the
+   "Correction" note above: `workout.tsx` has no `require()` calls to fix.
+   Do not modify `src/lib/homeWorkoutProgram.ts` as part of this task.
 
 2. Add a `handleStartSession` function next to `handleToggleCompletion`:
 
@@ -1184,7 +1184,7 @@ Expected: PASS (all tests, including the new one).
 
 ```bash
 git add src/app/\(tabs\)/workout.tsx src/__tests__/workout-completion.test.tsx
-git commit -m "feat: add Commencer button to Sport screen, fix broken session image paths"
+git commit -m "feat: add Commencer button to Sport screen"
 ```
 
 ---
