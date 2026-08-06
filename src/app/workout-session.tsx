@@ -11,7 +11,9 @@ import { useStepTimer } from '../lib/useStepTimer';
 import { logSessionCompletion } from '../lib/workoutCompletionsData';
 import { Button } from '../components/ui/Button';
 import { PressableScale } from '../components/ui/PressableScale';
-import { centeredContent, spacing, state, typography, useThemeColors, type ThemeColors } from '../theme/tokens';
+import { Mascot } from '../components/ui/Mascot';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { centeredContent, motion, spacing, state, typography, useThemeColors, type ThemeColors } from '../theme/tokens';
 
 const VALID_LEVELS: ExperienceLevel[] = ['beginner', 'intermediate', 'advanced'];
 
@@ -33,6 +35,23 @@ function stepHeadline(step: Exclude<SessionStep, { kind: 'manual' }>): string {
   if (step.kind === 'work') return step.exerciseName;
   if (step.kind === 'rest') return `Ensuite : ${step.nextExerciseName}`;
   return `Ensuite : ${step.nextRoundLabel}`;
+}
+
+/** Bounces the mascot in on mount — reward-moment motion, see motion.spring.celebrate. */
+function CelebrationMascot() {
+  const scale = useSharedValue(0.5);
+
+  useEffect(() => {
+    scale.value = withSpring(1, motion.spring.celebrate);
+  }, [scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <Mascot pose="celebrating" size={140} />
+    </Animated.View>
+  );
 }
 
 export default function WorkoutSessionScreen() {
@@ -102,7 +121,8 @@ export default function WorkoutSessionScreen() {
     return (
       <View style={styles.screen}>
         <View style={styles.finishedContainer}>
-          <Text style={styles.finishedTitle}>Séance terminée 🎉</Text>
+          <CelebrationMascot />
+          <Text style={styles.finishedTitle}>Bravo, séance dans la poche ! 🎉</Text>
           {error && <Text style={styles.error}>{error}</Text>}
           <Button title="Marquer la séance comme terminée" onPress={handleFinish} loading={finishing} />
         </View>
