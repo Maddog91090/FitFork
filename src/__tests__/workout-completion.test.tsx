@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import WorkoutScreen from '../app/(tabs)/workout';
 import { useAuth } from '../lib/auth-context';
 import { getTrainingProfile } from '../lib/profile';
@@ -88,5 +89,17 @@ describe('WorkoutScreen completion button', () => {
     await waitFor(() => expect(undoSessionCompletion).toHaveBeenCalledWith('user-1', 0, '2026-08-05'));
     expect(await findByText('Marquer comme terminée')).toBeTruthy();
     expect(queryByText("Fait aujourd'hui ✓")).toBeNull();
+  });
+
+  it('navigates to the guided session player when "Commencer" is pressed', async () => {
+    const { findByText, getByText } = await render(<WorkoutScreen />);
+
+    await findByText('Commencer');
+    await fireEvent.press(getByText('Commencer'));
+
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: '/workout-session',
+      params: { level: 'beginner', sessionIndex: '0' },
+    });
   });
 });

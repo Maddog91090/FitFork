@@ -88,6 +88,14 @@ export default function WorkoutScreen() {
     }
   };
 
+  const handleStartSession = (index: number) => {
+    if (!trainingProfile) return;
+    router.push({
+      pathname: '/workout-session',
+      params: { level: trainingProfile.experienceLevel, sessionIndex: String(index) },
+    });
+  };
+
   const handleToggleCompletion = async () => {
     if (!session) return;
     setError(null);
@@ -191,6 +199,9 @@ export default function WorkoutScreen() {
             <Text style={styles.sessionTitle}>
               Séance {index + 1} — {sessionItem.name}
             </Text>
+            <View style={styles.startRow}>
+              <Button title="Commencer" onPress={() => handleStartSession(index)} />
+            </View>
             <SessionDetail session={sessionItem} styles={styles} />
             <View style={styles.completionRow}>
               {todayCompletion ? (
@@ -246,6 +257,7 @@ function SessionDetail({ session, styles }: { session: Session; styles: Styles }
   if (session.type === 'circuit') {
     return (
       <View style={styles.sessionDetail}>
+        <Text style={styles.exerciseListLabel}>Aperçu des exercices</Text>
         <Text style={styles.sessionMeta}>
           Circuit : {session.workSeconds} s d'effort / {session.restSeconds} s de repos. {session.rounds} tours,{' '}
           {session.recoveryLabel}.
@@ -267,6 +279,7 @@ function SessionDetail({ session, styles }: { session: Session; styles: Styles }
 
   return (
     <View style={styles.sessionDetail}>
+      <Text style={styles.exerciseListLabel}>Aperçu des exercices</Text>
       <Text style={styles.sessionMeta}>En séries, {session.restLabel}.</Text>
       {session.exercises.map((exercise) => (
         <PressableScale
@@ -310,6 +323,8 @@ function createStyles(colors: ThemeColors) {
       height: '100%',
     },
     sessionTitle: { ...typography.subheading, color: colors.textPrimary },
+    startRow: { marginTop: spacing.sm, marginBottom: spacing.md },
+    exerciseListLabel: { ...typography.overline, color: colors.textTertiary, marginBottom: spacing.xs },
     sessionDetail: { marginTop: spacing.sm },
     sessionMeta: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.sm },
     exerciseCard: {
