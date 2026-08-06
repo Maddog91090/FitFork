@@ -1,3 +1,5 @@
+-- Migration numbers intentionally jump from 0023 to 0025: 0024 was never
+-- created, this is not a missing/lost migration.
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
 

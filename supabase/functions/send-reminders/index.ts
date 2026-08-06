@@ -22,8 +22,8 @@ function daysBetween(fromDateStr: string, toDateStr: string): number {
 }
 
 const MESSAGES: Record<Exclude<NotificationDecision, "none">, { title: string; body: string }> = {
-  reminder: { title: "FitFork", body: "Ta séance du jour t'attend." },
-  "streak-risk": { title: "FitFork", body: "Ça fait 2 jours — une petite séance aujourd'hui ?" },
+  reminder: { title: "FitPro", body: "Ta séance du jour t'attend." },
+  "streak-risk": { title: "FitPro", body: "Ça fait 2 jours — une petite séance aujourd'hui ?" },
 };
 
 Deno.serve(async (_req: Request) => {
@@ -72,21 +72,30 @@ Deno.serve(async (_req: Request) => {
   }
 
   const invalidUserIds: string[] = [];
+  let sendFailed = false;
 
   if (messages.length > 0) {
-    const pushResponse = await fetch("https://exp.host/--/api/v2/push/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(messages),
-    });
-    const pushResult = await pushResponse.json();
-    const tickets = Array.isArray(pushResult?.data) ? pushResult.data : [];
+    try {
+      const pushResponse = await fetch("https://exp.host/--/api/v2/push/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(messages),
+      });
+      const pushResult = await pushResponse.json();
+      const tickets = Array.isArray(pushResult?.data) ? pushResult.data : [];
 
-    tickets.forEach((ticket: { status: string; details?: { error?: string } }, index: number) => {
-      if (ticket.status === "error" && ticket.details?.error === "DeviceNotRegistered") {
-        invalidUserIds.push(messageUserIds[index]);
-      }
-    });
+      tickets.forEach((ticket: { status: string; details?: { error?: string } }, index: number) => {
+        if (ticket.status === "error" && ticket.details?.error === "DeviceNotRegistered") {
+          invalidUserIds.push(messageUserIds[index]);
+        }
+      });
+    } catch (err) {
+      // This function is invoked fire-and-forget by pg_net.http_post, so an
+      // uncaught throw here would fail the daily cron run silently with zero
+      // signal anywhere. Log it and degrade gracefully instead.
+      console.error("send-reminders: push send failed", err);
+      sendFailed = true;
+    }
   }
 
   if (invalidUserIds.length > 0) {
@@ -94,7 +103,7 @@ Deno.serve(async (_req: Request) => {
   }
 
   return new Response(
-    JSON.stringify({ notified: messages.length, cleaned: invalidUserIds.length }),
+    JSON.stringify({ notified: sendFailed ? 0 : messages.length, cleaned: invalidUserIds.length }),
     { headers: { "Content-Type": "application/json" } }
   );
 });

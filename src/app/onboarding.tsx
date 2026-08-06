@@ -180,6 +180,10 @@ export default function OnboardingScreen() {
     setRequestingNotifications(true);
     try {
       await enableNotifications(session.user.id);
+    } catch {
+      // Non-blocking: notification setup failing here (e.g. push token
+      // registration error) must not stop account creation. The user gets
+      // another chance to enable notifications from the Home toggle.
     } finally {
       setRequestingNotifications(false);
       router.replace('/home');
