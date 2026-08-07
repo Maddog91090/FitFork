@@ -53,7 +53,7 @@ export default function ProgressionScreen() {
   if (loading || !session || checking) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentOrange} />
+        <ActivityIndicator color={colors.accentOrangeDeep} />
       </View>
     );
   }

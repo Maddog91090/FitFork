@@ -22,7 +22,14 @@ export function KgIcon({ color, focused, size = 22 }: KgIconProps) {
         },
       ]}
     >
-      <Text style={[styles.label, { color: focused ? colors.textOnWarm : color, fontSize: size * 0.4 }]}>
+      {/*
+        When focused the circle fills with the tab's active tint, which is
+        accentOrangeDeep — dark enough that the glyph has to be white
+        (textOnAccent, 5.1:1). Ink on it would be 2.6:1. This is the one place
+        the "ink on orange" rule inverts, because the fill here is the deep
+        orange rather than the brand orange.
+      */}
+      <Text style={[styles.label, { color: focused ? colors.textOnAccent : color, fontSize: size * 0.4 }]}>
         kg
       </Text>
     </View>

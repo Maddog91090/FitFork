@@ -65,7 +65,7 @@ export default function AuthCallbackScreen() {
 
   return (
     <View style={styles.screen}>
-      <ActivityIndicator color={colors.accentOrange} />
+      <ActivityIndicator color={colors.accentOrangeDeep} />
       <Text style={styles.message}>Confirmation en cours…</Text>
     </View>
   );

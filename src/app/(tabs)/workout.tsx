@@ -155,7 +155,7 @@ export default function WorkoutScreen() {
   if (loading || !session || checking || !trainingProfile) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentOrange} />
+        <ActivityIndicator color={colors.accentOrangeDeep} />
       </View>
     );
   }
@@ -171,7 +171,7 @@ export default function WorkoutScreen() {
       <Text style={styles.blockText}>{homeWorkoutProgram.guidance}</Text>
 
       <ChoiceGroup options={LEVEL_OPTIONS} value={trainingProfile.experienceLevel} onChange={handleLevelChange} />
-      {savingLevel && <ActivityIndicator size="small" color={colors.accentOrange} />}
+      {savingLevel && <ActivityIndicator size="small" color={colors.accentOrangeDeep} />}
 
       <View style={styles.block}>
         <Text style={styles.blockTitle}>
