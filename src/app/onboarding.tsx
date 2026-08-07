@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
-import { Image } from 'expo-image';
+import { Mascot } from '../components/ui/Mascot';
 import Animated, {
   FadeInDown,
   useAnimatedStyle,
@@ -222,11 +222,7 @@ export default function OnboardingScreen() {
 
   return (
     <View style={styles.screen}>
-      <Image
-        source={require('../../assets/images/illustrations/onboarding-hero.png')}
-        style={styles.hero}
-        contentFit="contain"
-      />
+      <Mascot pose="idle" style={styles.hero} />
       <View style={styles.content}>
       <View style={styles.header}>
         <View style={styles.progressRow}>
@@ -388,10 +384,9 @@ function RecapRow({ label, value, styles }: { label: string; value: string; styl
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.bgBase },
-    // Full bleed: the illustration is generated on bgBase, so it blends into the
-    // screen with no seam — which is also why `contain` is safe here, any letterbox
-    // is the same color as the screen. maxHeight keeps the form above the fold on
-    // a small phone. Same banner on all four steps.
+    // The mascot PNG is transparent, so `contain` shows it cleanly on
+    // bgBase with no seam regardless of surface. maxHeight keeps the form
+    // above the fold on a small phone. Same banner on all four steps.
     hero: { width: '100%', aspectRatio: 2.4, maxHeight: 150 },
     // Everything below the full-bleed hero is capped and centered; the hero
     // itself stays outside this wrapper so it keeps spanning edge to edge.

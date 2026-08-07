@@ -15,7 +15,8 @@ type PressableScaleProps = PressableProps & {
  * pattern; do not use this for them.
  *
  * The scale rests at 1 and drops to state.pressedScale under the finger; the
- * snappy spring makes the release quick and unfussy, never bouncy.
+ * snappy spring gives the release a visible bounce — the Coral Rush direction
+ * wants everyday taps to feel more alive than Soft Neutral did.
  */
 export function PressableScale({ style, onPressIn, onPressOut, ...props }: PressableScaleProps) {
   const pressed = useSharedValue(0);

@@ -3,8 +3,8 @@ import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import { Fraunces_600SemiBold } from '@expo-google-fonts/fraunces/600SemiBold';
-import { Fraunces_700Bold } from '@expo-google-fonts/fraunces/700Bold';
+import { SpaceGrotesk_600SemiBold } from '@expo-google-fonts/space-grotesk/600SemiBold';
+import { SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk/700Bold';
 import { PlusJakartaSans_400Regular } from '@expo-google-fonts/plus-jakarta-sans/400Regular';
 import { PlusJakartaSans_500Medium } from '@expo-google-fonts/plus-jakarta-sans/500Medium';
 import { PlusJakartaSans_600SemiBold } from '@expo-google-fonts/plus-jakarta-sans/600SemiBold';
@@ -20,8 +20,8 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colors = useThemeColors();
   const [fontsLoaded, fontError] = useFonts({
-    Fraunces_600SemiBold,
-    Fraunces_700Bold,
+    SpaceGrotesk_600SemiBold,
+    SpaceGrotesk_700Bold,
     PlusJakartaSans_400Regular,
     PlusJakartaSans_500Medium,
     PlusJakartaSans_600SemiBold,

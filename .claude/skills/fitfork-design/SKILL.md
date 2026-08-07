@@ -3,6 +3,15 @@ name: fitfork-design
 description: FitPro's visual identity — the "Soft Neutral" design system. Read this BEFORE writing or changing any UI in this repo: screens under src/app, components under src/components, anything touching src/theme/tokens.ts, and any work described as styling, restyling, layout, spacing, colors, typography, animation, empty states, or "make it look better". Also read it when reviewing a screen's design or writing French UI copy.
 ---
 
+> ⚠️ **Coral Rush migration in progress.** This document describes the
+> outgoing "Soft Neutral" system. The motion rules ("no bounce on a button")
+> and the copy tone rules ("no exclamation marks, no hype") below are
+> **superseded** by the Coral Rush direction — see
+> `docs/superpowers/specs/2026-08-06-coral-rush-design-system-design.md`
+> and `docs/superpowers/plans/2026-08-06-coral-rush-design-system.md`. This
+> file will be rewritten once the full Coral Rush rollout (not just the
+> onboarding and end-of-workout touchpoints shipped so far) is complete.
+
 # FitPro — Soft Neutral
 
 ## The direction, in one sentence
