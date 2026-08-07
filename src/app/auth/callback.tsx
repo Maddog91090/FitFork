@@ -65,7 +65,7 @@ export default function AuthCallbackScreen() {
 
   return (
     <View style={styles.screen}>
-      <ActivityIndicator color={colors.accentRed} />
+      <ActivityIndicator color={colors.accentOrange} />
       <Text style={styles.message}>Confirmation en cours…</Text>
     </View>
   );
@@ -84,6 +84,6 @@ function createStyles(colors: ThemeColors) {
     message: { ...typography.body, color: colors.textSecondary, marginTop: spacing.md },
     error: { ...typography.body, color: colors.error, textAlign: 'center', marginBottom: spacing.lg },
     link: { marginTop: spacing.sm },
-    linkText: { ...typography.captionStrong, color: colors.accentRedDeep },
+    linkText: { ...typography.captionStrong, color: colors.accentOrangeDeep },
   });
 }

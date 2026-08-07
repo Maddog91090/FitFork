@@ -155,7 +155,7 @@ export default function WorkoutScreen() {
   if (loading || !session || checking || !trainingProfile) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+        <ActivityIndicator color={colors.accentOrange} />
       </View>
     );
   }
@@ -171,7 +171,7 @@ export default function WorkoutScreen() {
       <Text style={styles.blockText}>{homeWorkoutProgram.guidance}</Text>
 
       <ChoiceGroup options={LEVEL_OPTIONS} value={trainingProfile.experienceLevel} onChange={handleLevelChange} />
-      {savingLevel && <ActivityIndicator size="small" color={colors.accentRed} />}
+      {savingLevel && <ActivityIndicator size="small" color={colors.accentOrange} />}
 
       <View style={styles.block}>
         <Text style={styles.blockTitle}>
@@ -357,7 +357,7 @@ function createStyles(colors: ThemeColors) {
       paddingHorizontal: spacing.sm,
       justifyContent: 'center',
     },
-    completionUndoLink: { ...typography.caption, color: colors.accentRedDeep },
+    completionUndoLink: { ...typography.caption, color: colors.accentOrangeDeep },
     error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
   });
 }

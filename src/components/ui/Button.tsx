@@ -30,7 +30,7 @@ export function Button({ title, onPress, variant = 'primary', disabled = false, 
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? colors.textOnAccent : colors.textPrimary} />
+        <ActivityIndicator color={variant === 'primary' ? colors.textOnWarm : colors.textPrimary} />
       ) : (
         <Text
           style={[
@@ -57,13 +57,13 @@ function createStyles(colors: ThemeColors) {
       justifyContent: 'center',
     },
     primary: {
-      backgroundColor: colors.accentRed,
+      backgroundColor: colors.accentOrange,
       ...shadow.button,
     },
     // Pressed states darken rather than fade: the shadow stays put, so the
     // button reads as pushed in instead of half-disabled.
     primaryPressed: {
-      backgroundColor: colors.accentRedDeep,
+      backgroundColor: colors.accentOrangePressed,
     },
     secondary: {
       backgroundColor: colors.bgSurface,
@@ -81,7 +81,7 @@ function createStyles(colors: ThemeColors) {
       ...typography.label,
     },
     labelPrimary: {
-      color: colors.textOnAccent,
+      color: colors.textOnWarm,
     },
     labelSecondary: {
       color: colors.textPrimary,

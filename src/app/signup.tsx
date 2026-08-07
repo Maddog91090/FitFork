@@ -6,7 +6,7 @@ import { useAuth } from '../lib/auth-context';
 import { translateAuthError } from '../lib/authErrors';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
-import { centeredContent, spacing, radius, shadow, typography, useThemeColors, type ThemeColors } from '../theme/tokens';
+import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../theme/tokens';
 
 export default function SignupScreen() {
   const colors = useThemeColors();
@@ -53,14 +53,14 @@ export default function SignupScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.content}>
-        <View style={styles.logoWrap}>
-          <Image
-            source={require('../../assets/images/logo-mark.png')}
-            style={styles.logo}
-            contentFit="contain"
-          />
-        </View>
-        <Text style={styles.brand}>FitPro</Text>
+        <Image
+          source={require('../../assets/images/logo-fitfork.png')}
+          style={styles.logo}
+          contentFit="contain"
+        />
+        <Text style={styles.brand}>
+          FitF<Text style={styles.brandAccent}>o</Text>rk
+        </Text>
 
         <TextField
           label="Email"
@@ -95,29 +95,27 @@ function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     screen: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: colors.bgBase },
     content: { ...centeredContent },
-    logoWrap: {
-      width: 64,
-      height: 64,
-      borderRadius: radius.lg,
-      backgroundColor: colors.bgSurface,
-      alignItems: 'center',
-      justifyContent: 'center',
+    // Same knockout logic as the login screen: no white card behind the mark.
+    logo: {
+      width: 76,
+      aspectRatio: 602 / 790,
       alignSelf: 'center',
-      marginBottom: spacing.sm,
-      padding: spacing.sm,
-      ...shadow.card,
+      marginBottom: spacing.md,
     },
-    logo: { width: '100%', height: '100%' },
     brand: {
       ...typography.display,
       textAlign: 'center',
       color: colors.textPrimary,
       marginBottom: spacing.xl,
     },
+    // The mockup's wordmark colors the "o" in the brand orange. accentOrange
+    // itself is only 1.9:1 on bgBase — unreadable even at display size — so the
+    // letter uses accentOrangeDeep, which still reads orange and clears AA.
+    brandAccent: { color: colors.accentOrangeDeep },
     error: { ...typography.body, color: colors.error, marginBottom: spacing.md, textAlign: 'center' },
     switchLink: { marginTop: spacing.lg, textAlign: 'center' },
     switchText: { ...typography.caption, textAlign: 'center', color: colors.textSecondary },
-    switchTextAccent: { ...typography.captionStrong, color: colors.accentRedDeep },
+    switchTextAccent: { ...typography.captionStrong, color: colors.accentOrangeDeep },
     confirmText: { ...typography.body, textAlign: 'center', color: colors.textPrimary, marginBottom: spacing.lg },
   });
 }

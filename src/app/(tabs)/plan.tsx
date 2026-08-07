@@ -99,7 +99,7 @@ export default function PlanScreen() {
   if (loading || !session || checking) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+        <ActivityIndicator color={colors.accentOrange} />
       </View>
     );
   }
@@ -200,7 +200,7 @@ function createStyles(colors: ThemeColors) {
     entryText: { flex: 1 },
     mealTypeLabel: { ...typography.caption, color: colors.textSecondary },
     recipeName: { ...typography.bodyStrong, color: colors.textPrimary },
-    swapHint: { ...typography.captionStrong, color: colors.accentRedDeep, marginLeft: spacing.md },
+    swapHint: { ...typography.captionStrong, color: colors.accentOrangeDeep, marginLeft: spacing.md },
     error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
   });
 }

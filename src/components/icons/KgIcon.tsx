@@ -22,7 +22,7 @@ export function KgIcon({ color, focused, size = 22 }: KgIconProps) {
         },
       ]}
     >
-      <Text style={[styles.label, { color: focused ? colors.textOnAccent : color, fontSize: size * 0.4 }]}>
+      <Text style={[styles.label, { color: focused ? colors.textOnWarm : color, fontSize: size * 0.4 }]}>
         kg
       </Text>
     </View>

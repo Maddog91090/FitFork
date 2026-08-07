@@ -70,7 +70,7 @@ function createStyles(colors: ThemeColors) {
     },
     inputFocused: {
       borderWidth: 2,
-      borderColor: colors.accentRed,
+      borderColor: colors.accentOrange,
       // Keep the box the same size when the focus ring thickens.
       paddingVertical: spacing.md - 1,
       paddingHorizontal: spacing.md - 1,

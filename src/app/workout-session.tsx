@@ -175,7 +175,7 @@ function createStyles(colors: ThemeColors) {
     stepKindLabel: { ...typography.overline, color: colors.textSecondary, marginBottom: spacing.sm },
     exerciseName: { ...typography.display, color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.lg },
     detail: { ...typography.title, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xl },
-    countdown: { ...typography.hero, color: colors.accentRed, marginBottom: spacing.xl },
+    countdown: { ...typography.hero, color: colors.accentOrange, marginBottom: spacing.xl },
     controlsRow: { flexDirection: 'row', gap: spacing.md },
     finishedContainer: {
       flex: 1,

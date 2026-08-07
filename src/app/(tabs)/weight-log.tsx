@@ -92,7 +92,7 @@ export default function WeightLogScreen() {
   if (loading || !session || checking) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+        <ActivityIndicator color={colors.accentOrange} />
       </View>
     );
   }

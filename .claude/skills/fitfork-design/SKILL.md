@@ -1,20 +1,19 @@
 ---
 name: fitfork-design
-description: FitPro's visual identity — the "Soft Neutral" design system. Read this BEFORE writing or changing any UI in this repo: screens under src/app, components under src/components, anything touching src/theme/tokens.ts, and any work described as styling, restyling, layout, spacing, colors, typography, animation, empty states, or "make it look better". Also read it when reviewing a screen's design or writing French UI copy.
+description: FitFork's visual identity — the warm cream / orange / teal design system. Read this BEFORE writing or changing any UI in this repo: screens under src/app, components under src/components, anything touching src/theme/tokens.ts, and any work described as styling, restyling, layout, spacing, colors, typography, animation, empty states, or "make it look better". Also read it when reviewing a screen's design or writing French UI copy.
 ---
 
-# FitPro — Soft Neutral
+# FitFork
 
 ## The direction, in one sentence
 
-FitPro looks like a **calm editorial wellness app that happens to track hard
-training**: warm off-white paper, a soft serif for anything you read as a
-headline or a number, a clean geometric sans for everything you act on, and a
-single confident red used sparingly enough that it always means something.
+FitFork looks like a **warm, friendly coach**: cream paper rather than white, a
+chunky rounded sans for anything you read as a headline or a number, a clean
+sans for everything you act on, a confident orange for action, and a teal that
+shows up only where nutrition and confirmation live.
 
-Not "performance app": no black backgrounds, no neon, no full-caps slabs, no
-aggressive gradients. The energy comes from **typographic contrast** (serif vs
-sans) and from **restraint with the red** — not from loudness.
+Not "performance app": no black backgrounds, no neon, no aggressive gradients.
+The energy comes from **generous roundness and warm color** — not from loudness.
 
 ## The one hard rule
 
@@ -59,21 +58,39 @@ The names carry the intent — respect it:
 | Recessed / pressed-secondary areas | `bgSunken` |
 | Primary text | `textPrimary` |
 | Secondary text, labels, captions | `textSecondary` |
-| Text on a red fill | `textOnAccent` |
-| Red fills and large type | `accentRed` |
-| **Red text or icons at body size**, pressed primary | `accentRedDeep` |
-| Red-tinted background | `accentRedSoft` |
+| **Text on an orange fill** | `textOnWarm` (ink, not white) |
+| Text on a teal fill | `textOnAccent` (white) |
+| Orange fills | `accentOrange` |
+| Pressed state of an orange fill | `accentOrangePressed` |
+| **Orange text or icons at body size** | `accentOrangeDeep` |
+| Orange-tinted background | `accentOrangeSoft` |
+| Teal fills | `accentTeal` |
+| **Teal text or icons at body size** | `accentTealDeep` |
+| Teal-tinted background | `accentTealSoft` |
+| Logo, flat illustrations, chart bars | `illustrationTeal` |
 | Line inside a surface | `divider` |
 | Line around a surface | `border` / `borderStrong` |
 
 Rules:
 
-- **Red is a scarce resource.** One primary action per screen, plus selected
-  states. If two things on screen are red, one of them is wrong.
+- **The single most important color rule in this system: white text never goes
+  on orange.** `accentOrange` is the brand value, and white on it is 2.1:1 —
+  nowhere near AA. Darkening the orange far enough to carry white turns it
+  brown and kills the brand. So the orange keeps its exact value and the text
+  on top goes dark: `textOnWarm` (6.3:1). Teal is the opposite — dark enough to
+  carry `textOnAccent` (white, 4.6:1).
+- **Orange is a scarce resource.** One primary action per screen, plus selected
+  states. If two things on screen are orange, one of them is wrong.
+- **Teal is scarcer still.** It marks nutrition and secondary confirmation. It
+  is never the screen's primary action.
+- `illustrationTeal` is brighter than `accentTeal` on purpose: `accentTeal` was
+  darkened specifically so white clears 4.5:1 on it, which illustrations never
+  need. Never put text on `illustrationTeal`, never use it as a UI fill.
 - `textTertiary` **fails WCAG AA on purpose.** Use it only for text that is
   decorative or repeats information already available — never for labels,
   values, placeholders, or errors.
-- Never write `'#FFFFFF'` for text on red — that's `colors.textOnAccent`.
+- Never write `'#FFFFFF'` for text on an accent — that's `colors.textOnAccent`,
+  and on orange it's `colors.textOnWarm` instead.
 - Macros always keep their hue, everywhere they appear (cards, charts, legends):
   `macroProtein` (terracotta), `macroCarbs` (teal), `macroFat` (indigo).
   Training uses `effort` and `rest`. Never re-map these per screen.
@@ -89,8 +106,8 @@ Rules:
 
 Two families, loaded in `src/app/_layout.tsx`:
 
-- **Fraunces** (soft serif) — titles, hero text, and standalone numbers. This is
-  where the app's character lives.
+- **Nunito** (rounded, chunky — Bold and ExtraBold only) — titles, hero text,
+  and standalone numbers. This is where the app's character lives.
 - **Plus Jakarta Sans** — body, labels, buttons, tabs, anything tappable.
 
 React Native does **not** synthesize weights for custom fonts. Weight lives in
@@ -124,10 +141,12 @@ emphasis, change the step or the color.
   `layout.screenPaddingX`; sections separate by `layout.sectionGap`.
 - `layout.maxContentWidth` exists because this app also runs on web — center
   content rather than letting a line of text run 900px wide.
-- Radius: `sm` for inputs and small cells, `lg` for cards, `pill` for chips,
-  `full` for circles. Don't mix three radii in one component.
-- Elevation is `shadow.subtle` → `card` → `raised`. `shadow.button` is red-tinted
-  and belongs only to the primary button. Shadows are soft and low-opacity by
+- Radius: `md` for buttons and inputs, `lg` for cards, `pill` for chips, `full`
+  for circles. Don't mix three radii in one component. Corners run rounder here
+  than a default system would — that roundness is the direction, not an accident,
+  so don't quietly flatten a card back to 12.
+- Elevation is `shadow.subtle` → `card` → `raised`. `shadow.button` is
+  orange-tinted and belongs only to the primary button. Shadows are soft and low-opacity by
   design — deepening one to make something stand out is the wrong lever;
   hierarchy comes from type and space first.
 
@@ -200,7 +219,7 @@ The app tutoies the user and speaks like a coach who respects their time:
 ## Before you call a screen done
 
 1. Zero hex codes, zero raw `fontSize`/`fontWeight` in the diff.
-2. Exactly one red primary action.
+2. Exactly one orange primary action, and nothing white sitting on orange.
 3. Every tappable thing: pressed state, 44pt minimum, accessibility role.
 4. Text steps come from `typography`, and there are no more than four distinct
    steps on the screen.
@@ -218,13 +237,31 @@ illustrations (transparent), the app icon / splash, and the first motion pass
 (onboarding step transitions and progress fill, springy chip and cell
 presses).
 
+**The FitFork direction replaced "Soft Neutral" in one pass** — cream base,
+orange/teal accents, Nunito for display, rounder corners. Because every screen
+already went through `useThemeColors()` and `typography.*` rather than inlining
+values, the swap was a tokens-file change plus one mechanical rename
+(`accentRed*` → `accentOrange*`) and the six sites that put white on the accent
+(now `textOnWarm`). Nothing about screen layout changed.
+
+Still carrying Soft Neutral's shapes, and open for a follow-up pass: the
+illustrations and the badge medals were generated against the old red/off-white
+palette and have not been redrawn for cream/orange/teal. The logo mark
+(`assets/images/logo-fitfork.png`) is a transparent knockout — the arrow inside
+it is background showing through — so it must never be placed on a filled card.
+It was rebuilt from the design mockup at 602×790; if a use ever needs more than
+that (app icon, store assets), it should be redrawn as vector rather than
+upscaled again.
+
 **Charts.** Read the `dataviz` skill before writing the first line of chart
 code. Two things it does not know about this app, learned building the weight
-trend: the serif `typography.metric` is right for a hero number here even
-though the skill warns against display faces, because the serif is systematic
-across the app rather than decoration; and the brand red does **not** go to a
-chart mark — the screen's one primary action already owns it, so emphasis
-comes from ink weight (`textSecondary` line, `textPrimary` current point).
+trend: `typography.metric` is right for a hero number here even though the
+skill warns against display faces, because Nunito is systematic across the app
+rather than decoration; and `accentOrange` does **not** go to a chart mark —
+the screen's one primary action already owns it, so emphasis comes from ink
+weight (`textSecondary` line, `textPrimary` current point). Where a chart does
+need brand color (the week bars in the design mockups), it uses
+`illustrationTeal` alongside `accentOrange`, never white-on-either.
 `Sparkline` draws a single series from rotated views, no charting dependency.
 It reads `useThemeColors()` like everything else, rather than hardcoding a
 color of its own.

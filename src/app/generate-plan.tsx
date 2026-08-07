@@ -172,9 +172,9 @@ function createStyles(colors: ThemeColors) {
       justifyContent: 'center',
       ...shadow.card,
     },
-    cellSelected: { backgroundColor: colors.accentRed, shadowColor: colors.accentRed, shadowOpacity: 0.25 },
+    cellSelected: { backgroundColor: colors.accentOrange, shadowColor: colors.accentOrange, shadowOpacity: 0.25 },
     cellLabel: { ...typography.caption, color: colors.textSecondary },
-    cellLabelSelected: { ...typography.captionStrong, color: colors.textOnAccent },
+    cellLabelSelected: { ...typography.captionStrong, color: colors.textOnWarm },
     error: { ...typography.body, color: colors.error, marginTop: spacing.md, marginBottom: spacing.sm },
   });
 }

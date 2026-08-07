@@ -114,6 +114,6 @@ function createStyles(colors: ThemeColors) {
     error: { ...typography.body, color: colors.error, marginTop: spacing.md, marginBottom: spacing.md, textAlign: 'center' },
     switchLink: { marginTop: spacing.lg, textAlign: 'center' },
     switchText: { ...typography.caption, textAlign: 'center', color: colors.textSecondary },
-    switchTextAccent: { ...typography.captionStrong, color: colors.accentRedDeep },
+    switchTextAccent: { ...typography.captionStrong, color: colors.accentOrangeDeep },
   });
 }

@@ -14,11 +14,11 @@ export function createPillStyles(colors: ThemeColors) {
       ...shadow.card,
     },
     pillSelected: {
-      backgroundColor: colors.accentRed,
-      shadowColor: colors.accentRed,
+      backgroundColor: colors.accentOrange,
+      shadowColor: colors.accentOrange,
       shadowOpacity: 0.25,
     },
     label: { ...typography.subheading, color: colors.textPrimary },
-    labelSelected: { ...typography.subheading, color: colors.textOnAccent },
+    labelSelected: { ...typography.subheading, color: colors.textOnWarm },
   });
 }

@@ -406,7 +406,7 @@ function createStyles(colors: ThemeColors) {
       right: 0,
       bottom: 0,
       borderRadius: 2,
-      backgroundColor: colors.accentRed,
+      backgroundColor: colors.accentOrange,
       transformOrigin: 'left',
     },
     stepCounter: { ...typography.overline, color: colors.textSecondary, marginBottom: spacing.xs },

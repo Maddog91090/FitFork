@@ -1,51 +1,83 @@
 /**
- * FitPro design tokens — visual style "Soft Neutral".
+ * FitFork design tokens — visual style "FitFork".
  *
  * Single source of truth for the app's look. Screens and components must not
  * hardcode colors, sizes, durations or font weights — import from here.
  * See `.claude/skills/fitfork-design/SKILL.md` for the rules behind these values.
  */
 export const lightColors = {
-  // Surfaces — warm off-white base, pure white for raised content.
-  bgBase: '#F7F5F2',
+  // Surfaces — warm cream base, pure white for raised content.
+  bgBase: '#F6F3EC',
   bgSurface: '#FFFFFF',
-  bgSunken: '#EFEBE5',
+  bgSunken: '#EBE6DA',
 
-  // Text — textSecondary is AA-compliant on bgBase (4.9:1).
+  // Text — textSecondary is AA on both bgBase (5.3:1) and bgSurface (5.9:1).
   // textTertiary fails AA on purpose: decorative/redundant text only.
-  textPrimary: '#1E1B18',
-  textSecondary: '#6F6A61',
-  textTertiary: '#9A958D',
+  textPrimary: '#332F2B',
+  textSecondary: '#6B6459',
+  textTertiary: '#9C9487',
+  /** White. Only legible on accentTeal / accentTealDeep — never on accentOrange. */
   textOnAccent: '#FFFFFF',
+  /**
+   * Ink, for text and icons sitting on an accentOrange fill (6.3:1). The brand
+   * orange is too light to carry white text (2.1:1), and darkening it far
+   * enough to fix that turns it brown — so the orange keeps its exact brand
+   * value and the text on top goes dark instead. Primary buttons use this.
+   */
+  textOnWarm: '#332F2B',
 
-  // Brand accent. accentRed is for fills and large type only (4.4:1 on bgBase).
-  // For red text or icons at body size, use accentRedDeep (6.0:1).
-  accentRed: '#DC2626',
-  accentRedDeep: '#B91C1C',
-  accentRedSoft: '#FBEAE7',
+  // Brand accent — orange. accentOrange is a FILL color: it pairs with
+  // textOnWarm, never with white. For orange text or icons at body size on a
+  // cream/white background, use accentOrangeDeep (4.6:1).
+  accentOrange: '#F5A03C',
+  /**
+   * Pressed state for an accentOrange fill. Darkened just enough to read as
+   * pushed (1.3:1 against the resting fill) while textOnWarm on top still
+   * clears AA (4.9:1) — accentOrangeDeep would be too dark to keep ink legible.
+   */
+  accentOrangePressed: '#E8830C',
+  accentOrangeDeep: '#A45D08',
+  accentOrangeSoft: '#FDEEDA',
+
+  // Secondary accent — teal. Unlike orange this one is dark enough to carry
+  // white text (4.6:1), so accentTeal is the fill that pairs with
+  // textOnAccent. accentTealDeep is teal as text/icons on a background (4.5:1).
+  // Teal is scarcer than orange: it marks nutrition and secondary confirmation,
+  // never the screen's one primary action.
+  accentTeal: '#0B8477',
+  accentTealDeep: '#0A7D71',
+  accentTealSoft: '#DFF1EE',
+
+  /**
+   * Illustration-only teal — the logo, flat exercise figures, chart bars. It is
+   * deliberately brighter than accentTeal, which was darkened specifically so
+   * white text clears 4.5:1 on top of it. Never put text on this, and never use
+   * it as a UI fill.
+   */
+  illustrationTeal: '#0D9C8C',
 
   // Lines. divider = inside a surface, border = around one.
-  divider: '#F0ECE3',
-  border: '#E8E2D8',
-  borderStrong: '#D8D0C3',
+  divider: '#EFE9DC',
+  border: '#E4DCCB',
+  borderStrong: '#D2C7B1',
 
-  // Status
-  error: '#DC2626',
-  errorSoft: '#FBEAE7',
+  // Status — retuned so each one clears AA on the new cream base too.
+  error: '#C2321B',
+  errorSoft: '#FBE7E2',
   success: '#15803D',
-  successSoft: '#E6F2EA',
-  warning: '#B45309',
-  warningSoft: '#FBF0E2',
+  successSoft: '#E4F1E8',
+  warning: '#9A5B08',
+  warningSoft: '#FBEFDC',
 
   // Domain vocabulary — macros and training intensity. Every value is AA on
   // bgBase and hue-separated enough to stay readable in charts and legends.
   macroProtein: '#C2410C',
   macroCarbs: '#0F766E',
   macroFat: '#4338CA',
-  effort: '#DC2626',
+  effort: '#C2410C',
   rest: '#0369A1',
 
-  overlay: 'rgba(30, 27, 24, 0.45)',
+  overlay: 'rgba(51, 47, 43, 0.45)',
 } as const;
 
 export const colors = lightColors;
@@ -67,8 +99,8 @@ export function useThemeColors(): ThemeColors {
  * never pair these with `fontWeight`.
  */
 export const fontFamily = {
-  displaySemiBold: 'Fraunces_600SemiBold',
-  displayBold: 'Fraunces_700Bold',
+  displaySemiBold: 'Nunito_700Bold',
+  displayBold: 'Nunito_800ExtraBold',
   bodyRegular: 'PlusJakartaSans_400Regular',
   bodyMedium: 'PlusJakartaSans_500Medium',
   bodySemiBold: 'PlusJakartaSans_600SemiBold',
@@ -78,8 +110,8 @@ export const fontFamily = {
 /**
  * Type scale. Spread a whole entry into a style — `...typography.title` — rather
  * than picking sizes off it, so family, size, leading and tracking stay
- * together. Fraunces (serif) carries titles and numbers; Plus Jakarta Sans
- * carries everything the user reads or taps.
+ * together. Nunito (rounded, chunky) carries titles, hero text and numbers;
+ * Plus Jakarta Sans carries everything the user reads or taps.
  */
 export const typography = {
   hero: {
@@ -100,7 +132,7 @@ export const typography = {
     lineHeight: 26,
     letterSpacing: -0.2,
   },
-  /** Big numbers: weight, calories, sets. Serif gives them presence. */
+  /** Big numbers: weight, calories, sets. Nunito's weight gives them presence. */
   metric: {
     fontFamily: fontFamily.displayBold,
     fontSize: 28,
@@ -155,11 +187,15 @@ export const typography = {
   },
 } as const;
 
+/**
+ * Corners run rounder than Soft Neutral did — the FitFork direction is chunky
+ * and friendly, so `lg` (cards) went 16 → 20 and `md` (buttons, inputs) 14 → 16.
+ */
 export const radius = {
   xs: 8,
   sm: 12,
-  md: 14,
-  lg: 16,
+  md: 16,
+  lg: 20,
   xl: 24,
   pill: 20,
   full: 999,
@@ -216,8 +252,9 @@ export const shadow = {
     shadowOffset: { width: 0, height: 6 },
     elevation: 6,
   },
+  /** Orange-tinted glow. Belongs only to the primary button. */
   button: {
-    shadowColor: '#DC2626',
+    shadowColor: '#F5A03C',
     shadowOpacity: 0.25,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 4 },

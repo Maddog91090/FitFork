@@ -72,7 +72,7 @@ export default function GroceryListScreen() {
   if (loading || !session || checking) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+        <ActivityIndicator color={colors.accentOrange} />
       </View>
     );
   }

@@ -128,7 +128,7 @@ export default function HomeScreen() {
   if (loading || !session || checkingProfile) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+        <ActivityIndicator color={colors.accentOrange} />
       </View>
     );
   }
@@ -233,7 +233,7 @@ export default function HomeScreen() {
           value={notificationsEnabled}
           onValueChange={handleToggleNotifications}
           disabled={notificationsBusy}
-          trackColor={{ true: colors.accentRed, false: colors.border }}
+          trackColor={{ true: colors.accentOrange, false: colors.border }}
           thumbColor={colors.bgSurface}
         />
       </View>

@@ -53,7 +53,7 @@ export default function ProgressionScreen() {
   if (loading || !session || checking) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+        <ActivityIndicator color={colors.accentOrange} />
       </View>
     );
   }
@@ -150,7 +150,7 @@ function createStyles(colors: ThemeColors) {
       borderWidth: 1,
       borderColor: colors.border,
     },
-    dayDotDone: { backgroundColor: colors.accentRed, borderColor: colors.accentRed },
+    dayDotDone: { backgroundColor: colors.accentOrange, borderColor: colors.accentOrange },
     weekText: { ...typography.body, color: colors.textSecondary },
     badgeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
     badgeItem: { width: '30%', alignItems: 'center' },
