@@ -1,5 +1,11 @@
 # Coral Rush Design System — Implementation Plan
 
+> **SUPERSEDED — do not execute.** Coral Rush was never implemented (no task
+> below was completed). The design direction was replaced by the claymorphic
+> / multi-domain-color / generic-mascot spec at
+> `docs/superpowers/specs/2026-08-09-claymorphic-mascot-design-system-design.md`.
+> This plan is kept for historical reference only.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace the app's "Soft Neutral" design system with "Coral Rush" — new

@@ -1,7 +1,10 @@
 # FitPro Coral Rush — nouvelle direction artistique
 
 **Date**: 2026-08-06
-**Statut**: Spec validée, en attente d'implémentation
+**Statut**: **Remplacée, jamais implémentée.** Voir
+`docs/superpowers/specs/2026-08-09-claymorphic-mascot-design-system-design.md`
+pour la direction retenue (claymorphic, couleur multi-domaine, mascotte
+générique) — ce document est conservé pour historique uniquement.
 
 ## Contexte et motivation
 
