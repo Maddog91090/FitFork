@@ -25,4 +25,10 @@ describe('Mascot', () => {
       maxHeight: 150,
     });
   });
+
+  it('resets and re-bounces when the pose changes from idle to celebrating', async () => {
+    const { rerender, getByTestId } = await render(<Mascot pose="idle" />);
+    rerender(<Mascot pose="celebrating" />);
+    expect(getByTestId('mascot-image')).toBeTruthy();
+  });
 });

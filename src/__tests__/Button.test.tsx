@@ -37,10 +37,10 @@ describe('Button', () => {
     expect(style.backgroundColor).toBe(lightColors.domainSport);
   });
 
-  it('defaults to the neutral domain when none is given', async () => {
+  it('defaults to the progress domain when none is given', async () => {
     const { getByTestId } = await render(<Button title="Continuer" onPress={() => {}} />);
     const style = StyleSheet.flatten(getByTestId('button-pressable').props.style);
-    expect(style.backgroundColor).toBe(lightColors.domainNeutral);
+    expect(style.backgroundColor).toBe(lightColors.domainProgress);
   });
 
   it('renders a clay overlay for the primary variant', async () => {

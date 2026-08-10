@@ -1,5 +1,5 @@
 /**
- * FitPro design tokens — visual style "Soft Neutral".
+ * FitPro design tokens — claymorphic, multi-domain-color, mascot-driven design system.
  *
  * Single source of truth for the app's look. Screens and components must not
  * hardcode colors, sizes, durations or font weights — import from here.
@@ -127,7 +127,8 @@ export const typography = {
     lineHeight: 26,
     letterSpacing: -0.2,
   },
-  /** Big numbers: weight, calories, sets. Serif gives them presence. */
+  /** Big numbers: weight, calories, sets. Uses the bold display weight (not `title`'s
+   *  semibold) so it reads as the heaviest, most prominent number on the screen. */
   metric: {
     fontFamily: fontFamily.displayBold,
     fontSize: 28,
@@ -224,8 +225,9 @@ export const centeredContent = {
 /**
  * Claymorphic elevation. Every shadow is warm-tinted (never pure black) to
  * read as depth in a puffy material rather than a hard drop shadow. There is
- * no per-domain shadow tier here — `Button`'s primary variant overrides
- * `shadowColor` per domain at the call site (see Task 6); everything else
+ * no per-domain shadow tier here — `Button.tsx` overrides `shadowColor` at
+ * the call site for BOTH variants (primary gets the domain's deep color,
+ * secondary gets `colors.textPrimary` — see `Button.tsx`); everything else
  * uses these as-is.
  */
 export const shadow = {
@@ -258,7 +260,7 @@ export const shadow = {
  * sheen laid on top of a surface: lighter top-left (catching light), fading
  * through transparent, to a faint warm dark bottom-right (falling into
  * shadow). Consumers render this as an `expo-linear-gradient` `LinearGradient`
- * sized to `StyleSheet.absoluteFillObject` **with its own `borderRadius`
+ * sized to `StyleSheet.absoluteFill` **with its own `borderRadius`
  * matching the surface** — a view always clips its own background/gradient
  * fill to its own border radius, so no `overflow: 'hidden'` is needed on the
  * parent (which would otherwise also clip the parent's drop shadow).

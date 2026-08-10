@@ -37,7 +37,13 @@ type ButtonProps = {
   title: string;
   onPress: () => void;
   variant?: ButtonVariant;
-  /** Which domain's clay color fills the button. Ignored for variant="secondary". */
+  /**
+   * Which domain's clay color fills the button. Ignored for variant="secondary".
+   * Defaults to `'progress'` to match the legacy `accentRed` repointing during
+   * the transition period — most unmigrated screens still read `accentRed*`
+   * directly, which now resolves to `domainProgress`, so an un-annotated
+   * primary button stays visually coherent with the rest of that screen.
+   */
   domain?: ButtonDomain;
   disabled?: boolean;
   loading?: boolean;
@@ -47,7 +53,7 @@ export function Button({
   title,
   onPress,
   variant = 'primary',
-  domain = 'neutral',
+  domain = 'progress',
   disabled = false,
   loading = false,
 }: ButtonProps) {
@@ -62,12 +68,14 @@ export function Button({
   const downColor = isDisabled ? colors.bgSurface : variant === 'primary' ? deepColor : colors.bgSunken;
   const shadowTint = variant === 'primary' ? deepColor : colors.textPrimary;
 
-  // transform (scale) and backgroundColor are both driven by the same
-  // `pressed` shared value, so the squish and the color darken land on the
-  // exact same frame — see PressableScale.tsx for the same one-shared-value
-  // pattern.
+  // `pressed.value` itself is the animated driver (springs from 0 to 1 on
+  // press, back on release) rather than a plain instantaneous flag. Both
+  // `transform` and `backgroundColor` below are pure functions of that same
+  // continuously-animating value, read on the same frame — so the squish and
+  // the color darken are genuinely synchronized, not just computed from the
+  // same discrete 0/1 source.
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withSpring(1 - pressed.value * (1 - state.pressedScale), motion.spring.snappy) }],
+    transform: [{ scale: 1 - pressed.value * (1 - state.pressedScale) }],
     backgroundColor: interpolateColor(pressed.value, [0, 1], [restColor, downColor]),
   }));
 
@@ -79,10 +87,10 @@ export function Button({
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       onPressIn={() => {
-        if (!isDisabled) pressed.value = 1;
+        if (!isDisabled) pressed.value = withSpring(1, motion.spring.snappy);
       }}
       onPressOut={() => {
-        pressed.value = 0;
+        pressed.value = withSpring(0, motion.spring.snappy);
       }}
       style={[styles.base, { shadowColor: shadowTint }, isDisabled && styles.disabledShadow, animatedStyle]}
     >

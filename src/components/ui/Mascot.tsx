@@ -49,6 +49,14 @@ export function Mascot({ pose, size = 160, style }: MascotProps) {
         false
       );
     } else {
+      // Reset to the pre-bounce starting point before springing back to 1.
+      // Without this, a long-lived Mascot that switches from `idle` (where
+      // scale is already ~1, oscillating from the breathing loop) to
+      // `celebrating` would spring from ~1 to 1 — a no-op with no visible
+      // bounce. Setting `.value` twice synchronously is a standard
+      // Reanimated idiom: the first assignment commits immediately, and the
+      // `withSpring` animation then starts from that committed value.
+      scale.value = 0.5;
       scale.value = withSpring(1, motion.spring.celebrate);
     }
   }, [pose, scale]);
