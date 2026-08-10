@@ -6,30 +6,53 @@
  * See `.claude/skills/fitfork-design/SKILL.md` for the rules behind these values.
  */
 export const lightColors = {
-  // Surfaces — warm off-white base, pure white for raised content.
-  bgBase: '#F7F5F2',
+  // Surfaces — light warm cream base (lighter than Soft Neutral's paper, to
+  // let the saturated domain colors read as vivid rather than muddy), pure
+  // white raised, soft peach sunken.
+  bgBase: '#FFFBF5',
   bgSurface: '#FFFFFF',
-  bgSunken: '#EFEBE5',
+  bgSunken: '#FFF3E0',
 
-  // Text — textSecondary is AA-compliant on bgBase (4.9:1).
-  // textTertiary fails AA on purpose: decorative/redundant text only.
-  textPrimary: '#1E1B18',
-  textSecondary: '#6F6A61',
-  textTertiary: '#9A958D',
+  // Text — warm ink instead of Soft Neutral's cool gray-black, to match the
+  // warmer surfaces. textSecondary is AA-compliant on bgBase/bgSurface/
+  // bgSunken (6.0–6.6:1). textTertiary fails AA on purpose: decorative or
+  // redundant text only.
+  textPrimary: '#2E2418',
+  textSecondary: '#6B5A46',
+  textTertiary: '#B8A78E',
   textOnAccent: '#FFFFFF',
 
-  // Brand accent. accentRed is for fills and large type only (4.4:1 on bgBase).
-  // For red text or icons at body size, use accentRedDeep (6.0:1).
-  accentRed: '#DC2626',
-  accentRedDeep: '#B91C1C',
-  accentRedSoft: '#FBEAE7',
+  // Legacy single-accent keys — kept because 21 screens outside this plan's
+  // scope still read them directly. Repointed to the progress-domain color
+  // (the closest emotional match to the old "important/celebratory" red) so
+  // those screens look coherent with the new palette immediately, rather
+  // than staying stuck on Soft Neutral red. A later plan replaces each call
+  // site with the correct per-screen domain token and deletes these three
+  // keys — see "Follow-up work".
+  accentRed: '#C2325A',
+  accentRedDeep: '#A31C42',
+  accentRedSoft: '#FFE3E9',
 
-  // Lines. divider = inside a surface, border = around one.
-  divider: '#F0ECE3',
-  border: '#E8E2D8',
-  borderStrong: '#D8D0C3',
+  // Domain colors — nutrition/sport/progress each own a hue; there is no
+  // single brand accent anymore. `*Deep` is for text/icons at body size and
+  // for a button's pressed-state fill; the base tone is for large fills
+  // (buttons, big icon backgrounds) and passes AA with white text on top.
+  domainNutrition: '#B25900',
+  domainNutritionDeep: '#8A5200',
+  domainSport: '#187A57',
+  domainSportDeep: '#0E4F38',
+  domainProgress: '#C2325A',
+  domainProgressDeep: '#A31C42',
+  domainNeutral: '#7A5C34',
+  domainNeutralDeep: '#6B4F26',
 
-  // Status
+  // Lines. divider = inside a surface, border = around one. Warmed to match
+  // the new surfaces.
+  divider: '#FBEAD3',
+  border: '#F0D9B8',
+  borderStrong: '#E0C093',
+
+  // Status — unchanged. Not part of this design system's scope.
   error: '#DC2626',
   errorSoft: '#FBEAE7',
   success: '#15803D',
@@ -37,15 +60,17 @@ export const lightColors = {
   warning: '#B45309',
   warningSoft: '#FBF0E2',
 
-  // Domain vocabulary — macros and training intensity. Every value is AA on
-  // bgBase and hue-separated enough to stay readable in charts and legends.
+  // Domain vocabulary — macros and training intensity. Unchanged: these are
+  // a finer-grained vocabulary than the four screen-level domain colors
+  // above (e.g. all three macros can appear together on one nutrition
+  // screen), and the design spec never asked to touch them.
   macroProtein: '#C2410C',
   macroCarbs: '#0F766E',
   macroFat: '#4338CA',
   effort: '#DC2626',
   rest: '#0369A1',
 
-  overlay: 'rgba(30, 27, 24, 0.45)',
+  overlay: 'rgba(46, 36, 24, 0.45)',
 } as const;
 
 export const colors = lightColors;
