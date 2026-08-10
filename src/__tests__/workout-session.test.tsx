@@ -111,7 +111,7 @@ describe('WorkoutSessionScreen', () => {
 
     await fireEvent.press(getByText('Terminé'));
 
-    expect(await findByText('Séance terminée 🎉')).toBeTruthy();
+    expect(await findByText('Séance terminée')).toBeTruthy();
   });
 
   it('logs completion and returns to the workout tab when finishing', async () => {

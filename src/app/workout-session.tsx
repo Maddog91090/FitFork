@@ -10,6 +10,7 @@ import { buildSessionSteps, type SessionStep } from '../lib/sessionSteps';
 import { useStepTimer } from '../lib/useStepTimer';
 import { logSessionCompletion } from '../lib/workoutCompletionsData';
 import { Button } from '../components/ui/Button';
+import { Mascot } from '../components/ui/Mascot';
 import { PressableScale } from '../components/ui/PressableScale';
 import { centeredContent, spacing, state, typography, useThemeColors, type ThemeColors } from '../theme/tokens';
 
@@ -102,9 +103,10 @@ export default function WorkoutSessionScreen() {
     return (
       <View style={styles.screen}>
         <View style={styles.finishedContainer}>
-          <Text style={styles.finishedTitle}>Séance terminée 🎉</Text>
+          <Mascot pose="celebrating" size={140} />
+          <Text style={styles.finishedTitle}>Séance terminée</Text>
           {error && <Text style={styles.error}>{error}</Text>}
-          <Button title="Marquer la séance comme terminée" onPress={handleFinish} loading={finishing} />
+          <Button title="Marquer la séance comme terminée" onPress={handleFinish} loading={finishing} domain="sport" />
         </View>
       </View>
     );
@@ -175,7 +177,7 @@ function createStyles(colors: ThemeColors) {
     stepKindLabel: { ...typography.overline, color: colors.textSecondary, marginBottom: spacing.sm },
     exerciseName: { ...typography.display, color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.lg },
     detail: { ...typography.title, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xl },
-    countdown: { ...typography.hero, color: colors.accentRed, marginBottom: spacing.xl },
+    countdown: { ...typography.hero, color: colors.domainSport, marginBottom: spacing.xl },
     controlsRow: { flexDirection: 'row', gap: spacing.md },
     finishedContainer: {
       flex: 1,
