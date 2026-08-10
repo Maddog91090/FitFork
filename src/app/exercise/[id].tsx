@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { getExercise } from '../../lib/exercises';
+import { BackLink } from '../../components/ui/BackLink';
 import { centeredContent, radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 export default function ExerciseDetailScreen() {
@@ -13,6 +14,7 @@ export default function ExerciseDetailScreen() {
   if (!exercise) {
     return (
       <View style={styles.centered}>
+        <BackLink />
         <Text style={styles.error}>Exercice introuvable.</Text>
       </View>
     );
@@ -20,6 +22,7 @@ export default function ExerciseDetailScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+      <BackLink />
       <Text style={styles.title}>{exercise.name}</Text>
 
       <View style={styles.photoRow}>

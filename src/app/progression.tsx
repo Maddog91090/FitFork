@@ -7,6 +7,8 @@ import { fetchMyCompletions } from '../lib/workoutCompletionsData';
 import { computeStats, type GamificationStats } from '../lib/workoutGamification';
 import { BADGES, unlockedBadgeIds } from '../lib/workoutBadges';
 import { Card } from '../components/ui/Card';
+import { ErrorNotice } from '../components/ui/ErrorNotice';
+import { BackLink } from '../components/ui/BackLink';
 import {
   centeredContent,
   radius,
@@ -38,7 +40,7 @@ export default function ProgressionScreen() {
       // donc verrouillés jusqu'à ce que ce système existe.
       setStats(computeStats(myCompletions, [], today));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur de chargement.');
+      setError(err instanceof Error ? err.message : 'Erreur de chargement de ta progression.');
     } finally {
       setChecking(false);
     }
@@ -61,7 +63,8 @@ export default function ProgressionScreen() {
   if (!stats) {
     return (
       <View style={styles.centered}>
-        {error && <Text style={styles.error}>{error}</Text>}
+        <BackLink />
+        <ErrorNotice message={error ?? 'Impossible de charger ta progression.'} onRetry={load} />
       </View>
     );
   }
@@ -70,7 +73,8 @@ export default function ProgressionScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      {error && <Text style={styles.error}>{error}</Text>}
+      <BackLink />
+      {error && <ErrorNotice message={error} onRetry={load} />}
 
       <Text style={styles.title}>Progression</Text>
 
@@ -105,6 +109,7 @@ export default function ProgressionScreen() {
       <View style={styles.badgeGrid}>
         {BADGES.map((badge) => {
           const unlocked = unlockedIds.has(badge.id);
+          const unavailable = badge.available === false;
           return (
             <View key={badge.id} style={styles.badgeItem}>
               <Image
@@ -113,7 +118,9 @@ export default function ProgressionScreen() {
                 accessibilityLabel={badge.label}
               />
               <Text style={styles.badgeLabel}>{badge.label}</Text>
-              <Text style={styles.badgeDescription}>{badge.description}</Text>
+              <Text style={[styles.badgeDescription, unavailable && styles.badgeDescriptionMuted]}>
+                {badge.description}
+              </Text>
             </View>
           );
         })}
@@ -128,7 +135,6 @@ function createStyles(colors: ThemeColors) {
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
     container: { padding: spacing.lg, ...centeredContent },
     title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
-    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
     sectionLabel: {
       ...typography.overline,
       color: colors.textSecondary,
@@ -158,5 +164,10 @@ function createStyles(colors: ThemeColors) {
     badgeImageLocked: { opacity: state.disabledOpacity },
     badgeLabel: { ...typography.captionStrong, color: colors.textPrimary, textAlign: 'center' },
     badgeDescription: { ...typography.caption, color: colors.textSecondary, textAlign: 'center' },
+    // Marks a badge nobody can earn yet (a feature it depends on doesn't
+    // exist) as visually distinct from a badge that's merely locked —
+    // textTertiary is used here for exactly its documented purpose,
+    // decorative/non-actionable text.
+    badgeDescriptionMuted: { color: colors.textTertiary },
   });
 }

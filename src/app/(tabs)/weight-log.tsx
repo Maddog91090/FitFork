@@ -50,7 +50,7 @@ export default function WeightLogScreen() {
       const recent = await fetchRecentWeightLogs(session.user.id);
       setLogs(recent);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur de chargement.');
+      setError(err instanceof Error ? err.message : "Erreur de chargement de l'historique de poids.");
     } finally {
       setChecking(false);
     }
@@ -72,7 +72,7 @@ export default function WeightLogScreen() {
     setError(null);
     const weightNum = Number(weightInput);
     if (!Number.isFinite(weightNum) || weightNum <= 0) {
-      setError('Poids invalide.');
+      setError('Poids invalide (supérieur à 0 kg).');
       return;
     }
     if (!session) return;

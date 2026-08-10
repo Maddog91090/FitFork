@@ -9,6 +9,7 @@ import { ChoiceGroup } from '../../components/ChoiceGroup';
 import { TagFilterGroup } from '../../components/TagFilterGroup';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { ErrorNotice } from '../../components/ui/ErrorNotice';
 import { centeredContent, radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const MEAL_TYPE_OPTIONS: { value: MealType | 'all'; label: string }[] = [
@@ -94,7 +95,7 @@ export default function RecipesScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && <ErrorNotice message={error} onRetry={load} />}
 
       <ChoiceGroup options={MEAL_TYPE_OPTIONS} value={mealType} onChange={setMealType} />
       <TagFilterGroup options={TAG_OPTIONS} value={tags} onChange={setTags} />
@@ -135,7 +136,6 @@ function createStyles(colors: ThemeColors) {
     screen: { flex: 1, backgroundColor: colors.bgBase },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
     container: { padding: spacing.lg, ...centeredContent },
-    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
     recipeCard: { marginBottom: spacing.sm },
     recipeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
     thumbFrame: {

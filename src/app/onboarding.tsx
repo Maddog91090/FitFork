@@ -69,11 +69,11 @@ export function validateStep(step: number, fields: OnboardingFields): string | n
   if (step === 0) {
     if (!fields.sex) return 'Merci de choisir un sexe.';
     const ageNum = Number(fields.age);
-    if (!Number.isFinite(ageNum) || ageNum <= 0 || ageNum >= 120) return 'Âge invalide.';
+    if (!Number.isFinite(ageNum) || ageNum <= 0 || ageNum >= 120) return 'Âge invalide (1 à 119 ans).';
     const heightNum = Number(fields.heightCm);
-    if (!Number.isFinite(heightNum) || heightNum <= 0) return 'Taille invalide.';
+    if (!Number.isFinite(heightNum) || heightNum <= 0) return 'Taille invalide (supérieure à 0 cm).';
     const weightNum = Number(fields.weightKg);
-    if (!Number.isFinite(weightNum) || weightNum <= 0) return 'Poids invalide.';
+    if (!Number.isFinite(weightNum) || weightNum <= 0) return 'Poids invalide (supérieur à 0 kg).';
     return null;
   }
   if (step === 1) {
@@ -169,7 +169,7 @@ export default function OnboardingScreen() {
       });
       setShowNotificationPrompt(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue.');
+      setError(err instanceof Error ? err.message : 'Impossible d\'enregistrer ton profil. Réessaie.');
     } finally {
       setSubmitting(false);
     }

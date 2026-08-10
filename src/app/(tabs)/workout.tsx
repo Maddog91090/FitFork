@@ -16,6 +16,7 @@ import {
 import { Card } from '../../components/ui/Card';
 import { PressableScale } from '../../components/ui/PressableScale';
 import { Button } from '../../components/ui/Button';
+import { ErrorNotice } from '../../components/ui/ErrorNotice';
 import { centeredContent, radius, spacing, state, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
@@ -152,10 +153,18 @@ export default function WorkoutScreen() {
     }, [loadTodayCompletion])
   );
 
-  if (loading || !session || checking || !trainingProfile) {
+  if (loading || !session || checking) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator color={colors.accentRed} />
+      </View>
+    );
+  }
+
+  if (!trainingProfile) {
+    return (
+      <View style={styles.centered}>
+        <ErrorNotice message={error ?? 'Impossible de charger ton profil sportif.'} onRetry={load} />
       </View>
     );
   }

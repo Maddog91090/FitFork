@@ -16,6 +16,12 @@ export type Badge = {
   description: string;
   medalImage: ImageSourcePropType;
   check: (stats: GamificationStats) => boolean;
+  /**
+   * False when nobody can currently earn this badge because a feature it
+   * depends on doesn't exist yet (e.g. the friend/partner system) — distinct
+   * from "locked, but you can go earn it". Defaults to true when omitted.
+   */
+  available?: boolean;
 };
 
 export const BADGES: Badge[] = [
@@ -57,16 +63,18 @@ export const BADGES: Badge[] = [
   {
     id: 'esprit-equipe',
     label: "Esprit d'équipe",
-    description: "Premier bonus d'équipe déclenché.",
+    description: "Bientôt disponible — nécessite un système d'amis.",
     medalImage: require('../../assets/images/badges/esprit-equipe.png'),
     check: (stats) => stats.teamBonusCount >= 1,
+    available: false,
   },
   {
     id: 'duo-en-or',
     label: 'Duo en or',
-    description: "Bonus d'équipe 4 semaines de suite.",
+    description: "Bientôt disponible — nécessite un système d'amis.",
     medalImage: require('../../assets/images/badges/duo-en-or.png'),
     check: (stats) => stats.teamBonusStreak >= 4,
+    available: false,
   },
 ];
 
