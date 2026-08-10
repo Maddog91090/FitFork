@@ -102,4 +102,9 @@ describe('WorkoutScreen completion button', () => {
       params: { level: 'beginner', sessionIndex: '0' },
     });
   });
+
+  it('shows the idle mascot in the header', async () => {
+    const { getByTestId } = await render(<WorkoutScreen />);
+    await waitFor(() => expect(getByTestId('mascot-image')).toBeTruthy());
+  });
 });
