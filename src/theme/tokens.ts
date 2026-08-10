@@ -105,8 +105,8 @@ export const fontFamily = {
 /**
  * Type scale. Spread a whole entry into a style — `...typography.title` — rather
  * than picking sizes off it, so family, size, leading and tracking stay
- * together. Fraunces (serif) carries titles and numbers; Plus Jakarta Sans
- * carries everything the user reads or taps.
+ * together. Fredoka carries every entry here — there is no second family to
+ * distinguish titles/numbers from body text anymore.
  */
 export const typography = {
   hero: {
