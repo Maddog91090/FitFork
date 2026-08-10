@@ -89,15 +89,17 @@ export function useThemeColors(): ThemeColors {
 /**
  * Custom fonts are loaded in `src/app/_layout.tsx`. React Native does not
  * synthesize weights for custom fonts, so weight lives in the family name —
- * never pair these with `fontWeight`.
+ * never pair these with `fontWeight`. Fredoka carries everything — titles,
+ * hero text, numbers, body, labels — there is no second family in this
+ * design system.
  */
 export const fontFamily = {
-  displaySemiBold: 'Fraunces_600SemiBold',
-  displayBold: 'Fraunces_700Bold',
-  bodyRegular: 'PlusJakartaSans_400Regular',
-  bodyMedium: 'PlusJakartaSans_500Medium',
-  bodySemiBold: 'PlusJakartaSans_600SemiBold',
-  bodyBold: 'PlusJakartaSans_700Bold',
+  displaySemiBold: 'Fredoka_600SemiBold',
+  displayBold: 'Fredoka_700Bold',
+  bodyRegular: 'Fredoka_400Regular',
+  bodyMedium: 'Fredoka_500Medium',
+  bodySemiBold: 'Fredoka_600SemiBold',
+  bodyBold: 'Fredoka_700Bold',
 } as const;
 
 /**

@@ -1,4 +1,4 @@
-import { lightColors, radius } from '../theme/tokens';
+import { fontFamily, lightColors, radius } from '../theme/tokens';
 
 function srgbToLinear(c: number): number {
   const cs = c / 255;
@@ -51,5 +51,22 @@ describe('radius', () => {
     expect(radius.sm).toBeGreaterThanOrEqual(16);
     expect(radius.md).toBeGreaterThanOrEqual(20);
     expect(radius.lg).toBeGreaterThanOrEqual(24);
+  });
+});
+
+describe('fontFamily', () => {
+  it('uses a single rounded family for both display and body weights', () => {
+    expect(fontFamily.displayBold).toBe('Fredoka_700Bold');
+    expect(fontFamily.displaySemiBold).toBe('Fredoka_600SemiBold');
+    expect(fontFamily.bodyRegular).toBe('Fredoka_400Regular');
+    expect(fontFamily.bodyMedium).toBe('Fredoka_500Medium');
+    expect(fontFamily.bodySemiBold).toBe('Fredoka_600SemiBold');
+    expect(fontFamily.bodyBold).toBe('Fredoka_700Bold');
+  });
+
+  it('has no leftover Fraunces or Plus Jakarta Sans reference', () => {
+    const values = Object.values(fontFamily);
+    expect(values.some((v) => v.includes('Fraunces'))).toBe(false);
+    expect(values.some((v) => v.includes('PlusJakartaSans'))).toBe(false);
   });
 });
