@@ -1,4 +1,4 @@
-import { lightColors } from '../theme/tokens';
+import { lightColors, radius } from '../theme/tokens';
 
 function srgbToLinear(c: number): number {
   const cs = c / 255;
@@ -42,5 +42,14 @@ describe('lightColors contrast (WCAG AA, 4.5:1)', () => {
 
   it('textTertiary intentionally fails AA on bgBase (decorative use only)', () => {
     expect(contrastRatio(lightColors.textTertiary, lightColors.bgBase)).toBeLessThan(4.5);
+  });
+});
+
+describe('radius', () => {
+  it('is generous everywhere — no small corners in the claymorphic direction', () => {
+    expect(radius.xs).toBeGreaterThanOrEqual(10);
+    expect(radius.sm).toBeGreaterThanOrEqual(16);
+    expect(radius.md).toBeGreaterThanOrEqual(20);
+    expect(radius.lg).toBeGreaterThanOrEqual(24);
   });
 });

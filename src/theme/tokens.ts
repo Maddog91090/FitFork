@@ -181,12 +181,12 @@ export const typography = {
 } as const;
 
 export const radius = {
-  xs: 8,
-  sm: 12,
-  md: 14,
-  lg: 16,
-  xl: 24,
-  pill: 20,
+  xs: 10,
+  sm: 16,
+  md: 20,
+  lg: 26,
+  xl: 32,
+  pill: 28,
   full: 999,
 } as const;
 
@@ -219,35 +219,53 @@ export const centeredContent = {
   alignSelf: 'center',
 } as const;
 
+/**
+ * Claymorphic elevation. Every shadow is warm-tinted (never pure black) to
+ * read as depth in a puffy material rather than a hard drop shadow. There is
+ * no per-domain shadow tier here — `Button`'s primary variant overrides
+ * `shadowColor` per domain at the call site (see Task 6); everything else
+ * uses these as-is.
+ */
 export const shadow = {
   subtle: {
-    shadowColor: '#000000',
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: 1,
-  },
-  card: {
-    shadowColor: '#000000',
+    shadowColor: '#3A2E22',
     shadowOpacity: 0.06,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    elevation: 1,
+  },
+  card: {
+    shadowColor: '#3A2E22',
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
   },
   raised: {
-    shadowColor: '#000000',
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
+    shadowColor: '#3A2E22',
+    shadowOpacity: 0.18,
+    shadowRadius: 26,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 8,
   },
-  button: {
-    shadowColor: '#DC2626',
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
-  },
+} as const;
+
+/**
+ * The "puffy" inner-highlight illusion. React Native has no CSS-style inset
+ * shadow, so the claymorphic volume cue is faked with a low-opacity diagonal
+ * sheen laid on top of a surface: lighter top-left (catching light), fading
+ * through transparent, to a faint warm dark bottom-right (falling into
+ * shadow). Consumers render this as an `expo-linear-gradient` `LinearGradient`
+ * sized to `StyleSheet.absoluteFillObject` **with its own `borderRadius`
+ * matching the surface** — a view always clips its own background/gradient
+ * fill to its own border radius, so no `overflow: 'hidden'` is needed on the
+ * parent (which would otherwise also clip the parent's drop shadow).
+ */
+export const clayOverlay = {
+  colors: ['rgba(255,255,255,0.45)', 'rgba(255,255,255,0)', 'rgba(58,46,34,0.10)'],
+  locations: [0, 0.55, 1],
+  start: { x: 0, y: 0 },
+  end: { x: 1, y: 1 },
 } as const;
 
 /**
