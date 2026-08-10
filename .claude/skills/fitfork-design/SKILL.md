@@ -105,10 +105,13 @@ Rules:
 **Legacy `accentRed` / `accentRedDeep` / `accentRedSoft`.** These three keys
 still exist in `lightColors` and are still read directly by the ~20 screens
 that haven't been migrated to the domain system yet. They are a **transitional
-shim only**: repointed to `domainProgress` so those unmigrated screens read as
-visually coherent with the new palette instead of clashing against it. Do
-**not** reach for `accentRed*` in new or touched code — use the domain tokens
-directly. A later screen-by-screen rollout replaces every remaining
+shim only**: `accentRed`/`accentRedDeep` hold the exact `domainProgress`/
+`domainProgressDeep` values; `accentRedSoft` got its own new light rose-pink
+value coherent with that same hue rather than reusing a named token (there is
+no `domainProgressSoft` token today). Together this makes unmigrated screens
+read as visually coherent with the new palette instead of clashing against
+it. Do **not** reach for `accentRed*` in new or touched code — use the domain
+tokens directly. A later screen-by-screen rollout replaces every remaining
 `accentRed*` call site with the correct per-screen domain token and deletes
 these three keys for good.
 
@@ -318,18 +321,27 @@ The app tutoies the user and speaks like a coach who respects their time:
 
 ## Where things stand
 
-**Phase 1 of the claymorphic/domain-color/mascot system has shipped, screens
-have not.** Tokens (`src/theme/tokens.ts`: domain colors, single-family
-typography, generous radii, two-layer claymorphic shadows + `clayOverlay`,
-bouncier motion springs), the shared components (`Button`, `Card`,
-`PressableScale`), and the base `Mascot` component (2 of its planned 4 poses)
-are all done and tested. **No screen has been migrated yet.** If you open the
-actual app today, every screen under `src/app` still visually reads as the
-old "Soft Neutral" look — flat cards, the legacy `accentRed*` palette, the old
-type scale usage — because none of them have been touched by this rollout.
-This file describes the *target* system that the shared components already
-implement, not what a screenshot of the running app shows today. That mismatch
-is expected and temporary: a screen-by-screen migration is the deliberate
+**Phase 1 of the claymorphic/domain-color/mascot system has shipped; no
+screen has been individually migrated yet — but that's not the same as "no
+screen has visually changed."** Tokens (`src/theme/tokens.ts`: domain colors,
+single-family typography, generous radii, two-layer claymorphic shadows +
+`clayOverlay`, bouncier motion springs), the shared components (`Button`,
+`Card`, `PressableScale`), and the base `Mascot` component (2 of its planned
+4 poses) are all done and tested. Because colors, typography, radius, shadow
+and motion are all token-level changes, and `Card`/`Button`/`PressableScale`
+are already shared components consumed by most existing screens (`Card` by
+8+ screens under `src/app`, `Button` by even more), **opening the actual app
+today already shows the claymorphic look wherever those components are
+used** — puffy radius, the warm two-tier shadow, the `clayOverlay` sheen on
+every `Card`, the bouncier squish on every `Button` and `PressableScale`, and
+Fredoka everywhere text uses `typography.*`. What genuinely has **not**
+happened yet, screen by screen: no screen passes an explicit `domain` prop to
+`Button`, so every primary button today renders in the `'progress'` default
+regardless of whether the screen is nutrition- or sport-flavored; the
+`Mascot` isn't placed on any screen; the emoji-based icons haven't been
+replaced by the claymorphic icon set; and no copy has had the two-registry
+pass. That is the real remaining gap — not a plain color/shape/type mismatch,
+which is largely already live. A screen-by-screen migration is the deliberate
 follow-up work, and this file will stop being ahead of reality once it lands.
 Don't read the gap as a bug or as this file being wrong.
 
@@ -338,10 +350,11 @@ single warm-red accent, Fraunces serif + Plus Jakarta Sans, tokens (light-only
 — see **Dark mode** below for why there's no dark palette), `useThemeColors()`,
 the typography pass across all screens, three brand illustrations, the app
 icon/splash, and a first motion pass (onboarding step transitions and
-progress fill, springy chip/cell presses) — all shipped and is (until the
-rollout above lands) still what every real screen in the app looks like. Kept
-here as history; do not use it as a guide for new work, which follows this
-file's current sections instead.
+progress fill, springy chip/cell presses) — all shipped, and its layout and
+copy decisions (not its colors/type/shape, which the token swap already
+overwrote everywhere) are what's left recognizable on any screen the Phase 1
+rollout above hasn't reached yet. Kept here as history; do not use it as a
+guide for new work, which follows this file's current sections instead.
 
 **Charts.** Read the `dataviz` skill before writing the first line of chart
 code. One thing learned building the weight trend that's still relevant here:

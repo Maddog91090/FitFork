@@ -45,6 +45,15 @@ describe('lightColors contrast (WCAG AA, 4.5:1)', () => {
   });
 });
 
+describe('lightColors contrast (WCAG 1.4.11, non-text UI components, 3:1)', () => {
+  it.each([
+    ['borderStrong on bgBase', lightColors.borderStrong, lightColors.bgBase],
+    ['borderStrong on bgSurface', lightColors.borderStrong, lightColors.bgSurface],
+  ])('%s is at least 3:1', (_label, fg, bg) => {
+    expect(contrastRatio(fg, bg)).toBeGreaterThanOrEqual(3);
+  });
+});
+
 describe('radius', () => {
   it('is generous everywhere — no small corners in the claymorphic direction', () => {
     expect(radius.xs).toBeGreaterThanOrEqual(10);

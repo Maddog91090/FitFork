@@ -50,7 +50,10 @@ export const lightColors = {
   // the new surfaces.
   divider: '#FBEAD3',
   border: '#F0D9B8',
-  borderStrong: '#E0C093',
+  // Darker than `border` on purpose: this is the one line color that must
+  // clear the 3:1 WCAG 1.4.11 threshold for non-text UI components (e.g. a
+  // Switch's "off" track) rather than just reading as decorative.
+  borderStrong: '#A67F4C',
 
   // Status — unchanged. Not part of this design system's scope.
   error: '#DC2626',
