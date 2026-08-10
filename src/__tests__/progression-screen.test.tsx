@@ -121,12 +121,13 @@ describe('ProgressionScreen', () => {
     const { getByTestId, findByText } = await render(<ProgressionScreen />);
 
     expect(await findByText('🔥 7')).toBeTruthy();
-    // The Mascot component itself doesn't expose its `pose` prop on the
-    // rendered element, so asserting the exact pose isn't possible here
-    // without a testID per pose — instead, this confirms the mascot renders
-    // in this streak state (celebrating pose per the source's conditional).
-    // Mascot.test.tsx already covers pose-switching behavior in isolation.
-    expect(getByTestId('mascot-image')).toBeTruthy();
+    // Assert the resolved image source itself (not just that some image
+    // rendered) so this test actually distinguishes the celebrating pose
+    // from idle — see MASCOT_SOURCES in Mascot.tsx. expo-image's Image
+    // normalizes a single `require()` source into a one-element array.
+    expect(getByTestId('mascot-image').props.source).toEqual([
+      require('../../assets/images/mascot/mascot-celebrating.png'),
+    ]);
   });
 
   it('shows the idle mascot when the streak is not a multiple of 7', async () => {
@@ -147,6 +148,8 @@ describe('ProgressionScreen', () => {
     const { getByTestId, findByText } = await render(<ProgressionScreen />);
 
     expect(await findByText('🔥 3')).toBeTruthy();
-    expect(getByTestId('mascot-image')).toBeTruthy();
+    expect(getByTestId('mascot-image').props.source).toEqual([
+      require('../../assets/images/mascot/mascot-idle.png'),
+    ]);
   });
 });

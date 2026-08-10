@@ -99,7 +99,7 @@ export default function RecipesScreen() {
       {error && <ErrorNotice message={error} onRetry={load} />}
 
       <ChoiceGroup options={MEAL_TYPE_OPTIONS} value={mealType} onChange={setMealType} domain="nutrition" />
-      <TagFilterGroup options={TAG_OPTIONS} value={tags} onChange={setTags} />
+      <TagFilterGroup options={TAG_OPTIONS} value={tags} onChange={setTags} domain="nutrition" />
       <ChoiceGroup options={PREP_TIME_OPTIONS} value={prepTimeValue} onChange={setPrepTimeValue} domain="nutrition" />
 
       {filteredRecipes.length === 0 ? (

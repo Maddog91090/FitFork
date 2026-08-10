@@ -139,9 +139,11 @@ export default function HomeScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <View style={styles.headerRow}>
-        <View>
+        <View style={styles.headerText}>
           <Text style={styles.greeting}>Bonjour</Text>
-          <Text style={styles.name}>{session.user.email}</Text>
+          <Text style={styles.name} numberOfLines={1}>
+            {session.user.email}
+          </Text>
         </View>
         <Mascot pose="idle" size={64} />
       </View>
@@ -267,7 +269,8 @@ function createStyles(colors: ThemeColors) {
     screen: { flex: 1, backgroundColor: colors.bgBase },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
     container: { padding: spacing.lg, ...centeredContent },
-    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+    headerText: { flex: 1, marginRight: spacing.md },
     greeting: { ...typography.hero, color: colors.textPrimary },
     name: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
     macroCard: { marginBottom: spacing.lg },
@@ -291,7 +294,7 @@ function createStyles(colors: ThemeColors) {
     macroFat: { color: colors.macroFat },
     macroCarbs: { color: colors.macroCarbs },
     macroLabel: { ...typography.overline, color: colors.textSecondary, marginTop: spacing.xs },
-    macroValueRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    macroValueRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
     actionsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
     actionButton: { flex: 1 },
     mealsCard: { marginBottom: spacing.lg },
