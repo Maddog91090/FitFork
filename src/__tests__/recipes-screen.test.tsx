@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import RecipesScreen from '../app/(tabs)/recipes';
 import { useAuth } from '../lib/auth-context';
 import { fetchRecipes } from '../lib/mealPlanData';
@@ -79,6 +79,16 @@ describe('RecipesScreen', () => {
     await fireEvent.press(getByText('Végétarien'));
 
     expect(await findByText('Aucune recette ne correspond')).toBeTruthy();
+  });
+
+  it('shows the idle mascot when no recipe matches the filters', async () => {
+    const { findByText, getByText, getByTestId } = await render(<RecipesScreen />);
+    await findByText('Poulet grillé');
+
+    await fireEvent.press(getByText('Poulet'));
+    await fireEvent.press(getByText('Végétarien'));
+
+    await waitFor(() => expect(getByTestId('mascot-image')).toBeTruthy());
   });
 
   it('filters by prep time', async () => {

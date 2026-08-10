@@ -10,6 +10,7 @@ import { TagFilterGroup } from '../../components/TagFilterGroup';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
+import { Mascot } from '../../components/ui/Mascot';
 import { centeredContent, radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const MEAL_TYPE_OPTIONS: { value: MealType | 'all'; label: string }[] = [
@@ -88,7 +89,7 @@ export default function RecipesScreen() {
   if (loading || !session || checking) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+        <ActivityIndicator color={colors.domainNutrition} />
       </View>
     );
   }
@@ -97,12 +98,13 @@ export default function RecipesScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       {error && <ErrorNotice message={error} onRetry={load} />}
 
-      <ChoiceGroup options={MEAL_TYPE_OPTIONS} value={mealType} onChange={setMealType} />
+      <ChoiceGroup options={MEAL_TYPE_OPTIONS} value={mealType} onChange={setMealType} domain="nutrition" />
       <TagFilterGroup options={TAG_OPTIONS} value={tags} onChange={setTags} />
-      <ChoiceGroup options={PREP_TIME_OPTIONS} value={prepTimeValue} onChange={setPrepTimeValue} />
+      <ChoiceGroup options={PREP_TIME_OPTIONS} value={prepTimeValue} onChange={setPrepTimeValue} domain="nutrition" />
 
       {filteredRecipes.length === 0 ? (
         <EmptyState
+          icon={<Mascot pose="idle" size={120} />}
           title="Aucune recette ne correspond"
           message="Essaie d'assouplir tes filtres pour voir plus de résultats."
         />
