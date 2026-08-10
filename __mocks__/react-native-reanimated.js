@@ -65,6 +65,12 @@ module.exports = {
   withSpring: identity,
   withTiming: identity,
   withDelay: (_delay, animation) => animation,
+  // Discrete two-point mock: real Reanimated does true interpolation, but
+  // every consumer in this app only ever animates between 0 and 1 (press
+  // states), so snapping to the nearer end of the range is exact enough for
+  // tests to assert the committed style.
+  interpolateColor: (value, inputRange, outputRange) =>
+    value <= inputRange[0] ? outputRange[0] : outputRange[outputRange.length - 1],
   Easing: {
     bezier: () => (t) => t,
     linear: (t) => t,
