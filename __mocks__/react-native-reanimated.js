@@ -65,6 +65,8 @@ module.exports = {
   withSpring: identity,
   withTiming: identity,
   withDelay: (_delay, animation) => animation,
+  withRepeat: (animation) => animation,
+  withSequence: (...animations) => animations[animations.length - 1],
   // Discrete two-point mock: real Reanimated does true interpolation, but
   // every consumer in this app only ever animates between 0 and 1 (press
   // states), so snapping to the nearer end of the range is exact enough for
@@ -76,6 +78,7 @@ module.exports = {
     linear: (t) => t,
     inOut: (fn) => fn,
     out: (fn) => fn,
+    sin: (t) => t,
   },
   FadeIn: makeAnimationBuilder(),
   FadeInDown: makeAnimationBuilder(),
