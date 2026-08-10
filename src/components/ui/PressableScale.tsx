@@ -11,11 +11,12 @@ type PressableScaleProps = PressableProps & {
 /**
  * A Pressable that springs down on touch instead of snapping. This is the
  * "chips and cells" press pattern from the design system — a spring rather
- * than a static scale, so a tap feels physical. Buttons keep their darken
- * pattern; do not use this for them.
+ * than a static scale, so a tap feels physical and claymorphic-squishy.
+ * Buttons have their own press animation (color + scale together, see
+ * Button.tsx); do not use this for them.
  *
  * The scale rests at 1 and drops to state.pressedScale under the finger; the
- * snappy spring makes the release quick and unfussy, never bouncy.
+ * snappy spring gives the release a visible bounce.
  */
 export function PressableScale({ style, onPressIn, onPressOut, ...props }: PressableScaleProps) {
   const pressed = useSharedValue(0);
@@ -24,7 +25,6 @@ export function PressableScale({ style, onPressIn, onPressOut, ...props }: Press
     transform: [
       { scale: withSpring(1 - pressed.value * (1 - state.pressedScale), motion.spring.snappy) },
     ],
-    opacity: withSpring(1 - pressed.value * (1 - state.pressedOpacity), motion.spring.snappy),
   }));
 
   return (

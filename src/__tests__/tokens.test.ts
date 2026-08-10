@@ -1,4 +1,4 @@
-import { fontFamily, lightColors, radius } from '../theme/tokens';
+import { fontFamily, lightColors, motion, radius } from '../theme/tokens';
 
 function srgbToLinear(c: number): number {
   const cs = c / 255;
@@ -68,5 +68,23 @@ describe('fontFamily', () => {
     const values = Object.values(fontFamily);
     expect(values.some((v) => v.includes('Fraunces'))).toBe(false);
     expect(values.some((v) => v.includes('PlusJakartaSans'))).toBe(false);
+  });
+});
+
+describe('motion.spring', () => {
+  it('snappy is bouncier than Soft Neutral (lower damping, higher stiffness)', () => {
+    expect(motion.spring.snappy.damping).toBeLessThanOrEqual(10);
+    expect(motion.spring.snappy.stiffness).toBeGreaterThanOrEqual(240);
+  });
+
+  it('celebrate exists for reward moments and bounces more than snappy', () => {
+    expect(motion.spring.celebrate).toBeDefined();
+    expect(motion.spring.celebrate.damping).toBeLessThan(motion.spring.snappy.damping);
+  });
+});
+
+describe('motion.duration', () => {
+  it('has an idle-loop duration for the mascot breathing animation', () => {
+    expect(motion.duration.idle).toBeGreaterThan(motion.duration.slow);
   });
 });

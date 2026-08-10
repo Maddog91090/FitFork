@@ -281,6 +281,8 @@ export const motion = {
     fast: 160,
     base: 240,
     slow: 360,
+    /** One full cycle of the mascot's idle breathing loop (see Mascot.tsx). */
+    idle: 2400,
   },
   curve: {
     /** Default for anything already on screen moving or resizing. */
@@ -292,14 +294,20 @@ export const motion = {
   },
   spring: {
     gentle: { damping: 18, stiffness: 180, mass: 1 },
-    snappy: { damping: 14, stiffness: 320, mass: 0.8 },
+    /** Base of the "chips and cells" press pattern — visibly bouncy, the
+     *  default feel for everyday taps and button presses in this direction. */
+    snappy: { damping: 8, stiffness: 260, mass: 0.9 },
+    /** Reward moments only: the mascot's celebration pose bouncing in.
+     *  Pronounced overshoot — do not use for routine taps, it would read as
+     *  exhausting rather than delightful. */
+    celebrate: { damping: 5, stiffness: 220, mass: 1 },
   },
 } as const;
 
 /** Interaction states — applied consistently so touch feels the same app-wide. */
 export const state = {
-  pressedOpacity: 0.92,
-  pressedScale: 0.97,
+  /** Visible claymorphic squish under the finger — deliberately pronounced. */
+  pressedScale: 0.9,
   disabledOpacity: 0.55,
   hitSlop: 8,
   /** Minimum tappable square, per platform accessibility guidance. */
