@@ -12,4 +12,13 @@ describe('Card', () => {
     );
     expect(getByText('Contenu')).toBeTruthy();
   });
+
+  it('renders a clay overlay behind its content', async () => {
+    const { getByTestId } = await render(
+      <Card>
+        <Text>Contenu</Text>
+      </Card>
+    );
+    expect(getByTestId('card-clay-overlay')).toBeTruthy();
+  });
 });
