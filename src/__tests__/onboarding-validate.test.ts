@@ -20,7 +20,7 @@ describe('validateStep', () => {
   it('rejects step 0 with an invalid age', () => {
     expect(
       validateStep(0, { ...baseFields, sex: 'male', age: '0', heightCm: '178', weightKg: '75' })
-    ).toBe('Âge invalide.');
+    ).toBe('Âge invalide (1 à 119 ans).');
   });
 
   it('accepts a complete step 0', () => {

@@ -12,6 +12,7 @@ import { todayDayIndex, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { PressableScale } from '../../components/ui/PressableScale';
+import { ErrorNotice } from '../../components/ui/ErrorNotice';
 import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -138,7 +139,7 @@ export default function HomeScreen() {
       <Text style={styles.greeting}>Bonjour</Text>
       <Text style={styles.name}>{session.user.email}</Text>
 
-      {loadError && <Text style={styles.error}>{loadError}</Text>}
+      {loadError && <ErrorNotice message={loadError} onRetry={load} />}
 
       {macros && (
         <Card style={styles.macroCard}>
@@ -250,9 +251,8 @@ function createStyles(colors: ThemeColors) {
     screen: { flex: 1, backgroundColor: colors.bgBase },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
     container: { padding: spacing.lg, ...centeredContent },
-    greeting: { ...typography.caption, color: colors.textSecondary },
-    name: { ...typography.hero, color: colors.textPrimary, marginBottom: spacing.lg },
-    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
+    greeting: { ...typography.hero, color: colors.textPrimary },
+    name: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
     macroCard: { marginBottom: spacing.lg },
     gamificationCard: { marginBottom: spacing.lg },
     gamificationRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
