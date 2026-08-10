@@ -17,7 +17,7 @@ import {
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 type ButtonVariant = 'primary' | 'secondary';
-type ButtonDomain = 'nutrition' | 'sport' | 'progress' | 'neutral';
+export type ButtonDomain = 'nutrition' | 'sport' | 'progress' | 'neutral';
 
 const DOMAIN_FILL: Record<ButtonDomain, keyof ThemeColors> = {
   nutrition: 'domainNutrition',

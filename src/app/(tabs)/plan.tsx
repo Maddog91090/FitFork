@@ -15,6 +15,7 @@ import { ChoiceGroup } from '../../components/ChoiceGroup';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
+import { Mascot } from '../../components/ui/Mascot';
 import { centeredContent, radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -100,7 +101,7 @@ export default function PlanScreen() {
   if (loading || !session || checking) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+        <ActivityIndicator color={colors.domainNutrition} />
       </View>
     );
   }
@@ -117,11 +118,12 @@ export default function PlanScreen() {
     return (
       <View style={styles.centered}>
         <EmptyState
-          illustration={require('../../../assets/images/illustrations/empty-plan.png')}
+          icon={<Mascot pose="idle" size={120} />}
           title="Aucun plan pour l'instant"
           message="Génère ton premier plan de repas de la semaine."
           actionLabel="Générer un plan"
           onAction={() => router.push('/generate-plan')}
+          domain="nutrition"
         />
       </View>
     );
@@ -137,6 +139,7 @@ export default function PlanScreen() {
         options={DAY_TAB_OPTIONS}
         value={String(activeDayIndex)}
         onChange={(value) => setActiveDayIndex(Number(value))}
+        domain="nutrition"
       />
 
       {dayEntries.length === 0 ? (
@@ -173,7 +176,7 @@ export default function PlanScreen() {
                   accessibilityRole="button"
                 >
                   {swappingId === entry.id ? (
-                    <ActivityIndicator size="small" color={colors.accentRed} />
+                    <ActivityIndicator size="small" color={colors.domainNutrition} />
                   ) : (
                     <Text style={styles.swapHint}>Échanger</Text>
                   )}
@@ -213,6 +216,6 @@ function createStyles(colors: ThemeColors) {
     entryText: { flex: 1 },
     mealTypeLabel: { ...typography.caption, color: colors.textSecondary },
     recipeName: { ...typography.bodyStrong, color: colors.textPrimary },
-    swapHint: { ...typography.captionStrong, color: colors.accentRedDeep, marginLeft: spacing.md },
+    swapHint: { ...typography.captionStrong, color: colors.domainNutritionDeep, marginLeft: spacing.md },
   });
 }

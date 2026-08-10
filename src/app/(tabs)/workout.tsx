@@ -17,6 +17,7 @@ import { Card } from '../../components/ui/Card';
 import { PressableScale } from '../../components/ui/PressableScale';
 import { Button } from '../../components/ui/Button';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
+import { Mascot } from '../../components/ui/Mascot';
 import { centeredContent, radius, spacing, state, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
@@ -156,7 +157,7 @@ export default function WorkoutScreen() {
   if (loading || !session || checking) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+        <ActivityIndicator color={colors.domainSport} />
       </View>
     );
   }
@@ -175,12 +176,22 @@ export default function WorkoutScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       {error && <Text style={styles.error}>{error}</Text>}
 
-      <Text style={styles.title}>{homeWorkoutProgram.title}</Text>
-      <Text style={styles.subtitle}>{homeWorkoutProgram.subtitle}</Text>
+      <View style={styles.headerRow}>
+        <View style={styles.headerText}>
+          <Text style={styles.title}>{homeWorkoutProgram.title}</Text>
+          <Text style={styles.subtitle}>{homeWorkoutProgram.subtitle}</Text>
+        </View>
+        <Mascot pose="idle" size={64} />
+      </View>
       <Text style={styles.blockText}>{homeWorkoutProgram.guidance}</Text>
 
-      <ChoiceGroup options={LEVEL_OPTIONS} value={trainingProfile.experienceLevel} onChange={handleLevelChange} />
-      {savingLevel && <ActivityIndicator size="small" color={colors.accentRed} />}
+      <ChoiceGroup
+        options={LEVEL_OPTIONS}
+        value={trainingProfile.experienceLevel}
+        onChange={handleLevelChange}
+        domain="sport"
+      />
+      {savingLevel && <ActivityIndicator size="small" color={colors.domainSport} />}
 
       <View style={styles.block}>
         <Text style={styles.blockTitle}>
@@ -196,6 +207,7 @@ export default function WorkoutScreen() {
         options={SESSION_TAB_OPTIONS}
         value={String(activeSessionIndex)}
         onChange={(value) => setActiveSessionIndex(Number(value))}
+        domain="sport"
       />
 
       {levelProgram.sessions.map((sessionItem, index) => {
@@ -209,7 +221,7 @@ export default function WorkoutScreen() {
               Séance {index + 1} — {sessionItem.name}
             </Text>
             <View style={styles.startRow}>
-              <Button title="Commencer" onPress={() => handleStartSession(index)} />
+              <Button title="Commencer" onPress={() => handleStartSession(index)} domain="sport" />
             </View>
             <SessionDetail session={sessionItem} styles={styles} />
             <View style={styles.completionRow}>
@@ -234,6 +246,7 @@ export default function WorkoutScreen() {
                   title="Marquer comme terminée"
                   onPress={handleToggleCompletion}
                   loading={loggingCompletion}
+                  domain="sport"
                 />
               )}
             </View>
@@ -311,6 +324,8 @@ function createStyles(colors: ThemeColors) {
     screen: { flex: 1, backgroundColor: colors.bgBase },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
     container: { padding: spacing.lg, ...centeredContent },
+    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+    headerText: { flex: 1, marginRight: spacing.md },
     title: { ...typography.display, color: colors.textPrimary },
     subtitle: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.lg },
     block: { marginVertical: spacing.lg },
@@ -366,7 +381,7 @@ function createStyles(colors: ThemeColors) {
       paddingHorizontal: spacing.sm,
       justifyContent: 'center',
     },
-    completionUndoLink: { ...typography.caption, color: colors.accentRedDeep },
+    completionUndoLink: { ...typography.caption, color: colors.domainSportDeep },
     error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
   });
 }

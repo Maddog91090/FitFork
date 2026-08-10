@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Image, type ImageProps } from 'expo-image';
 import { Card } from './Card';
-import { Button } from './Button';
+import { Button, type ButtonDomain } from './Button';
 import { spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 type EmptyStateProps = {
@@ -15,6 +15,8 @@ type EmptyStateProps = {
   /** Omit both when the screen already offers the action elsewhere. */
   actionLabel?: string;
   onAction?: () => void;
+  /** Domain color for the action button. Defaults to `'progress'`, matching `Button`'s own default. */
+  domain?: ButtonDomain;
 };
 
 export function EmptyState({
@@ -24,6 +26,7 @@ export function EmptyState({
   message,
   actionLabel,
   onAction,
+  domain,
 }: EmptyStateProps) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -37,7 +40,7 @@ export function EmptyState({
       )}
       <Text style={styles.title}>{title}</Text>
       <Text style={[styles.message, hasAction && styles.messageSpaced]}>{message}</Text>
-      {actionLabel && onAction && <Button title={actionLabel} onPress={onAction} />}
+      {actionLabel && onAction && <Button title={actionLabel} onPress={onAction} domain={domain} />}
     </Card>
   );
 }

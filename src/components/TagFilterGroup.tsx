@@ -4,16 +4,19 @@ import { PressableScale } from './ui/PressableScale';
 import type { ChoiceOption } from './ChoiceGroup';
 import { useThemeColors } from '../theme/tokens';
 import { createPillStyles } from './choicePillStyles';
+import type { ButtonDomain } from './ui/Button';
 
 type TagFilterGroupProps<T extends string> = {
   options: ChoiceOption<T>[];
   value: T[];
   onChange: (value: T[]) => void;
+  /** Domain color for selected pills. Defaults to `'progress'`, matching the previous fixed color. */
+  domain?: ButtonDomain;
 };
 
-export function TagFilterGroup<T extends string>({ options, value, onChange }: TagFilterGroupProps<T>) {
+export function TagFilterGroup<T extends string>({ options, value, onChange, domain }: TagFilterGroupProps<T>) {
   const colors = useThemeColors();
-  const styles = useMemo(() => createPillStyles(colors), [colors]);
+  const styles = useMemo(() => createPillStyles(colors, domain), [colors, domain]);
 
   const toggle = (optionValue: T) => {
     if (value.includes(optionValue)) {
