@@ -79,7 +79,15 @@ Les 2 poses restantes du système (mouvement/transition, encourageant-après-
 échec) sont **explicitement reportées** — aucun emplacement de cette phase
 n'en a besoin, les générer maintenant serait du travail non consommé.
 
-## Icônes claymorphic sur-mesure — 12 icônes
+## Icônes claymorphic sur-mesure — 9 icônes
+
+> **Correction post-brainstorming** : la spec initiale prévoyait aussi 3
+> icônes de "niveau d'effort" (modéré/élevé/intense) pour Muscu, inspirées
+> d'une maquette de validation. En explorant le code réel pendant l'écriture
+> du plan, aucune donnée d'effort/intensité par exercice n'existe dans le
+> modèle actuel (`homeWorkoutProgram.ts`) — la maquette avait inventé ce
+> détail. Ces 3 icônes sont retirées du périmètre plutôt que d'inventer une
+> fonctionnalité non demandée ; le set est réduit à 9 icônes.
 
 - **6 icônes de tab bar** (`(tabs)/_layout.tsx`) : Accueil, Plan, Recettes,
   Muscu, Courses, Poids. Produites ensemble car la tab bar est un composant
@@ -88,13 +96,16 @@ n'en a besoin, les générer maintenant serait du travail non consommé.
   les 4 autres pour éviter un mélange d'icônes dans une même barre.
   Remplacent les icônes Ionicons actuelles (`home`/`calendar`/`restaurant`/
   `barbell`/`cart`, chacune avec sa variante `-outline`) et l'icône `KgIcon`
-  faite main. Chaque icône a un état actif et inactif (opacité ou saturation
-  réduite pour l'inactif, cohérent avec le traitement actuel).
-- **3 icônes de niveau d'effort** (Muscu) : modéré / élevé / intense —
-  remplacent les puces textuelles actuelles dans la liste d'exercices.
-- **3 icônes de macro** (Accueil, Recettes) : protéines / lipides / glucides
-  — viennent en complément du texte coloré existant (`macroProtein`/
-  `macroFat`/`macroCarbs`, inchangés), pas en remplacement des couleurs.
+  faite main. Chaque icône a un état actif et inactif (opacité réduite pour
+  l'inactif — les icônes sont des images statiques, pas des icônes
+  vectorielles teintables, donc l'état ne peut pas passer par
+  `tabBarActiveTintColor`/`tabBarInactiveTintColor` comme avant).
+- **3 icônes de macro** (Accueil) : protéines / lipides / glucides — viennent
+  en complément du texte coloré existant (`macroProtein`/`macroFat`/
+  `macroCarbs`, inchangés), pas en remplacement des couleurs. Recettes a été
+  retiré de cette entrée : ses cartes-liste n'affichent que le nombre de
+  calories, pas de détail de macros (ce détail n'existe que sur l'écran de
+  détail recette, hors périmètre de cette phase).
 
 Toutes rendues dans le même langage claymorphic que la mascotte et les
 composants (formes gonflées, ombre douce, pas de contour dur), à une échelle
