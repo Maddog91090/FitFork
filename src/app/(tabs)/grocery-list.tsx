@@ -5,6 +5,7 @@ import { useAuth } from '../../lib/auth-context';
 import { getCurrentPlan, fetchRecipeIngredients } from '../../lib/mealPlanData';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { ErrorNotice } from '../../components/ui/ErrorNotice';
 import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 type AggregatedIngredient = { name: string; quantity: number; unit: string };
@@ -94,7 +95,7 @@ export default function GroceryListScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <Text style={styles.title}>Liste de courses</Text>
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && <ErrorNotice message={error} onRetry={load} />}
       <Card>
         {items.map((item, index) => (
           <View
@@ -134,6 +135,5 @@ function createStyles(colors: ThemeColors) {
     rowLast: { borderBottomWidth: 0 },
     name: { ...typography.body, flex: 1, color: colors.textPrimary },
     quantity: { ...typography.captionStrong, color: colors.textSecondary },
-    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
   });
 }

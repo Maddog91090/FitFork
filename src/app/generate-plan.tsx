@@ -7,9 +7,10 @@ import { computeTargetsFromProfile } from '../lib/targets';
 import { fetchRecipes, fetchRecipeIngredients, saveWeeklyPlan } from '../lib/mealPlanData';
 import { fetchRecentWeightLogs, type WeightLogEntry } from '../lib/weightLogData';
 import { computeAdjustedTargets } from '../lib/progressTracking';
-import { generateWeeklyPlan, type MealSlot, type MealType } from '../lib/mealPlan';
+import { generateWeeklyPlan, DAY_LABELS, type MealSlot, type MealType } from '../lib/mealPlan';
 import { Button } from '../components/ui/Button';
 import { PressableScale } from '../components/ui/PressableScale';
+import { BackLink } from '../components/ui/BackLink';
 import {
   centeredContent,
   radius,
@@ -21,7 +22,6 @@ import {
   type ThemeColors,
 } from '../theme/tokens';
 
-const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
   breakfast: 'Petit-déj',
@@ -112,7 +112,7 @@ export default function GeneratePlanScreen() {
       await saveWeeklyPlan(session.user.id, targets, entries);
       router.replace('/plan');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue.');
+      setError(err instanceof Error ? err.message : 'Impossible de générer ton plan. Réessaie.');
     } finally {
       setGenerating(false);
     }
@@ -124,6 +124,7 @@ export default function GeneratePlanScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+      <BackLink />
       <Text style={styles.title}>Choisis les repas à générer</Text>
       {DAY_LABELS.map((dayLabel, dayIndex) => (
         <View key={dayLabel} style={styles.dayRow}>

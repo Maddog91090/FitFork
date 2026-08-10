@@ -10,6 +10,8 @@ import {
 } from '../../lib/mealPlanData';
 import { scaleIngredientQuantity, scaleMacroValue, clampPortionMultiplier } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
+import { ErrorNotice } from '../../components/ui/ErrorNotice';
+import { BackLink } from '../../components/ui/BackLink';
 import { centeredContent, radius, shadow, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 export default function RecipeDetailScreen() {
@@ -59,16 +61,27 @@ export default function RecipeDetailScreen() {
     );
   }
 
-  if (error || !recipe) {
+  if (error) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.error}>{error ?? 'Recette introuvable.'}</Text>
+        <BackLink />
+        <ErrorNotice message={error} onRetry={load} />
+      </View>
+    );
+  }
+
+  if (!recipe) {
+    return (
+      <View style={styles.centered}>
+        <BackLink />
+        <Text style={styles.error}>Recette introuvable.</Text>
       </View>
     );
   }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+      <BackLink />
       <Text style={styles.title}>{recipe.name}</Text>
       <Text style={styles.macros}>
         {scaleMacroValue(recipe.baseCalories, portionMultiplier)} kcal — {scaleMacroValue(recipe.baseProteinG, portionMultiplier)}g prot / {scaleMacroValue(recipe.baseFatG, portionMultiplier)}g lip / {scaleMacroValue(recipe.baseCarbsG, portionMultiplier)}g gluc (

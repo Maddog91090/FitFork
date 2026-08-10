@@ -14,6 +14,7 @@ import {
 import { ChoiceGroup } from '../../components/ChoiceGroup';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { ErrorNotice } from '../../components/ui/ErrorNotice';
 import { centeredContent, radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -104,6 +105,14 @@ export default function PlanScreen() {
     );
   }
 
+  if (error && !plan) {
+    return (
+      <View style={styles.centered}>
+        <ErrorNotice message={error} onRetry={load} />
+      </View>
+    );
+  }
+
   if (!plan || plan.entries.length === 0) {
     return (
       <View style={styles.centered}>
@@ -122,7 +131,7 @@ export default function PlanScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && <ErrorNotice message={error} onRetry={load} />}
 
       <ChoiceGroup
         options={DAY_TAB_OPTIONS}
@@ -163,7 +172,11 @@ export default function PlanScreen() {
                   disabled={swappingId === entry.id}
                   accessibilityRole="button"
                 >
-                  <Text style={styles.swapHint}>{swappingId === entry.id ? '...' : 'Échanger'}</Text>
+                  {swappingId === entry.id ? (
+                    <ActivityIndicator size="small" color={colors.accentRed} />
+                  ) : (
+                    <Text style={styles.swapHint}>Échanger</Text>
+                  )}
                 </Pressable>
               </View>
             </Card>
@@ -201,6 +214,5 @@ function createStyles(colors: ThemeColors) {
     mealTypeLabel: { ...typography.caption, color: colors.textSecondary },
     recipeName: { ...typography.bodyStrong, color: colors.textPrimary },
     swapHint: { ...typography.captionStrong, color: colors.accentRedDeep, marginLeft: spacing.md },
-    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
   });
 }
