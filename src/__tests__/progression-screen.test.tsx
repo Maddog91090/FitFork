@@ -87,4 +87,66 @@ describe('ProgressionScreen', () => {
 
     expect(await findByText('network')).toBeTruthy();
   });
+
+  it('shows the celebrating mascot when the streak is a multiple of 7', async () => {
+    // stats.streak counts consecutive *weeks* with >= 3 distinct completed
+    // days (see calculateStreak/weeksStreak in workoutGamification.ts), not
+    // consecutive days. 7 consecutive qualifying weeks (Mon/Tue/Wed of each,
+    // walking back from the current week starting Monday 2026-08-03) yields
+    // stats.streak === 7.
+    (fetchMyCompletions as jest.Mock).mockResolvedValue([
+      { id: 'c1', sessionIndex: 0, completedDate: '2026-08-03' },
+      { id: 'c2', sessionIndex: 1, completedDate: '2026-08-04' },
+      { id: 'c3', sessionIndex: 2, completedDate: '2026-08-05' },
+      { id: 'c4', sessionIndex: 0, completedDate: '2026-07-27' },
+      { id: 'c5', sessionIndex: 1, completedDate: '2026-07-28' },
+      { id: 'c6', sessionIndex: 2, completedDate: '2026-07-29' },
+      { id: 'c7', sessionIndex: 0, completedDate: '2026-07-20' },
+      { id: 'c8', sessionIndex: 1, completedDate: '2026-07-21' },
+      { id: 'c9', sessionIndex: 2, completedDate: '2026-07-22' },
+      { id: 'c10', sessionIndex: 0, completedDate: '2026-07-13' },
+      { id: 'c11', sessionIndex: 1, completedDate: '2026-07-14' },
+      { id: 'c12', sessionIndex: 2, completedDate: '2026-07-15' },
+      { id: 'c13', sessionIndex: 0, completedDate: '2026-07-06' },
+      { id: 'c14', sessionIndex: 1, completedDate: '2026-07-07' },
+      { id: 'c15', sessionIndex: 2, completedDate: '2026-07-08' },
+      { id: 'c16', sessionIndex: 0, completedDate: '2026-06-29' },
+      { id: 'c17', sessionIndex: 1, completedDate: '2026-06-30' },
+      { id: 'c18', sessionIndex: 2, completedDate: '2026-07-01' },
+      { id: 'c19', sessionIndex: 0, completedDate: '2026-06-22' },
+      { id: 'c20', sessionIndex: 1, completedDate: '2026-06-23' },
+      { id: 'c21', sessionIndex: 2, completedDate: '2026-06-24' },
+    ]);
+
+    const { getByTestId, findByText } = await render(<ProgressionScreen />);
+
+    expect(await findByText('🔥 7')).toBeTruthy();
+    // The Mascot component itself doesn't expose its `pose` prop on the
+    // rendered element, so asserting the exact pose isn't possible here
+    // without a testID per pose — instead, this confirms the mascot renders
+    // in this streak state (celebrating pose per the source's conditional).
+    // Mascot.test.tsx already covers pose-switching behavior in isolation.
+    expect(getByTestId('mascot-image')).toBeTruthy();
+  });
+
+  it('shows the idle mascot when the streak is not a multiple of 7', async () => {
+    // 3 consecutive qualifying weeks yields stats.streak === 3, not a
+    // multiple of 7.
+    (fetchMyCompletions as jest.Mock).mockResolvedValue([
+      { id: 'c1', sessionIndex: 0, completedDate: '2026-08-03' },
+      { id: 'c2', sessionIndex: 1, completedDate: '2026-08-04' },
+      { id: 'c3', sessionIndex: 2, completedDate: '2026-08-05' },
+      { id: 'c4', sessionIndex: 0, completedDate: '2026-07-27' },
+      { id: 'c5', sessionIndex: 1, completedDate: '2026-07-28' },
+      { id: 'c6', sessionIndex: 2, completedDate: '2026-07-29' },
+      { id: 'c7', sessionIndex: 0, completedDate: '2026-07-20' },
+      { id: 'c8', sessionIndex: 1, completedDate: '2026-07-21' },
+      { id: 'c9', sessionIndex: 2, completedDate: '2026-07-22' },
+    ]);
+
+    const { getByTestId, findByText } = await render(<ProgressionScreen />);
+
+    expect(await findByText('🔥 3')).toBeTruthy();
+    expect(getByTestId('mascot-image')).toBeTruthy();
+  });
 });

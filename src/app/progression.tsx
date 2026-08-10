@@ -9,6 +9,7 @@ import { BADGES, unlockedBadgeIds } from '../lib/workoutBadges';
 import { Card } from '../components/ui/Card';
 import { ErrorNotice } from '../components/ui/ErrorNotice';
 import { BackLink } from '../components/ui/BackLink';
+import { Mascot } from '../components/ui/Mascot';
 import {
   centeredContent,
   radius,
@@ -55,7 +56,7 @@ export default function ProgressionScreen() {
   if (loading || !session || checking) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+        <ActivityIndicator color={colors.domainProgress} />
       </View>
     );
   }
@@ -76,7 +77,10 @@ export default function ProgressionScreen() {
       <BackLink />
       {error && <ErrorNotice message={error} onRetry={load} />}
 
-      <Text style={styles.title}>Progression</Text>
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>Progression</Text>
+        <Mascot pose={stats.streak > 0 && stats.streak % 7 === 0 ? 'celebrating' : 'idle'} size={64} />
+      </View>
 
       <Card style={styles.headerCard}>
         <View style={styles.headerRow}>
@@ -134,7 +138,13 @@ function createStyles(colors: ThemeColors) {
     screen: { flex: 1, backgroundColor: colors.bgBase },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
     container: { padding: spacing.lg, ...centeredContent },
-    title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
+    title: { ...typography.display, color: colors.textPrimary },
+    titleRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.lg,
+    },
     sectionLabel: {
       ...typography.overline,
       color: colors.textSecondary,
@@ -156,7 +166,7 @@ function createStyles(colors: ThemeColors) {
       borderWidth: 1,
       borderColor: colors.border,
     },
-    dayDotDone: { backgroundColor: colors.accentRed, borderColor: colors.accentRed },
+    dayDotDone: { backgroundColor: colors.domainProgress, borderColor: colors.domainProgress },
     weekText: { ...typography.body, color: colors.textSecondary },
     badgeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
     badgeItem: { width: '30%', alignItems: 'center' },
