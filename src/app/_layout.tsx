@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Notifications from 'expo-notifications';
 import { Fraunces_600SemiBold } from '@expo-google-fonts/fraunces/600SemiBold';
 import { Fraunces_700Bold } from '@expo-google-fonts/fraunces/700Bold';
 import { PlusJakartaSans_400Regular } from '@expo-google-fonts/plus-jakarta-sans/400Regular';
@@ -16,6 +17,19 @@ import { useThemeColors } from '../theme/tokens';
 // renders in the system font first. `useFonts` (rather than the expo-font
 // config plugin) because it is the only option that also covers web.
 SplashScreen.preventAutoHideAsync();
+
+// Without this, a push notification that arrives while the app is open and
+// in the foreground is not shown as a banner (Expo SDK 51+ default) — the
+// user misses the workout reminder / streak-risk alert entirely if they
+// happen to have the app open when the daily cron fires.
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function RootLayout() {
   const colors = useThemeColors();
