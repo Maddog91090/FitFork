@@ -329,7 +329,7 @@ export const shadow = {
  * sheen laid on top of a surface: lighter top-left (catching light), fading
  * through transparent, to a faint warm dark bottom-right (falling into
  * shadow). Consumers render this as an `expo-linear-gradient` `LinearGradient`
- * sized to `StyleSheet.absoluteFillObject` **with its own `borderRadius`
+ * sized to `StyleSheet.absoluteFill` **with its own `borderRadius`
  * matching the surface** — a view always clips its own background/gradient
  * fill to its own border radius, so no `overflow: 'hidden'` is needed on the
  * parent (which would otherwise also clip the parent's drop shadow).
@@ -786,7 +786,7 @@ function createStyles(colors: ThemeColors) {
       ...shadow.card,
     },
     overlay: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       // A view clips its own background/gradient fill to its own radius —
       // this needs no `overflow: 'hidden'` on `card`, which would otherwise
       // also clip `card`'s own drop shadow (see clayOverlay's doc comment
@@ -1036,7 +1036,7 @@ function createStyles(colors: ThemeColors) {
       elevation: 0,
     },
     overlay: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       borderRadius: radius.lg,
     },
     label: {
