@@ -1,20 +1,21 @@
 ---
 name: fitfork-design
-description: FitPro's visual identity — the "Soft Neutral" design system. Read this BEFORE writing or changing any UI in this repo: screens under src/app, components under src/components, anything touching src/theme/tokens.ts, and any work described as styling, restyling, layout, spacing, colors, typography, animation, empty states, or "make it look better". Also read it when reviewing a screen's design or writing French UI copy.
+description: FitPro's visual identity — the claymorphic, multi-domain-color, mascot-driven design system. Read this BEFORE writing or changing any UI in this repo: screens under src/app, components under src/components, anything touching src/theme/tokens.ts, and any work described as styling, restyling, layout, spacing, colors, typography, animation, empty states, or "make it look better". Also read it when reviewing a screen's design or writing French UI copy.
 ---
 
-# FitPro — Soft Neutral
+# FitPro — Claymorphic
 
 ## The direction, in one sentence
 
-FitPro looks like a **calm editorial wellness app that happens to track hard
-training**: warm off-white paper, a soft serif for anything you read as a
-headline or a number, a clean geometric sans for everything you act on, and a
-single confident red used sparingly enough that it always means something.
+FitPro looks like a **puffy, claymorphic fitness and nutrition app**: warm
+off-white surfaces with soft rounded volume and gentle two-layer shadows
+instead of flat cards, one rounded display family (Fredoka) for everything
+you read, four domain colors instead of a single brand accent, and a
+permanent broccoli mascot that lives in the app and reacts to what you do.
 
-Not "performance app": no black backgrounds, no neon, no full-caps slabs, no
-aggressive gradients. The energy comes from **typographic contrast** (serif vs
-sans) and from **restraint with the red** — not from loudness.
+Not "flat and minimal": generous radii everywhere, no hard outlines, and a
+deliberately bouncy press feel on buttons, chips, and cells. The energy comes
+from **volume and motion** — not from a loud palette or aggressive gradients.
 
 ## The one hard rule
 
@@ -29,11 +30,12 @@ which sizes an emoji glyph rather than text.
 ## Color
 
 Call `useThemeColors()` inside the component — never import the static
-`colors` export in a screen or a shared component. It resolves to
-`lightColors` or `darkColors` based on the OS setting (`useColorScheme()`
-under the hood) and re-renders when the user flips their system theme, which
-the static object can't do. Because the palette is now dynamic, styles move
-into a factory function called with `useMemo`:
+`colors` export in a screen or a shared component. The app is light-only by
+decision (see **Where things stand** below), so today `useThemeColors()`
+always returns `lightColors` — but it stays a hook, not an inlined constant,
+so no call site needs to change if that decision is ever revisited. Because
+the palette is resolved through a function, styles move into a factory
+function called with `useMemo`:
 
 ```tsx
 export function Thing() {
@@ -50,7 +52,24 @@ function createStyles(colors: ThemeColors) {
 The static `colors` export still exists (it's `lightColors`) for the rare
 non-component call site — tests mostly — that can't call a hook.
 
-The names carry the intent — respect it:
+There is no single brand accent anymore. Instead, four **domain colors** each
+own a functional area of the app, each with a base tone (large fills — button
+backgrounds, big icon backgrounds — AA-safe with white text on top) and a
+`*Deep` pair (text/icons at body size, and a button's pressed-state fill):
+
+| Domain | Token | For |
+| --- | --- | --- |
+| Nutrition | `domainNutrition` / `domainNutritionDeep` | Meals, recipes, macros screens |
+| Sport | `domainSport` / `domainSportDeep` | Workouts, exercises, training screens |
+| Progress | `domainProgress` / `domainProgressDeep` | Streaks, milestones, weight/progress tracking |
+| Neutral | `domainNeutral` / `domainNeutralDeep` | Anything that isn't domain-specific (settings, generic confirmations) |
+
+`Button`'s `domain` prop (see `src/components/ui/Button.tsx`) selects which of
+these four families fills a primary button. `variant="secondary"` **ignores**
+`domain` entirely — a secondary button is always `bgSurface`/`bgSunken` with a
+`textPrimary`-tinted shadow, regardless of what domain it's contextually in.
+
+Other surface/text tokens keep the same names and intent as before:
 
 | Use | Token |
 | --- | --- |
@@ -59,39 +78,49 @@ The names carry the intent — respect it:
 | Recessed / pressed-secondary areas | `bgSunken` |
 | Primary text | `textPrimary` |
 | Secondary text, labels, captions | `textSecondary` |
-| Text on a red fill | `textOnAccent` |
-| Red fills and large type | `accentRed` |
-| **Red text or icons at body size**, pressed primary | `accentRedDeep` |
-| Red-tinted background | `accentRedSoft` |
+| Text on a domain-color fill | `textOnAccent` |
 | Line inside a surface | `divider` |
 | Line around a surface | `border` / `borderStrong` |
 
 Rules:
 
-- **Red is a scarce resource.** One primary action per screen, plus selected
-  states. If two things on screen are red, one of them is wrong.
+- **One domain per screen.** A screen that's fundamentally about nutrition
+  uses `domainNutrition` for its accents; a sport screen uses `domainSport`;
+  don't mix two domain colors as accents on the same screen without a reason
+  — this mirrors the old "red is scarce" rule, just per-domain instead of
+  per-app.
 - `textTertiary` **fails WCAG AA on purpose.** Use it only for text that is
   decorative or repeats information already available — never for labels,
   values, placeholders, or errors.
-- Never write `'#FFFFFF'` for text on red — that's `colors.textOnAccent`.
+- Never write `'#FFFFFF'` for text on a domain fill — that's `colors.textOnAccent`.
 - Macros always keep their hue, everywhere they appear (cards, charts, legends):
   `macroProtein` (terracotta), `macroCarbs` (teal), `macroFat` (indigo).
   Training uses `effort` and `rest`. Never re-map these per screen.
-- Every foreground token is ≥ 4.5:1 on `bgBase`/`bgSurface` — **in both
-  `lightColors` and `darkColors`.** If you add or change a color, verify the
-  ratio in both palettes before committing (a quick WCAG relative-luminance
-  script is enough; there's no in-repo validator). `darkColors` is not just
-  light-colors-inverted: several light-mode text shades (the macro hues,
-  `accentRedDeep`) are too dark to read on a near-black background and needed
-  a lighter step picked specifically for dark contrast, not a mechanical flip.
+- Every foreground token used for text is ≥ 4.5:1 on `bgBase`/`bgSurface`/
+  `bgSunken`. If you add or change a color, verify the ratio before
+  committing (a quick WCAG relative-luminance script is enough; there's no
+  in-repo validator) — the same practice used to derive the current domain
+  colors.
+
+**Legacy `accentRed` / `accentRedDeep` / `accentRedSoft`.** These three keys
+still exist in `lightColors` and are still read directly by the ~20 screens
+that haven't been migrated to the domain system yet. They are a **transitional
+shim only**: `accentRed`/`accentRedDeep` hold the exact `domainProgress`/
+`domainProgressDeep` values; `accentRedSoft` got its own new light rose-pink
+value coherent with that same hue rather than reusing a named token (there is
+no `domainProgressSoft` token today). Together this makes unmigrated screens
+read as visually coherent with the new palette instead of clashing against
+it. Do **not** reach for `accentRed*` in new or touched code — use the domain
+tokens directly. A later screen-by-screen rollout replaces every remaining
+`accentRed*` call site with the correct per-screen domain token and deletes
+these three keys for good.
 
 ## Typography
 
-Two families, loaded in `src/app/_layout.tsx`:
-
-- **Fraunces** (soft serif) — titles, hero text, and standalone numbers. This is
-  where the app's character lives.
-- **Plus Jakarta Sans** — body, labels, buttons, tabs, anything tappable.
+One family, loaded in `src/app/_layout.tsx`: **Fredoka**, a rounded display
+sans. It carries everything — hero text, screen titles, big numbers, body
+copy, buttons — there is no second family and no serif/sans distinction
+driving the type scale anymore.
 
 React Native does **not** synthesize weights for custom fonts. Weight lives in
 the family name, so:
@@ -106,9 +135,10 @@ Scale, and what each step is for:
 - `hero` — the one thing a screen is about (a user's name, a headline)
 - `display` — screen titles
 - `title` — card titles, section headings that carry weight
-- `metric` — a single big number standing alone. **Not** for a 3- or 4-up row
-  of numbers on a phone: it wraps. Use `title` there.
-- `heading` / `subheading` — sans headings inside content
+- `metric` — a single big number standing alone, set in the bold display
+  weight so it reads as the heaviest number on the screen. **Not** for a 3- or
+  4-up row of numbers on a phone: it wraps. Use `title` there.
+- `heading` / `subheading` — headings inside content
 - `body` / `bodyStrong` — running text
 - `label` — buttons, tabs, chips
 - `caption` / `captionStrong` — metadata, secondary rows
@@ -124,12 +154,35 @@ emphasis, change the step or the color.
   `layout.screenPaddingX`; sections separate by `layout.sectionGap`.
 - `layout.maxContentWidth` exists because this app also runs on web — center
   content rather than letting a line of text run 900px wide.
-- Radius: `sm` for inputs and small cells, `lg` for cards, `pill` for chips,
-  `full` for circles. Don't mix three radii in one component.
-- Elevation is `shadow.subtle` → `card` → `raised`. `shadow.button` is red-tinted
-  and belongs only to the primary button. Shadows are soft and low-opacity by
-  design — deepening one to make something stand out is the wrong lever;
-  hierarchy comes from type and space first.
+- Radius is generous throughout this direction — there is no small-radius
+  anywhere on screen today. `sm` is the smallest radius actually in use (small
+  cells, inputs), `md`/`lg` for cards and buttons, `xl` for larger surfaces,
+  `pill` for chips, `full` for circles. `radius.xs` (10) exists in the scale
+  but isn't used anywhere currently — treat reaching for it as a signal to
+  double check the surface really needs to look that tight in this direction.
+
+**Elevation is claymorphic and has two parts, used together:**
+
+1. **Shadow tiers** — `shadow.subtle` → `card` → `raised`, all warm-tinted
+   (`#3A2E22`, never pure black) so they read as depth in a puffy material
+   rather than a hard drop shadow. There's no per-domain shadow tier here —
+   `Button.tsx` overrides `shadowColor` at the call site for both variants
+   (primary gets the domain's `*Deep` color, secondary gets
+   `colors.textPrimary`); everything else uses these tiers as-is. Shadows stay
+   soft and low-opacity by design — deepening one to make something stand out
+   is the wrong lever; hierarchy comes from type and space first.
+2. **`clayOverlay`** — the "puffy inner-highlight" illusion. React Native has
+   no CSS-style inset shadow, so the claymorphic volume cue is faked with a
+   low-opacity diagonal gradient sheen laid on top of a surface: lighter
+   top-left (catching light), fading through transparent, to a faint warm dark
+   bottom-right (falling into shadow). Render it as an `expo-linear-gradient`
+   `LinearGradient` sized to `StyleSheet.absoluteFill`, **with its own
+   `borderRadius` matching the surface** — a view always clips its own
+   background/gradient fill to its own border radius, so the parent surface
+   deliberately does **not** get `overflow: 'hidden'`, which would otherwise
+   also clip the parent's own drop shadow. See `Card.tsx` and `Button.tsx` for
+   the pattern in place (`clayOverlay` on primary buttons only — secondary
+   buttons don't get the sheen).
 
 ## Motion
 
@@ -148,20 +201,34 @@ withTiming(1, {
   everything else uses `curve.standard`.
 - Nothing on a tap should take longer than `duration.fast`. Reserve
   `duration.slow` for a screen-level transition.
-- Motion confirms an action; it never announces itself. No bounce on a button,
-  no spinning icons for decoration.
+- **Bounce is the deliberate default feel** in this direction — the opposite
+  of the old "no bounce on a button" rule. Both `PressableScale` (chips,
+  cells) and `Button` (primary and secondary) use `motion.spring.snappy`
+  (`damping: 8, stiffness: 260`), which is visibly springy on both press and
+  release. This is intentional, not an animation bug to tone down.
+- `motion.spring.celebrate` (`damping: 5, stiffness: 220`, a pronounced
+  overshoot) exists specifically for the mascot's celebration bounce. Reserve
+  it for genuine reward moments — using it for routine taps would read as
+  exhausting rather than delightful.
 
 What is wired today, to copy rather than reinvent:
 
 - **`PressableScale`** (`src/components/ui/PressableScale.tsx`) is the springy
-  version of the "chips and cells" press pattern — a shared value driving
-  `withSpring(motion.spring.snappy)` on scale and opacity. Use it for chips,
-  cells, and list rows. Buttons still darken; never give a button this.
+  "chips and cells" press pattern — a shared value driving
+  `withSpring(motion.spring.snappy)` on **scale only** (no opacity dip — that
+  was dropped from this component). Use it for chips, cells, and list rows.
+  Buttons have their own press animation; never give a button this.
+- **`Button`** (`src/components/ui/Button.tsx`) animates scale and
+  `backgroundColor` together, both as pure functions of a single `pressed`
+  shared value that is itself sprung (`withSpring(motion.spring.snappy)`) in
+  `onPressIn`/`onPressOut` — so the squish and the color darken are read from
+  the same continuously-animating value on every frame, genuinely
+  synchronized rather than one snapping instantly while the other animates.
 - **Onboarding step transitions** wrap the step body in an `Animated.View`
   keyed by `step` with `entering={FadeInDown…entrance}`, so each step replays
   the entrance. The keyed-remount trick is the simplest way to fire an entering
   animation on a value change.
-- **Onboarding progress segments** grow a red fill left-to-right with
+- **Onboarding progress segments** grow a fill left-to-right with
   `scaleX` + `transformOrigin: 'left'` over `duration.base`, rather than
   snapping color.
 
@@ -171,12 +238,48 @@ the small surface the app uses — animated components render as plain views,
 animations resolve to their target value. Add to that file when you reach for a
 reanimated API it doesn't cover yet; don't try to load the library's own mock.
 
+## Mascot
+
+`Mascot` (`src/components/ui/Mascot.tsx`) is a stylized cartoon **broccoli**
+character — arms, legs, big expressive Pixar-style eyes, coral-orange
+sneakers as its only clothing accent. The species is a deliberate choice made
+via a human checkpoint during implementation: the original design spec asked
+only for a "generic sporty creature, no fixed species," and the pick pivoted
+mid-implementation to this specific broccoli character. Treat the species as
+settled, not a placeholder — don't propose a different creature without a new
+checkpoint.
+
+Two poses ship today:
+
+- **`idle`** — the default, continuous appearance. Breathes with a slow scale
+  pulse (`motion.duration.idle`, a full 2.4s cycle) so it reads as alive even
+  when nothing is happening — this is the design spec's "présence continue"
+  requirement, not a one-off animation.
+- **`celebrating`** — a triggered reward moment. Bounces in with the
+  pronounced-overshoot `motion.spring.celebrate`. Because a real screen will
+  almost always mount `Mascot` as `idle` and then flip its `pose` prop to
+  `celebrating` in response to an event (rather than mounting fresh already
+  celebrating), the component resets its scale to the pre-bounce starting
+  point before springing back to 1 whenever `pose` changes — otherwise a
+  scale that's already resting near 1 would spring from ~1 to 1 and produce
+  no visible bounce.
+
+`Mascot` is **foundation-only** — it is not yet wired into any screen. Screen
+placements (end-of-workout, meal logged, streak milestones, and similar
+moments described as follow-up work) are a separate, later effort.
+
+Two more poses from the design spec are not built yet: a moving/transition
+pose (for loading and screen transitions) and an encouraging-after-a-setback
+pose (deflated but never mocking or guilt-inducing, matching the app's
+error-copy tone below).
+
 ## Interaction and accessibility
 
 - Every `Pressable` needs a visible pressed state. Two accepted patterns:
-  darken the fill (buttons — see `src/components/ui/Button.tsx`), or the scale +
-  opacity dip (chips, cells) — reach for `PressableScale`, which springs it,
-  rather than re-implementing a static `state.pressedScale` style.
+  darken the fill and squish the scale together (buttons — see
+  `src/components/ui/Button.tsx`), or the scale-only spring (chips, cells) —
+  reach for `PressableScale`, which springs it, rather than re-implementing a
+  static `state.pressedScale` style.
 - Every tappable element is at least `state.minTouchSize` tall.
 - Every `Pressable` gets an `accessibilityRole` and, when it has state, an
   `accessibilityState`.
@@ -192,15 +295,23 @@ The app tutoies the user and speaks like a coach who respects their time:
 
 - Second person singular, always. Never "vous".
 - Short, concrete, no exclamation marks, no hype ("Boom !", "Incroyable !"),
-  no guilt ("Tu as encore raté...").
-- Errors say what happened and what to do next, in that order.
+  no guilt ("Tu as encore raté...") — for functional copy (labels, errors,
+  buttons, informational content).
+- The mascot's own lines and celebration messages are the one exception: they
+  get energy and exclamation marks — a dedicated zone for enthusiasm, not a
+  blanket tone change. Functional copy elsewhere keeps the sober register
+  above.
+- Errors say what happened and what to do next, in that order, and stay
+  factual — the mascot never appears in an error state, so a failure is never
+  read as the app poking fun at the user.
 - Empty states name the benefit of acting, not the emptiness itself.
 - Labels are nouns ("Poids", "Objectif"), buttons are verbs ("Générer le plan").
 
 ## Before you call a screen done
 
 1. Zero hex codes, zero raw `fontSize`/`fontWeight` in the diff.
-2. Exactly one red primary action.
+2. One domain color per screen — don't mix two domains' accents without a
+   reason (see **Color** above).
 3. Every tappable thing: pressed state, 44pt minimum, accessibility role.
 4. Text steps come from `typography`, and there are no more than four distinct
    steps on the screen.
@@ -210,24 +321,49 @@ The app tutoies the user and speaks like a coach who respects their time:
 
 ## Where things stand
 
-Shipped: tokens (light-only — see **Dark mode** below for why there's no dark
-palette anymore), `useThemeColors()`, both fonts, the shared components
-(`Button`, `Card`, `TextField`, `EmptyState`, `ChoiceGroup`, `Sparkline`,
-`PressableScale`), the typography pass across all screens, the three brand
-illustrations (transparent), the app icon / splash, and the first motion pass
-(onboarding step transitions and progress fill, springy chip and cell
-presses).
+**Phase 1 of the claymorphic/domain-color/mascot system has shipped; no
+screen has been individually migrated yet — but that's not the same as "no
+screen has visually changed."** Tokens (`src/theme/tokens.ts`: domain colors,
+single-family typography, generous radii, two-layer claymorphic shadows +
+`clayOverlay`, bouncier motion springs), the shared components (`Button`,
+`Card`, `PressableScale`), and the base `Mascot` component (2 of its planned
+4 poses) are all done and tested. Because colors, typography, radius, shadow
+and motion are all token-level changes, and `Card`/`Button`/`PressableScale`
+are already shared components consumed by most existing screens (`Card` by
+8+ screens under `src/app`, `Button` by even more), **opening the actual app
+today already shows the claymorphic look wherever those components are
+used** — puffy radius, the warm two-tier shadow, the `clayOverlay` sheen on
+every `Card`, the bouncier squish on every `Button` and `PressableScale`, and
+Fredoka everywhere text uses `typography.*`. What genuinely has **not**
+happened yet, screen by screen: no screen passes an explicit `domain` prop to
+`Button`, so every primary button today renders in the `'progress'` default
+regardless of whether the screen is nutrition- or sport-flavored; the
+`Mascot` isn't placed on any screen; the emoji-based icons haven't been
+replaced by the claymorphic icon set; and no copy has had the two-registry
+pass. That is the real remaining gap — not a plain color/shape/type mismatch,
+which is largely already live. A screen-by-screen migration is the deliberate
+follow-up work, and this file will stop being ahead of reality once it lands.
+Don't read the gap as a bug or as this file being wrong.
+
+**The previous system this replaced ("Soft Neutral") and its history** —
+single warm-red accent, Fraunces serif + Plus Jakarta Sans, tokens (light-only
+— see **Dark mode** below for why there's no dark palette), `useThemeColors()`,
+the typography pass across all screens, three brand illustrations, the app
+icon/splash, and a first motion pass (onboarding step transitions and
+progress fill, springy chip/cell presses) — all shipped, and its layout and
+copy decisions (not its colors/type/shape, which the token swap already
+overwrote everywhere) are what's left recognizable on any screen the Phase 1
+rollout above hasn't reached yet. Kept here as history; do not use it as a
+guide for new work, which follows this file's current sections instead.
 
 **Charts.** Read the `dataviz` skill before writing the first line of chart
-code. Two things it does not know about this app, learned building the weight
-trend: the serif `typography.metric` is right for a hero number here even
-though the skill warns against display faces, because the serif is systematic
-across the app rather than decoration; and the brand red does **not** go to a
-chart mark — the screen's one primary action already owns it, so emphasis
-comes from ink weight (`textSecondary` line, `textPrimary` current point).
-`Sparkline` draws a single series from rotated views, no charting dependency.
-It reads `useThemeColors()` like everything else, rather than hardcoding a
-color of its own.
+code. One thing learned building the weight trend that's still relevant here:
+the brand/domain color does **not** go to a chart mark — the screen's one
+domain-colored primary action already owns that emphasis, so a chart's
+emphasis instead comes from ink weight (`textSecondary` line, `textPrimary`
+current point). `Sparkline` draws a single series from rotated views, no
+charting dependency. It reads `useThemeColors()` like everything else, rather
+than hardcoding a color of its own.
 
 **Dark mode — tried, then reverted. The app is light-only by decision.**
 
@@ -257,17 +393,22 @@ Current state:
   on the pixel being light-colored so real drop shadows aren't touched — is
   still the right tool if a background-bleed halo ever shows up on a new
   asset; it just isn't a dark-mode-specific concern anymore.
-- If dark mode is revisited later: the WCAG-verified `darkColors` values are
+- If dark mode is revisited later: the old WCAG-verified `darkColors` values
+  (from the "Soft Neutral" era, now stale against the new domain palette) are
   recoverable from `228667e`, but re-verify the **rendered** result on-device
   before shipping again — that step never happened last time before the
-  revert.
+  revert, and a fresh dark palette derived from the current domain colors
+  would need the same on-device check plus a full WCAG re-verification, not
+  just resurrecting the old values.
 
-**Illustrations beyond the three that shipped.** The onboarding hero and the
-plan / grocery empty states are in `assets/images/illustrations/`; see that
-folder's README and
+**Illustrations beyond the three that shipped under Soft Neutral.** The
+onboarding hero and the plan / grocery empty states are in
+`assets/images/illustrations/`; see that folder's README and
 `docs/superpowers/specs/2026-08-02-illustrations-soft-neutral-design.md` (that
 spec's "generate on the exact background color" guidance is superseded by the
 transparent approach above). The weight-log empty state is still unillustrated.
+Whether/how these get restyled for the claymorphic direction is part of the
+screen-by-screen rollout, not decided here.
 
 **Recipe photography — shipped, 32/32.** Every recipe has a photorealistic
 3/4-angle dish photo, shown on `recipe/[id].tsx` under the title and macros,
@@ -280,7 +421,10 @@ unpretentious home-cook plating (no ring molds, no architectural garnish, no
 sauce-dot drizzle art) — a home cook should look at the photo and believe they
 can make it, not that it came from a restaurant kitchen. Warm natural window
 light, shallow depth of field, plain wood-table background, no hands/people/
-text/logos.
+text/logos. The claymorphic direction's spec explicitly keeps this
+photorealistic house style unchanged and frames it inside a puffy claymorphic
+card instead of replacing it with illustration — the photo/UI contrast is
+assumed, not a gap to fix.
 
 **Workout-session photography — shipped, 9/9.** Every session card in
 `(tabs)/workout.tsx` shows a photo above its title. Unlike recipes, the
@@ -310,7 +454,7 @@ carries an `exerciseId` pointing at the catalog, cross-checked at generation
 time so every id actually resolves. Two photos per exercise (not one, unlike
 recipes/sessions) specifically to show the movement's start and end position.
 Same "achievable home workout" house style as session photos; the exercise
-rows deliberately do **not** turn red to signal tappability — red is scarce
-in this system (one primary action per screen), and the session cards they
-live inside already establish "tap for more" via press feedback alone, not
-color.
+rows deliberately do not turn a domain color to signal tappability — one
+domain color per screen is still the rule (now per-domain rather than
+per-app), and the session cards they live inside already establish "tap for
+more" via press feedback alone, not color.

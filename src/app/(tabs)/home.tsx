@@ -234,7 +234,7 @@ export default function HomeScreen() {
           value={notificationsEnabled}
           onValueChange={handleToggleNotifications}
           disabled={notificationsBusy}
-          trackColor={{ true: colors.accentRed, false: colors.border }}
+          trackColor={{ true: colors.accentRed, false: colors.borderStrong }}
           thumbColor={colors.bgSurface}
         />
       </View>

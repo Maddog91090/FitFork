@@ -14,10 +14,12 @@ import { decideNotification as appDecideNotification } from '../lib/notification
  */
 describe('decideNotification stays in sync between src/lib and the Deno edge function', () => {
   it('produces identical output to the app copy across the known decision matrix', () => {
-    const edgeFunctionSource = fs.readFileSync(
-      path.join(__dirname, '../../supabase/functions/send-reminders/index.ts'),
-      'utf-8'
-    );
+    // Normalized to LF regardless of the checkout's line-ending setting (this
+    // repo's git config CRLF-normalizes some files on Windows checkouts) —
+    // the extraction regex below anchors on '\n', not '\r\n'.
+    const edgeFunctionSource = fs
+      .readFileSync(path.join(__dirname, '../../supabase/functions/send-reminders/index.ts'), 'utf-8')
+      .replace(/\r\n/g, '\n');
 
     const decideMatch = edgeFunctionSource.match(/function decideNotification\([\s\S]*?\n}\n/);
     const daysBetweenMatch = edgeFunctionSource.match(/function daysBetween\([\s\S]*?\n}\n/);
