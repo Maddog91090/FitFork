@@ -98,4 +98,10 @@ describe('HomeScreen notifications toggle', () => {
 
     await waitFor(() => expect(disableNotifications).toHaveBeenCalledWith('user-1'));
   });
+
+  it('shows the idle mascot in the header', async () => {
+    (getNotificationStatus as jest.Mock).mockResolvedValue({ enabled: false, canAskAgain: true });
+    const { getByTestId } = await render(<HomeScreen />);
+    await waitFor(() => expect(getByTestId('mascot-image')).toBeTruthy());
+  });
 });

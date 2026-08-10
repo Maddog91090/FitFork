@@ -13,6 +13,8 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { PressableScale } from '../../components/ui/PressableScale';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
+import { Mascot } from '../../components/ui/Mascot';
+import { MacroIcon } from '../../components/icons/MacroIcon';
 import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -129,15 +131,20 @@ export default function HomeScreen() {
   if (loading || !session || checkingProfile) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+        <ActivityIndicator color={colors.domainNutrition} />
       </View>
     );
   }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <Text style={styles.greeting}>Bonjour</Text>
-      <Text style={styles.name}>{session.user.email}</Text>
+      <View style={styles.headerRow}>
+        <View>
+          <Text style={styles.greeting}>Bonjour</Text>
+          <Text style={styles.name}>{session.user.email}</Text>
+        </View>
+        <Mascot pose="idle" size={64} />
+      </View>
 
       {loadError && <ErrorNotice message={loadError} onRetry={load} />}
 
@@ -150,15 +157,24 @@ export default function HomeScreen() {
               <Text style={styles.macroLabel}>kcal</Text>
             </View>
             <View style={styles.macroItem}>
-              <Text style={[styles.macroValue, styles.macroProtein]}>{macros.proteinG}g</Text>
+              <View style={styles.macroValueRow}>
+                <MacroIcon name="protein" size={16} />
+                <Text style={[styles.macroValue, styles.macroProtein]}>{macros.proteinG}g</Text>
+              </View>
               <Text style={styles.macroLabel}>Prot</Text>
             </View>
             <View style={styles.macroItem}>
-              <Text style={[styles.macroValue, styles.macroFat]}>{macros.fatG}g</Text>
+              <View style={styles.macroValueRow}>
+                <MacroIcon name="fat" size={16} />
+                <Text style={[styles.macroValue, styles.macroFat]}>{macros.fatG}g</Text>
+              </View>
               <Text style={styles.macroLabel}>Lip</Text>
             </View>
             <View style={styles.macroItem}>
-              <Text style={[styles.macroValue, styles.macroCarbs]}>{macros.carbsG}g</Text>
+              <View style={styles.macroValueRow}>
+                <MacroIcon name="carbs" size={16} />
+                <Text style={[styles.macroValue, styles.macroCarbs]}>{macros.carbsG}g</Text>
+              </View>
               <Text style={styles.macroLabel}>Gluc</Text>
             </View>
           </View>
@@ -193,7 +209,7 @@ export default function HomeScreen() {
           <Button title="Voir mon plan" variant="secondary" onPress={() => router.push('/plan')} />
         </View>
         <View style={styles.actionButton}>
-          <Button title="Générer" onPress={() => router.push('/generate-plan')} />
+          <Button title="Générer" onPress={() => router.push('/generate-plan')} domain="nutrition" />
         </View>
       </View>
 
@@ -234,7 +250,7 @@ export default function HomeScreen() {
           value={notificationsEnabled}
           onValueChange={handleToggleNotifications}
           disabled={notificationsBusy}
-          trackColor={{ true: colors.accentRed, false: colors.borderStrong }}
+          trackColor={{ true: colors.domainNutrition, false: colors.borderStrong }}
           thumbColor={colors.bgSurface}
         />
       </View>
@@ -251,6 +267,7 @@ function createStyles(colors: ThemeColors) {
     screen: { flex: 1, backgroundColor: colors.bgBase },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
     container: { padding: spacing.lg, ...centeredContent },
+    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     greeting: { ...typography.hero, color: colors.textPrimary },
     name: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
     macroCard: { marginBottom: spacing.lg },
@@ -274,6 +291,7 @@ function createStyles(colors: ThemeColors) {
     macroFat: { color: colors.macroFat },
     macroCarbs: { color: colors.macroCarbs },
     macroLabel: { ...typography.overline, color: colors.textSecondary, marginTop: spacing.xs },
+    macroValueRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
     actionsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
     actionButton: { flex: 1 },
     mealsCard: { marginBottom: spacing.lg },
