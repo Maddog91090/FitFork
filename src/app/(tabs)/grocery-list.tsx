@@ -94,7 +94,13 @@ export default function GroceryListScreen() {
       <View style={[styles.centered, { paddingTop: insets.top }]}>
         <EmptyState
           icon={
-            <MaterialIcons testID="empty-state-icon" name="shopping-cart" size={64} color={colors.onSurfaceVariant} />
+            <MaterialIcons
+              testID="empty-state-icon"
+              name="shopping-cart"
+              size={64}
+              color={colors.onSurfaceVariant}
+              accessible={false}
+            />
           }
           title="Aucun plan pour l'instant"
           message="Génère un plan de repas pour obtenir ta liste de courses."

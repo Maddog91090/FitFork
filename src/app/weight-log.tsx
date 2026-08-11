@@ -6,6 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../lib/auth-context';
 import { logWeight, fetchRecentWeightLogs, type WeightLogEntry } from '../lib/weightLogData';
 import { calculateWeeklyTrendPercent } from '../lib/progressTracking';
+import { BackLink } from '../components/ui/BackLink';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -117,6 +118,7 @@ export default function WeightLogScreen() {
 
   return (
     <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
+      <BackLink />
       <Text style={styles.title}>Suivi de poids</Text>
       <TextField label="Poids (kg)" value={weightInput} onChangeText={setWeightInput} keyboardType="numeric" />
       {error && <Text style={styles.error}>{error}</Text>}
@@ -155,7 +157,13 @@ export default function WeightLogScreen() {
       {logs.length === 0 ? (
         <EmptyState
           icon={
-            <MaterialIcons testID="empty-state-icon" name="monitor-weight" size={64} color={colors.onSurfaceVariant} />
+            <MaterialIcons
+              testID="empty-state-icon"
+              name="monitor-weight"
+              size={64}
+              color={colors.onSurfaceVariant}
+              accessible={false}
+            />
           }
           title="Aucune pesée"
           message="Enregistre ton poids ci-dessus pour voir ta courbe se construire."

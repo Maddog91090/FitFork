@@ -4,13 +4,6 @@ import WeightLogScreen from '../app/weight-log';
 import { useAuth } from '../lib/auth-context';
 import { fetchRecentWeightLogs } from '../lib/weightLogData';
 
-jest.mock('@expo/vector-icons', () => ({
-  MaterialIcons: (props: any) => {
-    const React = require('react');
-    return React.createElement('MaterialIcon', props);
-  },
-}));
-
 jest.mock('../lib/auth-context', () => ({
   useAuth: jest.fn(),
 }));

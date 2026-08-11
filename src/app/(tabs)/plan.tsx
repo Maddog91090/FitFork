@@ -130,7 +130,15 @@ export default function PlanScreen() {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
         <EmptyState
-          icon={<MaterialIcons testID="empty-state-icon" name="event" size={64} color={colors.onSurfaceVariant} />}
+          icon={
+            <MaterialIcons
+              testID="empty-state-icon"
+              name="event"
+              size={64}
+              color={colors.onSurfaceVariant}
+              accessible={false}
+            />
+          }
           title="Aucun plan pour l'instant"
           message="Génère ton premier plan de repas de la semaine."
           actionLabel="Générer un plan"

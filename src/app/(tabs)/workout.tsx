@@ -189,12 +189,8 @@ export default function WorkoutScreen() {
     <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
       {error && <Text style={styles.error}>{error}</Text>}
 
-      <View style={styles.headerRow}>
-        <View style={styles.headerText}>
-          <Text style={styles.title}>{homeWorkoutProgram.title}</Text>
-          <Text style={styles.subtitle}>{homeWorkoutProgram.subtitle}</Text>
-        </View>
-      </View>
+      <Text style={styles.title}>{homeWorkoutProgram.title}</Text>
+      <Text style={styles.subtitle}>{homeWorkoutProgram.subtitle}</Text>
       <Text style={styles.blockText}>{homeWorkoutProgram.guidance}</Text>
 
       <ChoiceGroup
@@ -336,8 +332,6 @@ function createStyles(colors: MaterialColorScheme, sport: MaterialTertiary) {
     screen: { flex: 1, backgroundColor: colors.background },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
     container: { padding: spacing.lg, ...centeredContent },
-    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-    headerText: { flex: 1, marginRight: spacing.md },
     title: { ...materialTypography.displayMedium, color: colors.onSurface },
     subtitle: { ...materialTypography.bodyLarge, color: colors.onSurfaceVariant, marginBottom: spacing.lg },
     block: { marginVertical: spacing.lg },

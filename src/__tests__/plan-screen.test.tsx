@@ -22,13 +22,6 @@ jest.mock('expo-router', () => ({
   },
 }));
 
-jest.mock('@expo/vector-icons', () => ({
-  MaterialIcons: (props: any) => {
-    const React = require('react');
-    return React.createElement('MaterialIcon', props);
-  },
-}));
-
 describe('PlanScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();

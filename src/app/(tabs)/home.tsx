@@ -148,14 +148,10 @@ export default function HomeScreen() {
 
   return (
     <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
-      <View style={styles.headerRow}>
-        <View style={styles.headerText}>
-          <Text style={styles.greeting}>Bonjour</Text>
-          <Text style={styles.name} numberOfLines={1}>
-            {session.user.email}
-          </Text>
-        </View>
-      </View>
+      <Text style={styles.greeting}>Bonjour</Text>
+      <Text style={styles.name} numberOfLines={1}>
+        {session.user.email}
+      </Text>
 
       {loadError && <ErrorNotice message={loadError} onRetry={load} />}
 
@@ -282,8 +278,6 @@ function createStyles(colors: MaterialColorScheme) {
     screen: { flex: 1, backgroundColor: colors.background },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
     container: { padding: spacing.lg, ...centeredContent },
-    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-    headerText: { flex: 1, marginRight: spacing.md },
     greeting: { ...materialTypography.displayLarge, color: colors.onSurface },
     name: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginBottom: spacing.lg },
     macroCard: { marginBottom: spacing.lg },

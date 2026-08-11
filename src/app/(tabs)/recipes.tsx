@@ -116,7 +116,13 @@ export default function RecipesScreen() {
       {filteredRecipes.length === 0 ? (
         <EmptyState
           icon={
-            <MaterialIcons testID="empty-state-icon" name="restaurant-menu" size={64} color={colors.onSurfaceVariant} />
+            <MaterialIcons
+              testID="empty-state-icon"
+              name="restaurant-menu"
+              size={64}
+              color={colors.onSurfaceVariant}
+              accessible={false}
+            />
           }
           title="Aucune recette ne correspond"
           message="Essaie d'assouplir tes filtres pour voir plus de résultats."

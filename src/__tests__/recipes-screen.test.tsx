@@ -20,13 +20,6 @@ jest.mock('expo-router', () => ({
   },
 }));
 
-jest.mock('@expo/vector-icons', () => ({
-  MaterialIcons: (props: any) => {
-    const React = require('react');
-    return React.createElement('MaterialIcon', props);
-  },
-}));
-
 const CHICKEN_RECIPE = {
   id: 'r1',
   name: 'Poulet grillé',
