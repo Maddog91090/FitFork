@@ -21,6 +21,13 @@ jest.mock('expo-router', () => ({
   },
 }));
 
+jest.mock('@expo/vector-icons', () => ({
+  MaterialIcons: (props: any) => {
+    const React = require('react');
+    return React.createElement('MaterialIcon', props);
+  },
+}));
+
 describe('GroceryListScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -28,8 +35,8 @@ describe('GroceryListScreen', () => {
     (getCurrentPlan as jest.Mock).mockResolvedValue(null);
   });
 
-  it('shows the idle mascot in the empty-plan state', async () => {
+  it('shows the empty-plan icon', async () => {
     const { getByTestId } = await render(<GroceryListScreen />);
-    await waitFor(() => expect(getByTestId('mascot-image')).toBeTruthy());
+    await waitFor(() => expect(getByTestId('empty-state-icon').props.name).toBe('shopping-cart'));
   });
 });
