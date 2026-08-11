@@ -4,11 +4,21 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { getExercise } from '../../lib/exercises';
 import { BackLink } from '../../components/ui/BackLink';
-import { centeredContent, radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+import {
+  centeredContent,
+  materialTypography,
+  radius,
+  spacing,
+  useMaterialColors,
+  useMaterialTertiary,
+  type MaterialColorScheme,
+  type MaterialTertiary,
+} from '../../theme/tokens';
 
 export default function ExerciseDetailScreen() {
-  const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colors = useMaterialColors();
+  const sport = useMaterialTertiary('sport');
+  const styles = useMemo(() => createStyles(colors, sport), [colors, sport]);
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const exercise = id ? getExercise(id) : undefined;
@@ -55,37 +65,37 @@ export default function ExerciseDetailScreen() {
   );
 }
 
-function createStyles(colors: ThemeColors) {
+function createStyles(colors: MaterialColorScheme, sport: MaterialTertiary) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.bgBase },
+    screen: { flex: 1, backgroundColor: colors.background },
     centered: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.bgBase,
+      backgroundColor: colors.background,
       padding: spacing.lg,
     },
     container: { padding: spacing.lg, ...centeredContent },
-    title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
+    title: { ...materialTypography.displayMedium, color: colors.onSurface, marginBottom: spacing.lg },
     photoRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
     photoColumn: { flex: 1 },
     photoFrame: {
       width: '100%',
       aspectRatio: 4 / 3,
       borderRadius: radius.md,
-      backgroundColor: colors.bgSunken,
+      backgroundColor: colors.surfaceVariant,
       overflow: 'hidden',
     },
     photo: { width: '100%', height: '100%' },
     photoLabel: {
-      ...typography.caption,
-      color: colors.textSecondary,
+      ...materialTypography.labelMedium,
+      color: colors.onSurfaceVariant,
       textAlign: 'center',
       marginTop: spacing.xs,
     },
     sectionTitle: {
-      ...typography.overline,
-      color: colors.textSecondary,
+      ...materialTypography.overline,
+      color: colors.onSurfaceVariant,
       marginBottom: spacing.sm,
     },
     stepRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm, alignItems: 'flex-start' },
@@ -93,13 +103,13 @@ function createStyles(colors: ThemeColors) {
       width: 20,
       height: 20,
       borderRadius: 10,
-      backgroundColor: colors.domainSport,
+      backgroundColor: sport.tertiary,
       alignItems: 'center',
       justifyContent: 'center',
       marginTop: 1,
     },
-    stepBadgeText: { ...typography.overline, color: colors.textOnAccent, letterSpacing: 0 },
-    stepText: { ...typography.body, flex: 1, color: colors.textPrimary },
-    error: { ...typography.body, color: colors.error },
+    stepBadgeText: { ...materialTypography.overline, color: sport.onTertiary, letterSpacing: 0 },
+    stepText: { ...materialTypography.bodyLarge, flex: 1, color: colors.onSurface },
+    error: { ...materialTypography.bodyLarge, color: colors.error },
   });
 }
