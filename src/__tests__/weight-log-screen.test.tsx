@@ -1,8 +1,15 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
-import WeightLogScreen from '../app/(tabs)/weight-log';
+import WeightLogScreen from '../app/weight-log';
 import { useAuth } from '../lib/auth-context';
 import { fetchRecentWeightLogs } from '../lib/weightLogData';
+
+jest.mock('@expo/vector-icons', () => ({
+  MaterialIcons: (props: any) => {
+    const React = require('react');
+    return React.createElement('MaterialIcon', props);
+  },
+}));
 
 jest.mock('../lib/auth-context', () => ({
   useAuth: jest.fn(),
@@ -32,8 +39,8 @@ describe('WeightLogScreen', () => {
     (fetchRecentWeightLogs as jest.Mock).mockResolvedValue([]);
   });
 
-  it('shows the idle mascot when there is no weight history yet', async () => {
+  it('shows the empty-history icon when there is no weight history yet', async () => {
     const { getByTestId } = await render(<WeightLogScreen />);
-    await waitFor(() => expect(getByTestId('mascot-image')).toBeTruthy());
+    await waitFor(() => expect(getByTestId('empty-state-icon').props.name).toBe('monitor-weight'));
   });
 });

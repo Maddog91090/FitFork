@@ -2,16 +2,25 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
-import { useAuth } from '../../lib/auth-context';
-import { logWeight, fetchRecentWeightLogs, type WeightLogEntry } from '../../lib/weightLogData';
-import { calculateWeeklyTrendPercent } from '../../lib/progressTracking';
-import { TextField } from '../../components/ui/TextField';
-import { Button } from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
-import { EmptyState } from '../../components/ui/EmptyState';
-import { Sparkline } from '../../components/ui/Sparkline';
-import { Mascot } from '../../components/ui/Mascot';
-import { centeredContent, fontFamily, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useAuth } from '../lib/auth-context';
+import { logWeight, fetchRecentWeightLogs, type WeightLogEntry } from '../lib/weightLogData';
+import { calculateWeeklyTrendPercent } from '../lib/progressTracking';
+import { TextField } from '../components/ui/TextField';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
+import { EmptyState } from '../components/ui/EmptyState';
+import { Sparkline } from '../components/ui/Sparkline';
+import {
+  centeredContent,
+  fontFamily,
+  lightColors,
+  materialTypography,
+  spacing,
+  useMaterialColors,
+  useMaterialTertiary,
+  type MaterialColorScheme,
+} from '../theme/tokens';
 
 /** French decimals, without depending on Intl being built into the JS engine. */
 function formatNumber(value: number, decimals = 1): string {
@@ -34,7 +43,8 @@ function formatTrend(percentPerWeek: number): string {
 }
 
 export default function WeightLogScreen() {
-  const colors = useThemeColors();
+  const colors = useMaterialColors();
+  const neutral = useMaterialTertiary('neutral');
   const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
@@ -95,7 +105,7 @@ export default function WeightLogScreen() {
   if (loading || !session || checking) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator color={colors.domainNeutral} />
+        <ActivityIndicator color={neutral.tertiary} />
       </View>
     );
   }
@@ -144,7 +154,9 @@ export default function WeightLogScreen() {
       <Text style={styles.historyTitle}>Historique</Text>
       {logs.length === 0 ? (
         <EmptyState
-          icon={<Mascot pose="idle" size={120} />}
+          icon={
+            <MaterialIcons testID="empty-state-icon" name="monitor-weight" size={64} color={colors.onSurfaceVariant} />
+          }
           title="Aucune pesée"
           message="Enregistre ton poids ci-dessus pour voir ta courbe se construire."
         />
@@ -162,22 +174,22 @@ export default function WeightLogScreen() {
   );
 }
 
-function createStyles(colors: ThemeColors) {
+function createStyles(colors: MaterialColorScheme) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.bgBase },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+    screen: { flex: 1, backgroundColor: colors.background },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
     container: { padding: spacing.lg, ...centeredContent },
-    title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
+    title: { ...materialTypography.displayMedium, color: colors.onSurface, marginBottom: spacing.lg },
     statCard: { marginTop: spacing.xl },
-    statLabel: { ...typography.overline, color: colors.textSecondary },
-    statValue: { ...typography.metric, color: colors.textPrimary, marginTop: spacing.xs },
-    statDelta: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.xs },
+    statLabel: { ...materialTypography.overline, color: colors.onSurfaceVariant },
+    statValue: { ...materialTypography.headlineLarge, color: colors.onSurface, marginTop: spacing.xs },
+    statDelta: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginTop: spacing.xs },
     chart: { marginTop: spacing.lg },
     chartAxis: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.xs },
-    axisLabel: { ...typography.caption, color: colors.textTertiary },
+    axisLabel: { ...materialTypography.labelMedium, color: lightColors.textTertiary },
     historyTitle: {
-      ...typography.overline,
-      color: colors.textSecondary,
+      ...materialTypography.overline,
+      color: colors.onSurfaceVariant,
       marginTop: spacing.xl,
       marginBottom: spacing.sm,
     },
@@ -186,12 +198,12 @@ function createStyles(colors: ThemeColors) {
       justifyContent: 'space-between',
       paddingVertical: spacing.sm + 1,
       borderBottomWidth: 1,
-      borderBottomColor: colors.divider,
+      borderBottomColor: colors.outlineVariant,
     },
     rowLast: { borderBottomWidth: 0 },
-    date: { ...typography.caption, color: colors.textPrimary },
+    date: { ...materialTypography.labelMedium, color: colors.onSurface },
     // The number is the point of this screen — serif, and darker than its date.
-    weight: { ...typography.bodyStrong, color: colors.textPrimary, fontFamily: fontFamily.displayBold },
-    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
+    weight: { ...materialTypography.bodyMedium, color: colors.onSurface, fontFamily: fontFamily.displayBold },
+    error: { ...materialTypography.bodyLarge, color: colors.error, marginBottom: spacing.md },
   });
 }
