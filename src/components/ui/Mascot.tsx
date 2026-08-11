@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import type { ImageStyle, StyleProp } from 'react-native';
 import { motion } from '../../theme/tokens';
+import { useReducedMotion } from '../../lib/useReducedMotion';
 
 export type MascotPose = 'idle' | 'celebrating' | 'encouraging';
 
@@ -41,8 +42,18 @@ type MascotProps = {
  */
 export function Mascot({ pose, size = 160, style }: MascotProps) {
   const scale = useSharedValue(pose === 'celebrating' ? 0.5 : 1);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
+    if (reducedMotion) {
+      // The breathing loop is a nonessential, indefinitely-looping
+      // animation, and the celebration bounce is a spring overshoot —
+      // both are exactly what Reduce Motion asks apps to stop. Settle on
+      // the resting pose with no animation at all rather than a reduced
+      // version of either.
+      scale.value = 1;
+      return;
+    }
     if (pose === 'celebrating') {
       // Reset to the pre-bounce starting point before springing back to 1.
       // Without this, a long-lived Mascot that switches from `idle` (where
@@ -66,7 +77,7 @@ export function Mascot({ pose, size = 160, style }: MascotProps) {
         false
       );
     }
-  }, [pose, scale]);
+  }, [pose, scale, reducedMotion]);
 
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 

@@ -13,6 +13,7 @@ import {
   useThemeColors,
   type ThemeColors,
 } from '../../theme/tokens';
+import { useReducedMotion } from '../../lib/useReducedMotion';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -61,6 +62,7 @@ export function Button({
   const styles = useMemo(() => createStyles(colors), [colors]);
   const isDisabled = disabled || loading;
   const pressed = useSharedValue(0);
+  const reducedMotion = useReducedMotion();
 
   const fillColor = colors[DOMAIN_FILL[domain]];
   const deepColor = colors[DOMAIN_DEEP[domain]];
@@ -87,10 +89,10 @@ export function Button({
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       onPressIn={() => {
-        if (!isDisabled) pressed.value = withSpring(1, motion.spring.snappy);
+        if (!isDisabled) pressed.value = reducedMotion ? 1 : withSpring(1, motion.spring.snappy);
       }}
       onPressOut={() => {
-        pressed.value = withSpring(0, motion.spring.snappy);
+        pressed.value = reducedMotion ? 0 : withSpring(0, motion.spring.snappy);
       }}
       style={[styles.base, { shadowColor: shadowTint }, isDisabled && styles.disabledShadow, animatedStyle]}
     >
