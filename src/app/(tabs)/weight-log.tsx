@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { logWeight, fetchRecentWeightLogs, type WeightLogEntry } from '../../lib/weightLogData';
@@ -35,6 +36,7 @@ function formatTrend(percentPerWeek: number): string {
 export default function WeightLogScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [logs, setLogs] = useState<WeightLogEntry[]>([]);
   const [weightInput, setWeightInput] = useState('');
@@ -92,7 +94,7 @@ export default function WeightLogScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <ActivityIndicator color={colors.domainNeutral} />
       </View>
     );
@@ -104,7 +106,7 @@ export default function WeightLogScreen() {
   const trendPercent = calculateWeeklyTrendPercent(chronological);
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+    <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
       <Text style={styles.title}>Suivi de poids</Text>
       <TextField label="Poids (kg)" value={weightInput} onChangeText={setWeightInput} keyboardType="numeric" />
       {error && <Text style={styles.error}>{error}</Text>}

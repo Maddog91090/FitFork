@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../lib/profile';
@@ -38,6 +39,7 @@ function defaultSelection(): boolean[][] {
 export default function GeneratePlanScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [selected, setSelected] = useState<boolean[][]>(defaultSelection());
   const [generating, setGenerating] = useState(false);
@@ -124,7 +126,7 @@ export default function GeneratePlanScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+    <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
       <BackLink />
       <Text style={styles.title}>Choisis les repas à générer</Text>
       {DAY_LABELS.map((dayLabel, dayIndex) => (

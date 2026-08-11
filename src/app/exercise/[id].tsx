@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { getExercise } from '../../lib/exercises';
 import { BackLink } from '../../components/ui/BackLink';
@@ -8,12 +9,13 @@ import { centeredContent, radius, spacing, typography, useThemeColors, type Them
 export default function ExerciseDetailScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const exercise = id ? getExercise(id) : undefined;
 
   if (!exercise) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <BackLink />
         <Text style={styles.error}>Exercice introuvable.</Text>
       </View>
@@ -21,7 +23,7 @@ export default function ExerciseDetailScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+    <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
       <BackLink />
       <Text style={styles.title}>{exercise.name}</Text>
 

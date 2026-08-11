@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getCurrentPlan, fetchRecipeIngredients } from '../../lib/mealPlanData';
@@ -14,6 +15,7 @@ type AggregatedIngredient = { name: string; quantity: number; unit: string };
 export default function GroceryListScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [items, setItems] = useState<AggregatedIngredient[]>([]);
   const [hasPlan, setHasPlan] = useState(true);
@@ -73,7 +75,7 @@ export default function GroceryListScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <ActivityIndicator color={colors.domainNutrition} />
       </View>
     );
@@ -81,7 +83,7 @@ export default function GroceryListScreen() {
 
   if (!hasPlan) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <EmptyState
           icon={<Mascot pose="idle" size={120} />}
           title="Aucun plan pour l'instant"
@@ -95,7 +97,7 @@ export default function GroceryListScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+    <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
       <Text style={styles.title}>Liste de courses</Text>
       {error && <ErrorNotice message={error} onRetry={load} />}
       <Card>

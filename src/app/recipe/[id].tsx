@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Image } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 import {
   fetchRecipes,
@@ -17,6 +19,7 @@ import { centeredContent, radius, shadow, spacing, typography, useThemeColors, t
 export default function RecipeDetailScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { id, portion: portionParam } = useLocalSearchParams<{ id: string; portion?: string }>();
   const parsedPortion = Number(portionParam);
   const portionMultiplier =
@@ -55,7 +58,7 @@ export default function RecipeDetailScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <ActivityIndicator color={colors.domainNutrition} />
       </View>
     );
@@ -63,7 +66,7 @@ export default function RecipeDetailScreen() {
 
   if (error) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <BackLink />
         <ErrorNotice message={error} onRetry={load} />
       </View>
@@ -72,7 +75,7 @@ export default function RecipeDetailScreen() {
 
   if (!recipe) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <BackLink />
         <Text style={styles.error}>Recette introuvable.</Text>
       </View>
@@ -80,7 +83,7 @@ export default function RecipeDetailScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+    <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
       <BackLink />
       <Text style={styles.title}>{recipe.name}</Text>
       <Text style={styles.macros}>
@@ -95,7 +98,12 @@ export default function RecipeDetailScreen() {
 
       {recipe.imageUrl && (
         <View style={styles.photoFrame}>
-          <Image source={{ uri: recipe.imageUrl }} style={styles.photo} accessibilityLabel={recipe.name} />
+          <Image
+            source={{ uri: recipe.imageUrl }}
+            style={styles.photo}
+            contentFit="cover"
+            accessibilityLabel={recipe.name}
+          />
         </View>
       )}
 
