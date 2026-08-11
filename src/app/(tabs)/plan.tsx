@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, Image, Pressable, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../lib/auth-context';
 import { getCurrentPlan, updatePlanEntry, fetchRecipes, type Recipe, type SavedPlan } from '../../lib/mealPlanData';
 import {
@@ -16,8 +17,16 @@ import { ChoiceGroup } from '../../components/ChoiceGroup';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
-import { Mascot } from '../../components/ui/Mascot';
-import { centeredContent, radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+import {
+  centeredContent,
+  materialTypography,
+  radius,
+  spacing,
+  useMaterialColors,
+  useMaterialTertiary,
+  type MaterialColorScheme,
+  type MaterialTertiary,
+} from '../../theme/tokens';
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
   breakfast: 'Petit-déj',
@@ -29,8 +38,9 @@ const MEAL_TYPE_LABELS: Record<MealType, string> = {
 const DAY_TAB_OPTIONS = DAY_LABELS.map((label, index) => ({ value: String(index), label }));
 
 export default function PlanScreen() {
-  const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colors = useMaterialColors();
+  const nutrition = useMaterialTertiary('nutrition');
+  const styles = useMemo(() => createStyles(colors, nutrition), [colors, nutrition]);
   const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [plan, setPlan] = useState<SavedPlan | null>(null);
@@ -103,7 +113,7 @@ export default function PlanScreen() {
   if (loading || !session || checking) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator color={colors.domainNutrition} />
+        <ActivityIndicator color={nutrition.tertiary} />
       </View>
     );
   }
@@ -120,7 +130,7 @@ export default function PlanScreen() {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
         <EmptyState
-          icon={<Mascot pose="idle" size={120} />}
+          icon={<MaterialIcons testID="empty-state-icon" name="event" size={64} color={colors.onSurfaceVariant} />}
           title="Aucun plan pour l'instant"
           message="Génère ton premier plan de repas de la semaine."
           actionLabel="Générer un plan"
@@ -178,7 +188,7 @@ export default function PlanScreen() {
                   accessibilityRole="button"
                 >
                   {swappingId === entry.id ? (
-                    <ActivityIndicator size="small" color={colors.domainNutrition} />
+                    <ActivityIndicator size="small" color={nutrition.tertiary} />
                   ) : (
                     <Text style={styles.swapHint}>Échanger</Text>
                   )}
@@ -192,18 +202,18 @@ export default function PlanScreen() {
   );
 }
 
-function createStyles(colors: ThemeColors) {
+function createStyles(colors: MaterialColorScheme, nutrition: MaterialTertiary) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.bgBase },
+    screen: { flex: 1, backgroundColor: colors.background },
     centered: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.bgBase,
+      backgroundColor: colors.background,
       padding: spacing.lg,
     },
     container: { padding: spacing.lg, ...centeredContent },
-    emptyDayText: { ...typography.body, color: colors.textSecondary, marginTop: spacing.md },
+    emptyDayText: { ...materialTypography.bodyLarge, color: colors.onSurfaceVariant, marginTop: spacing.md },
     entryCard: { marginBottom: spacing.sm },
     entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     entryInfo: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: spacing.md },
@@ -211,13 +221,13 @@ function createStyles(colors: ThemeColors) {
       width: 56,
       height: 56,
       borderRadius: radius.sm,
-      backgroundColor: colors.bgSunken,
+      backgroundColor: colors.surfaceVariant,
       overflow: 'hidden',
     },
     thumb: { width: '100%', height: '100%' },
     entryText: { flex: 1 },
-    mealTypeLabel: { ...typography.caption, color: colors.textSecondary },
-    recipeName: { ...typography.bodyStrong, color: colors.textPrimary },
-    swapHint: { ...typography.captionStrong, color: colors.domainNutritionDeep, marginLeft: spacing.md },
+    mealTypeLabel: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant },
+    recipeName: { ...materialTypography.bodyMedium, color: colors.onSurface },
+    swapHint: { ...materialTypography.labelSmall, color: nutrition.tertiaryContainer, marginLeft: spacing.md },
   });
 }
