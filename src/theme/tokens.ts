@@ -301,9 +301,6 @@ export const motion = {
   },
   spring: {
     gentle: { damping: 18, stiffness: 180, mass: 1 },
-    /** Base of the "chips and cells" press pattern — visibly bouncy, the
-     *  default feel for everyday taps and button presses in this direction. */
-    snappy: { damping: 8, stiffness: 260, mass: 0.9 },
     /** Reward moments only: the mascot's celebration pose bouncing in.
      *  Pronounced overshoot — do not use for routine taps, it would read as
      *  exhausting rather than delightful. */
