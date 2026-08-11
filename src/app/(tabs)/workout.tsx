@@ -18,8 +18,18 @@ import { Card } from '../../components/ui/Card';
 import { PressableScale } from '../../components/ui/PressableScale';
 import { Button } from '../../components/ui/Button';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
-import { Mascot } from '../../components/ui/Mascot';
-import { centeredContent, radius, spacing, state, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+import {
+  centeredContent,
+  lightColors,
+  materialTypography,
+  radius,
+  spacing,
+  state,
+  useMaterialColors,
+  useMaterialTertiary,
+  type MaterialColorScheme,
+  type MaterialTertiary,
+} from '../../theme/tokens';
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
 
@@ -33,8 +43,9 @@ function todayDateString(): string {
 }
 
 export default function WorkoutScreen() {
-  const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colors = useMaterialColors();
+  const sport = useMaterialTertiary('sport');
+  const styles = useMemo(() => createStyles(colors, sport), [colors, sport]);
   const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [trainingProfile, setTrainingProfile] = useState<TrainingProfile | null>(null);
@@ -159,7 +170,7 @@ export default function WorkoutScreen() {
   if (loading || !session || checking) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator color={colors.domainSport} />
+        <ActivityIndicator color={sport.tertiary} />
       </View>
     );
   }
@@ -183,7 +194,6 @@ export default function WorkoutScreen() {
           <Text style={styles.title}>{homeWorkoutProgram.title}</Text>
           <Text style={styles.subtitle}>{homeWorkoutProgram.subtitle}</Text>
         </View>
-        <Mascot pose="idle" size={64} />
       </View>
       <Text style={styles.blockText}>{homeWorkoutProgram.guidance}</Text>
 
@@ -193,7 +203,7 @@ export default function WorkoutScreen() {
         onChange={handleLevelChange}
         domain="sport"
       />
-      {savingLevel && <ActivityIndicator size="small" color={colors.domainSport} />}
+      {savingLevel && <ActivityIndicator size="small" color={sport.tertiary} />}
 
       <View style={styles.block}>
         <Text style={styles.blockTitle}>
@@ -321,26 +331,26 @@ function SessionDetail({ session, styles }: { session: Session; styles: Styles }
   );
 }
 
-function createStyles(colors: ThemeColors) {
+function createStyles(colors: MaterialColorScheme, sport: MaterialTertiary) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.bgBase },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+    screen: { flex: 1, backgroundColor: colors.background },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
     container: { padding: spacing.lg, ...centeredContent },
     headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
     headerText: { flex: 1, marginRight: spacing.md },
-    title: { ...typography.display, color: colors.textPrimary },
-    subtitle: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.lg },
+    title: { ...materialTypography.displayMedium, color: colors.onSurface },
+    subtitle: { ...materialTypography.bodyLarge, color: colors.onSurfaceVariant, marginBottom: spacing.lg },
     block: { marginVertical: spacing.lg },
-    blockTitle: { ...typography.heading, color: colors.textPrimary, marginBottom: spacing.xs },
-    blockText: { ...typography.body, color: colors.textSecondary },
-    levelSummary: { ...typography.body, marginTop: spacing.sm, color: colors.textSecondary },
-    levelDuration: { ...typography.caption, marginBottom: spacing.lg, color: colors.textSecondary },
+    blockTitle: { ...materialTypography.titleMedium, color: colors.onSurface, marginBottom: spacing.xs },
+    blockText: { ...materialTypography.bodyLarge, color: colors.onSurfaceVariant },
+    levelSummary: { ...materialTypography.bodyLarge, marginTop: spacing.sm, color: colors.onSurfaceVariant },
+    levelDuration: { ...materialTypography.labelMedium, marginBottom: spacing.lg, color: colors.onSurfaceVariant },
     sessionCard: { marginBottom: spacing.sm },
     sessionPhotoFrame: {
       width: '100%',
       aspectRatio: 4 / 3,
       borderRadius: radius.md,
-      backgroundColor: colors.bgSunken,
+      backgroundColor: colors.surfaceVariant,
       marginBottom: spacing.sm,
       overflow: 'hidden',
     },
@@ -348,23 +358,23 @@ function createStyles(colors: ThemeColors) {
       width: '100%',
       height: '100%',
     },
-    sessionTitle: { ...typography.subheading, color: colors.textPrimary },
+    sessionTitle: { ...materialTypography.titleSmall, color: colors.onSurface },
     startRow: { marginTop: spacing.sm, marginBottom: spacing.md },
-    exerciseListLabel: { ...typography.overline, color: colors.textTertiary, marginBottom: spacing.xs },
+    exerciseListLabel: { ...materialTypography.overline, color: colors.onSurfaceVariant, marginBottom: spacing.xs },
     sessionDetail: { marginTop: spacing.sm },
-    sessionMeta: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.sm },
+    sessionMeta: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginBottom: spacing.sm },
     exerciseCard: {
       borderWidth: 1,
-      borderColor: colors.border,
+      borderColor: colors.outlineVariant,
       borderRadius: radius.sm,
-      backgroundColor: colors.bgBase,
+      backgroundColor: colors.background,
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md,
       marginBottom: spacing.sm,
     },
-    exerciseLine: { ...typography.bodyStrong, color: colors.textPrimary },
-    exerciseDetail: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
-    coachNote: { ...typography.body, marginBottom: spacing.xs, color: colors.textSecondary },
+    exerciseLine: { ...materialTypography.bodyMedium, color: colors.onSurface },
+    exerciseDetail: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginTop: 2 },
+    coachNote: { ...materialTypography.bodyLarge, marginBottom: spacing.xs, color: colors.onSurfaceVariant },
     completionRow: {
       marginTop: spacing.md,
       flexDirection: 'row',
@@ -372,18 +382,18 @@ function createStyles(colors: ThemeColors) {
       justifyContent: 'space-between',
     },
     completionDoneBadge: {
-      backgroundColor: colors.successSoft,
+      backgroundColor: lightColors.successSoft,
       borderRadius: radius.pill,
       paddingVertical: spacing.xs,
       paddingHorizontal: spacing.md,
     },
-    completionDoneText: { ...typography.captionStrong, color: colors.success },
+    completionDoneText: { ...materialTypography.labelSmall, color: lightColors.success },
     completionUndoTouchable: {
       minHeight: state.minTouchSize,
       paddingHorizontal: spacing.sm,
       justifyContent: 'center',
     },
-    completionUndoLink: { ...typography.caption, color: colors.domainSportDeep },
-    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
+    completionUndoLink: { ...materialTypography.labelMedium, color: sport.tertiaryContainer },
+    error: { ...materialTypography.bodyLarge, color: colors.error, marginBottom: spacing.md },
   });
 }
