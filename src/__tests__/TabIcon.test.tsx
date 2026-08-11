@@ -1,3 +1,10 @@
+// This suite intentionally exercises the REAL @expo/vector-icons MaterialIcons
+// component — specifically that it folds the `color` prop into `.props.style`
+// rather than keeping it as a top-level prop. __mocks__/@expo/vector-icons.js
+// (a bare pass-through mock used by other screen tests) is auto-applied to
+// every test file, so opt this one back out to restore real behavior.
+jest.unmock('@expo/vector-icons');
+
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
