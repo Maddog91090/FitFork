@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "icon": "./assets/images/icon.png",
     "scheme": "mealworkoutplanner",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "android": {
       "package": "com.maddog91steam.fitpro",
       "adaptiveIcon": {
