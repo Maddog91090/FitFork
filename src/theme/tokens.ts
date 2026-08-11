@@ -310,8 +310,6 @@ export const motion = {
 
 /** Interaction states — applied consistently so touch feels the same app-wide. */
 export const state = {
-  /** Visible claymorphic squish under the finger — deliberately pronounced. */
-  pressedScale: 0.9,
   disabledOpacity: 0.55,
   hitSlop: 8,
   /** Minimum tappable square. 48dp is Android's Material guidance (this app's

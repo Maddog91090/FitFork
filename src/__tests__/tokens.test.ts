@@ -81,8 +81,8 @@ describe('fontFamily', () => {
 });
 
 describe('motion.spring', () => {
-  it('celebrate exists for reward moments', () => {
-    expect(motion.spring.celebrate).toBeDefined();
+  it('celebrate has lower damping than gentle, so it overshoots/bounces more for reward moments', () => {
+    expect(motion.spring.celebrate.damping).toBeLessThan(motion.spring.gentle.damping);
   });
 });
 

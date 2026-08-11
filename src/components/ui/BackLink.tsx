@@ -19,7 +19,7 @@ export function BackLink() {
       accessibilityRole="button"
       hitSlop={state.hitSlop}
       android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant) }}
-      style={styles.touchable}
+      style={({ pressed }) => [styles.touchable, pressed && styles.pressed]}
     >
       <Text style={styles.label}>‹ Retour</Text>
     </Pressable>
@@ -29,6 +29,7 @@ export function BackLink() {
 function createStyles(colors: MaterialColorScheme) {
   return StyleSheet.create({
     touchable: { minHeight: state.minTouchSize, justifyContent: 'center', alignSelf: 'flex-start' },
+    pressed: { opacity: 0.85 },
     label: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant },
   });
 }

@@ -245,7 +245,7 @@ export default function WorkoutScreen() {
                     accessibilityRole="button"
                     accessibilityState={{ disabled: loggingCompletion }}
                     android_ripple={{ color: withRippleAlpha(sport.tertiaryContainer) }}
-                    style={styles.completionUndoTouchable}
+                    style={({ pressed }) => [styles.completionUndoTouchable, pressed && styles.completionUndoPressed]}
                   >
                     <Text style={styles.completionUndoLink}>Annuler</Text>
                   </Pressable>
@@ -300,7 +300,7 @@ function SessionDetail({ session, styles, sport }: { session: Session; styles: S
             accessibilityRole="link"
             hitSlop={4}
             android_ripple={{ color: withRippleAlpha(sport.tertiary) }}
-            style={styles.exerciseCard}
+            style={({ pressed }) => [styles.exerciseCard, pressed && styles.exerciseCardPressed]}
           >
             <Text style={styles.exerciseLine}>{exercise.name}</Text>
           </Pressable>
@@ -370,6 +370,7 @@ function createStyles(colors: MaterialColorScheme, sport: MaterialTertiary) {
       marginBottom: spacing.sm,
       overflow: 'hidden',
     },
+    exerciseCardPressed: { opacity: 0.85 },
     exerciseLine: { ...materialTypography.bodyMedium, color: colors.onSurface },
     exerciseDetail: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginTop: 2 },
     coachNote: { ...materialTypography.bodyLarge, marginBottom: spacing.xs, color: colors.onSurfaceVariant },
@@ -391,6 +392,7 @@ function createStyles(colors: MaterialColorScheme, sport: MaterialTertiary) {
       paddingHorizontal: spacing.sm,
       justifyContent: 'center',
     },
+    completionUndoPressed: { opacity: 0.85 },
     completionUndoLink: { ...materialTypography.labelMedium, color: sport.tertiaryContainer },
     error: { ...materialTypography.bodyLarge, color: colors.error, marginBottom: spacing.md },
   });

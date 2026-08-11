@@ -146,7 +146,11 @@ export default function GeneratePlanScreen() {
                   android_ripple={{
                     color: isSelected ? withRippleAlpha(nutrition.onTertiary) : withRippleAlpha(nutrition.tertiary),
                   }}
-                  style={[styles.cell, isSelected && styles.cellSelected]}
+                  style={({ pressed }) => [
+                    styles.cell,
+                    isSelected && styles.cellSelected,
+                    pressed && styles.cellPressed,
+                  ]}
                 >
                   <Text style={isSelected ? styles.cellLabelSelected : styles.cellLabel}>
                     {MEAL_TYPE_LABELS[mealType]}
@@ -198,6 +202,7 @@ function createStyles(colors: MaterialColorScheme, nutrition: MaterialTertiary) 
       overflow: 'hidden',
     },
     cellSelected: { backgroundColor: nutrition.tertiary, borderColor: nutrition.tertiary },
+    cellPressed: { opacity: 0.85 },
     cellLabel: { ...materialTypography.labelMedium, color: nutrition.tertiary },
     cellLabelSelected: { ...materialTypography.labelSmall, color: nutrition.onTertiary },
     errorContainer: { alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },

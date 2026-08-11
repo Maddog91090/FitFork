@@ -115,7 +115,13 @@ export default function WorkoutSessionScreen() {
     return (
       <View style={styles.screen}>
         <View style={[styles.finishedContainer, { paddingTop: insets.top }]}>
-          <MaterialIcons testID="celebration-icon" name="celebration" size={96} color={sport.tertiary} />
+          <MaterialIcons
+            testID="celebration-icon"
+            name="celebration"
+            size={96}
+            color={sport.tertiary}
+            accessible={false}
+          />
           <Text style={styles.finishedTitle}>Séance terminée</Text>
           {error && <Text style={styles.error}>{error}</Text>}
           <Button title="Marquer la séance comme terminée" onPress={handleFinish} loading={finishing} domain="sport" />
@@ -136,7 +142,7 @@ export default function WorkoutSessionScreen() {
           accessibilityRole="button"
           hitSlop={state.hitSlop}
           android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant) }}
-          style={styles.exitTouchable}
+          style={({ pressed }) => [styles.exitTouchable, pressed && styles.exitPressed]}
         >
           <Text style={styles.exitLabel}>Quitter</Text>
         </Pressable>
@@ -179,6 +185,7 @@ function createStyles(colors: MaterialColorScheme, sport: MaterialTertiary) {
     error: { ...materialTypography.bodyLarge, color: colors.error },
     exitRow: { paddingTop: spacing.lg, paddingHorizontal: spacing.lg, alignItems: 'flex-start' },
     exitTouchable: { minHeight: state.minTouchSize, justifyContent: 'center' },
+    exitPressed: { opacity: 0.85 },
     exitLabel: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant },
     stepContainer: {
       flex: 1,

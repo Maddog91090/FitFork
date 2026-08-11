@@ -193,10 +193,10 @@ export default function HomeScreen() {
         <Pressable
           onPress={() => router.push('/progression')}
           accessibilityRole="button"
-          android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant) }}
-          style={styles.gamificationTouchable}
+          android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant), foreground: true }}
+          style={({ pressed }) => [styles.gamificationTouchable, pressed && styles.gamificationPressed]}
         >
-          <Card style={styles.gamificationCard}>
+          <Card>
             <Text style={styles.sectionLabel}>Progression</Text>
             <View style={styles.gamificationRow}>
               <View style={styles.gamificationItem}>
@@ -287,8 +287,8 @@ function createStyles(colors: MaterialColorScheme) {
     greeting: { ...materialTypography.displayLarge, color: colors.onSurface },
     name: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginBottom: spacing.lg },
     macroCard: { marginBottom: spacing.lg },
-    gamificationTouchable: { borderRadius: radius.lg, overflow: 'hidden' },
-    gamificationCard: { marginBottom: spacing.lg },
+    gamificationTouchable: { borderRadius: radius.lg, overflow: 'hidden', marginBottom: spacing.lg },
+    gamificationPressed: { opacity: 0.85 },
     gamificationRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
     gamificationItem: { alignItems: 'center', flex: 1 },
     gamificationValue: { ...materialTypography.titleLarge, color: colors.onSurface },
