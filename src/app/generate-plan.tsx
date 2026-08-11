@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../lib/profile';
 import { computeTargetsFromProfile } from '../lib/targets';
@@ -10,18 +11,18 @@ import { fetchRecentWeightLogs, type WeightLogEntry } from '../lib/weightLogData
 import { computeAdjustedTargets } from '../lib/progressTracking';
 import { generateWeeklyPlan, DAY_LABELS, type MealSlot, type MealType } from '../lib/mealPlan';
 import { Button } from '../components/ui/Button';
-import { PressableScale } from '../components/ui/PressableScale';
 import { BackLink } from '../components/ui/BackLink';
-import { Mascot } from '../components/ui/Mascot';
 import {
   centeredContent,
+  materialTypography,
   radius,
-  shadow,
   spacing,
   state,
-  typography,
-  useThemeColors,
-  type ThemeColors,
+  useMaterialColors,
+  useMaterialTertiary,
+  withRippleAlpha,
+  type MaterialColorScheme,
+  type MaterialTertiary,
 } from '../theme/tokens';
 
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
@@ -37,8 +38,9 @@ function defaultSelection(): boolean[][] {
 }
 
 export default function GeneratePlanScreen() {
-  const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colors = useMaterialColors();
+  const nutrition = useMaterialTertiary('nutrition');
+  const styles = useMemo(() => createStyles(colors, nutrition), [colors, nutrition]);
   const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [selected, setSelected] = useState<boolean[][]>(defaultSelection());
@@ -133,25 +135,37 @@ export default function GeneratePlanScreen() {
         <View key={dayLabel} style={styles.dayRow}>
           <Text style={styles.dayLabel}>{dayLabel}</Text>
           <View style={styles.mealRow}>
-            {MEAL_TYPES.map((mealType, mealIndex) => (
-              <PressableScale
-                key={mealType}
-                onPress={() => toggle(dayIndex, mealIndex)}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: selected[dayIndex][mealIndex] }}
-                style={[styles.cell, selected[dayIndex][mealIndex] && styles.cellSelected]}
-              >
-                <Text style={selected[dayIndex][mealIndex] ? styles.cellLabelSelected : styles.cellLabel}>
-                  {MEAL_TYPE_LABELS[mealType]}
-                </Text>
-              </PressableScale>
-            ))}
+            {MEAL_TYPES.map((mealType, mealIndex) => {
+              const isSelected = selected[dayIndex][mealIndex];
+              return (
+                <Pressable
+                  key={mealType}
+                  onPress={() => toggle(dayIndex, mealIndex)}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: isSelected }}
+                  android_ripple={{
+                    color: isSelected ? withRippleAlpha(nutrition.onTertiary) : withRippleAlpha(nutrition.tertiary),
+                  }}
+                  style={[styles.cell, isSelected && styles.cellSelected]}
+                >
+                  <Text style={isSelected ? styles.cellLabelSelected : styles.cellLabel}>
+                    {MEAL_TYPE_LABELS[mealType]}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
         </View>
       ))}
       {error && (
         <View style={styles.errorContainer}>
-          <Mascot pose="encouraging" size={100} />
+          <MaterialIcons
+            testID="generate-plan-error-icon"
+            name="refresh"
+            size={64}
+            color={colors.error}
+            accessible={false}
+          />
           <Text style={styles.error}>{error}</Text>
         </View>
       )}
@@ -160,31 +174,33 @@ export default function GeneratePlanScreen() {
   );
 }
 
-function createStyles(colors: ThemeColors) {
+function createStyles(colors: MaterialColorScheme, nutrition: MaterialTertiary) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.bgBase },
+    screen: { flex: 1, backgroundColor: colors.background },
     container: { padding: spacing.lg, ...centeredContent },
-    title: { ...typography.title, color: colors.textPrimary, marginBottom: spacing.lg },
+    title: { ...materialTypography.titleLarge, color: colors.onSurface, marginBottom: spacing.lg },
     dayRow: { marginBottom: spacing.md },
     dayLabel: {
-      ...typography.overline,
-      color: colors.textSecondary,
+      ...materialTypography.overline,
+      color: colors.onSurfaceVariant,
       marginBottom: spacing.sm,
     },
     mealRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
     cell: {
-      backgroundColor: colors.bgSurface,
+      backgroundColor: 'transparent',
+      borderWidth: 1,
+      borderColor: nutrition.tertiary,
       borderRadius: radius.sm,
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md,
       minHeight: state.minTouchSize,
       justifyContent: 'center',
-      ...shadow.card,
+      overflow: 'hidden',
     },
-    cellSelected: { backgroundColor: colors.domainNutrition, shadowColor: colors.domainNutrition, shadowOpacity: 0.25 },
-    cellLabel: { ...typography.caption, color: colors.textSecondary },
-    cellLabelSelected: { ...typography.captionStrong, color: colors.textOnAccent },
+    cellSelected: { backgroundColor: nutrition.tertiary, borderColor: nutrition.tertiary },
+    cellLabel: { ...materialTypography.labelMedium, color: nutrition.tertiary },
+    cellLabelSelected: { ...materialTypography.labelSmall, color: nutrition.onTertiary },
     errorContainer: { alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
-    error: { ...typography.body, color: colors.error, textAlign: 'center' },
+    error: { ...materialTypography.bodyLarge, color: colors.error, textAlign: 'center' },
   });
 }
