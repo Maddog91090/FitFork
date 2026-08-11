@@ -3,10 +3,9 @@
     "name": "meal-workout-planner",
     "slug": "fitpro",
     "version": "1.0.0",
-    "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mealworkoutplanner",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "android": {
       "package": "com.maddog91steam.fitpro",
       "adaptiveIcon": {
@@ -28,7 +27,10 @@
         {
           "backgroundColor": "#FFFBF5",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 320
+          "imageWidth": 320,
+          "dark": {
+            "backgroundColor": "#17120C"
+          }
         }
       ],
       "expo-audio",
