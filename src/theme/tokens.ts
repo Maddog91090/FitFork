@@ -5,6 +5,8 @@
  * hardcode colors, sizes, durations or font weights — import from here.
  * See `.claude/skills/fitfork-design/SKILL.md` for the rules behind these values.
  */
+import { useColorScheme } from 'react-native';
+
 export const lightColors = {
   // Surfaces — light warm cream base (lighter than Soft Neutral's paper, to
   // let the saturated domain colors read as vivid rather than muddy), pure
@@ -318,4 +320,148 @@ export const state = {
   /** Minimum tappable square. 48dp is Android's Material guidance (this app's
    *  platform, per PRODUCT.md) — taller than iOS's 44pt floor. */
   minTouchSize: 48,
+} as const;
+
+/**
+ * Material 3 color roles — added alongside `lightColors`/`useThemeColors`
+ * rather than replacing them, because ~20 screens outside this phase's scope
+ * still read the claymorphic tokens directly. Fixed roles (background,
+ * surface, outline, primary, error) never change per screen; `tertiary` is
+ * the one swappable role, selected per screen via `useMaterialTertiary`.
+ */
+export type MaterialColorScheme = {
+  background: string;
+  onBackground: string;
+  surface: string;
+  onSurface: string;
+  surfaceVariant: string;
+  onSurfaceVariant: string;
+  outline: string;
+  outlineVariant: string;
+  primary: string;
+  onPrimary: string;
+  primaryContainer: string;
+  onPrimaryContainer: string;
+  error: string;
+  onError: string;
+  errorContainer: string;
+  onErrorContainer: string;
+};
+
+export const lightMaterialColors: MaterialColorScheme = {
+  background: lightColors.bgBase,
+  onBackground: lightColors.textPrimary,
+  surface: lightColors.bgSurface,
+  onSurface: lightColors.textPrimary,
+  surfaceVariant: lightColors.bgSunken,
+  onSurfaceVariant: lightColors.textSecondary,
+  outline: lightColors.borderStrong,
+  outlineVariant: lightColors.border,
+  primary: '#7A5C34',
+  onPrimary: '#FFFFFF',
+  primaryContainer: '#6B4F26',
+  onPrimaryContainer: '#FFFFFF',
+  error: lightColors.error,
+  onError: '#FFFFFF',
+  errorContainer: lightColors.errorSoft,
+  onErrorContainer: lightColors.textPrimary,
+};
+
+/**
+ * Derived by `scripts/derive-material-dark.js` (deleted after use — see
+ * Phase 4 plan Task 1) via Material's tonal-inversion method: each
+ * container is a ~20-25%-lightness rotation of the same hue as its light
+ * source color, and its on-container pair is a ~80-85%-lightness rotation
+ * of that same hue — never a different hue. Every pair clears WCAG AA
+ * (4.5:1 text, 3:1 non-text); see the Phase 4 plan's reference table for
+ * the exact verified ratios.
+ */
+export const darkMaterialColors: MaterialColorScheme = {
+  background: '#17120C',
+  onBackground: '#EEE6DD',
+  surface: '#2C2217',
+  onSurface: '#EEE6DD',
+  surfaceVariant: '#433423',
+  onSurfaceVariant: '#D5C4AF',
+  outline: '#B3874C',
+  outlineVariant: '#6B512E',
+  primary: '#D4BC9B',
+  onPrimary: '#322615',
+  primaryContainer: '#4F3B22',
+  onPrimaryContainer: '#E8DBC9',
+  error: '#E87272',
+  onError: '#3D0A0A',
+  errorContainer: '#611010',
+  onErrorContainer: '#F4BDBD',
+};
+
+export type MaterialDomain = 'nutrition' | 'sport' | 'progress' | 'neutral';
+
+export type MaterialTertiary = {
+  tertiary: string;
+  onTertiary: string;
+  tertiaryContainer: string;
+  onTertiaryContainer: string;
+};
+
+/** Same hex values as `domainX`/`domainXDeep` — a role rename, not new colors. */
+export const lightTertiaryByDomain: Record<MaterialDomain, MaterialTertiary> = {
+  nutrition: { tertiary: '#B25900', onTertiary: '#FFFFFF', tertiaryContainer: '#8A5200', onTertiaryContainer: '#FFFFFF' },
+  sport: { tertiary: '#187A57', onTertiary: '#FFFFFF', tertiaryContainer: '#0E4F38', onTertiaryContainer: '#FFFFFF' },
+  progress: { tertiary: '#C2325A', onTertiary: '#FFFFFF', tertiaryContainer: '#A31C42', onTertiaryContainer: '#FFFFFF' },
+  neutral: { tertiary: '#7A5C34', onTertiary: '#FFFFFF', tertiaryContainer: '#6B4F26', onTertiaryContainer: '#FFFFFF' },
+};
+
+export const darkTertiaryByDomain: Record<MaterialDomain, MaterialTertiary> = {
+  nutrition: { tertiary: '#FFB870', onTertiary: '#472400', tertiaryContainer: '#703800', onTertiaryContainer: '#FFD9B3' },
+  sport: { tertiary: '#88E8C5', onTertiary: '#0C3C2B', tertiaryContainer: '#125E43', onTertiaryContainer: '#BFF2E0' },
+  progress: { tertiary: '#E28DA5', onTertiary: '#390F1A', tertiaryContainer: '#591729', onTertiaryContainer: '#EFC2CF' },
+  neutral: { tertiary: '#D4BC9B', onTertiary: '#322615', tertiaryContainer: '#4F3B22', onTertiaryContainer: '#E8DBC9' },
+};
+
+/** `userInterfaceStyle` is `"automatic"` in app.json as of this phase, so this genuinely switches with the system setting. */
+export function useMaterialColors(): MaterialColorScheme {
+  const scheme = useColorScheme();
+  return scheme === 'dark' ? darkMaterialColors : lightMaterialColors;
+}
+
+export function useMaterialTertiary(domain: MaterialDomain = 'progress'): MaterialTertiary {
+  const scheme = useColorScheme();
+  return scheme === 'dark' ? darkTertiaryByDomain[domain] : lightTertiaryByDomain[domain];
+}
+
+/**
+ * Material type-scale aliases for the 12 existing `typography.*` roles —
+ * same family/size/lineHeight/letterSpacing, only the key names change, so
+ * a change to `typography.body` still flows through automatically.
+ * `overline` has no canonical Material 3 slot (the label scale only goes to
+ * `labelSmall`) and is kept as a documented custom addition, same as
+ * Material itself allows.
+ */
+export const materialTypography = {
+  displayLarge: typography.hero,
+  displayMedium: typography.display,
+  titleLarge: typography.title,
+  headlineLarge: typography.metric,
+  titleMedium: typography.heading,
+  titleSmall: typography.subheading,
+  bodyLarge: typography.body,
+  bodyMedium: typography.bodyStrong,
+  labelLarge: typography.label,
+  labelMedium: typography.caption,
+  labelSmall: typography.captionStrong,
+  overline: typography.overline,
+} as const;
+
+/**
+ * Single-tier Material elevation for the rebuilt `Card` — neutral black-
+ * based, unlike claymorphic `shadow.*`'s warm `#3A2E22` tint, matching how
+ * Material's own elevation shadows are neutral rather than brand-tinted.
+ */
+export const materialElevation = {
+  shadowColor: '#000000',
+  shadowOpacity: 0.16,
+  shadowRadius: 6,
+  shadowOffset: { width: 0, height: 2 },
+  elevation: 2,
 } as const;
