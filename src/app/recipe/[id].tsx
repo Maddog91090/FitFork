@@ -14,11 +14,22 @@ import { scaleIngredientQuantity, scaleMacroValue, clampPortionMultiplier } from
 import { Card } from '../../components/ui/Card';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
 import { BackLink } from '../../components/ui/BackLink';
-import { centeredContent, radius, shadow, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+import {
+  centeredContent,
+  materialElevation,
+  materialTypography,
+  radius,
+  spacing,
+  useMaterialColors,
+  useMaterialTertiary,
+  type MaterialColorScheme,
+  type MaterialTertiary,
+} from '../../theme/tokens';
 
 export default function RecipeDetailScreen() {
-  const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colors = useMaterialColors();
+  const nutrition = useMaterialTertiary('nutrition');
+  const styles = useMemo(() => createStyles(colors, nutrition), [colors, nutrition]);
   const insets = useSafeAreaInsets();
   const { id, portion: portionParam } = useLocalSearchParams<{ id: string; portion?: string }>();
   const parsedPortion = Number(portionParam);
@@ -59,7 +70,7 @@ export default function RecipeDetailScreen() {
   if (loading) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator color={colors.domainNutrition} />
+        <ActivityIndicator color={nutrition.tertiary} />
       </View>
     );
   }
@@ -130,53 +141,53 @@ export default function RecipeDetailScreen() {
   );
 }
 
-function createStyles(colors: ThemeColors) {
+function createStyles(colors: MaterialColorScheme, nutrition: MaterialTertiary) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.bgBase },
+    screen: { flex: 1, backgroundColor: colors.background },
     centered: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.bgBase,
+      backgroundColor: colors.background,
       padding: spacing.lg,
     },
     container: { padding: spacing.lg, ...centeredContent },
-    title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.xs },
-    macros: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
-    portionBanner: { ...typography.captionStrong, color: colors.domainNutritionDeep, marginBottom: spacing.lg },
+    title: { ...materialTypography.displayMedium, color: colors.onSurface, marginBottom: spacing.xs },
+    macros: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginBottom: spacing.lg },
+    portionBanner: { ...materialTypography.labelSmall, color: nutrition.tertiaryContainer, marginBottom: spacing.lg },
     photoFrame: {
       width: '100%',
       aspectRatio: 4 / 3,
       borderRadius: radius.lg,
-      backgroundColor: colors.bgSunken,
+      backgroundColor: colors.surfaceVariant,
       marginBottom: spacing.lg,
       overflow: 'hidden',
-      ...shadow.card,
+      ...materialElevation,
     },
     photo: {
       width: '100%',
       height: '100%',
     },
     sectionTitle: {
-      ...typography.overline,
-      color: colors.textSecondary,
+      ...materialTypography.overline,
+      color: colors.onSurfaceVariant,
       marginTop: spacing.md,
       marginBottom: spacing.sm,
     },
     card: { marginBottom: spacing.sm },
-    ingredientLine: { ...typography.body, color: colors.textPrimary, marginBottom: spacing.xs },
+    ingredientLine: { ...materialTypography.bodyLarge, color: colors.onSurface, marginBottom: spacing.xs },
     stepRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm, alignItems: 'flex-start' },
     stepBadge: {
       width: 20,
       height: 20,
       borderRadius: 10,
-      backgroundColor: colors.domainNutrition,
+      backgroundColor: nutrition.tertiary,
       alignItems: 'center',
       justifyContent: 'center',
       marginTop: 1,
     },
-    stepBadgeText: { ...typography.overline, color: colors.textOnAccent, letterSpacing: 0 },
-    stepText: { ...typography.body, flex: 1, color: colors.textPrimary },
-    error: { ...typography.body, color: colors.error },
+    stepBadgeText: { ...materialTypography.overline, color: nutrition.onTertiary, letterSpacing: 0 },
+    stepText: { ...materialTypography.bodyLarge, flex: 1, color: colors.onSurface },
+    error: { ...materialTypography.bodyLarge, color: colors.error },
   });
 }
