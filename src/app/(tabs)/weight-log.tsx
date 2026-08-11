@@ -9,6 +9,7 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Sparkline } from '../../components/ui/Sparkline';
+import { Mascot } from '../../components/ui/Mascot';
 import { centeredContent, fontFamily, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 /** French decimals, without depending on Intl being built into the JS engine. */
@@ -92,7 +93,7 @@ export default function WeightLogScreen() {
   if (loading || !session || checking) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+        <ActivityIndicator color={colors.domainNeutral} />
       </View>
     );
   }
@@ -107,7 +108,7 @@ export default function WeightLogScreen() {
       <Text style={styles.title}>Suivi de poids</Text>
       <TextField label="Poids (kg)" value={weightInput} onChangeText={setWeightInput} keyboardType="numeric" />
       {error && <Text style={styles.error}>{error}</Text>}
-      <Button title="Enregistrer" onPress={handleSubmit} loading={submitting} />
+      <Button title="Enregistrer" onPress={handleSubmit} loading={submitting} domain="neutral" />
 
       {current && (
         <Card style={styles.statCard}>
@@ -141,6 +142,7 @@ export default function WeightLogScreen() {
       <Text style={styles.historyTitle}>Historique</Text>
       {logs.length === 0 ? (
         <EmptyState
+          icon={<Mascot pose="idle" size={120} />}
           title="Aucune pesée"
           message="Enregistre ton poids ci-dessus pour voir ta courbe se construire."
         />
