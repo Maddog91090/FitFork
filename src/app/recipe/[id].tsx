@@ -56,7 +56,7 @@ export default function RecipeDetailScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+        <ActivityIndicator color={colors.domainNutrition} />
       </View>
     );
   }
@@ -135,7 +135,7 @@ function createStyles(colors: ThemeColors) {
     container: { padding: spacing.lg, ...centeredContent },
     title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.xs },
     macros: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
-    portionBanner: { ...typography.captionStrong, color: colors.accentRedDeep, marginBottom: spacing.lg },
+    portionBanner: { ...typography.captionStrong, color: colors.domainNutritionDeep, marginBottom: spacing.lg },
     photoFrame: {
       width: '100%',
       aspectRatio: 4 / 3,
@@ -162,7 +162,7 @@ function createStyles(colors: ThemeColors) {
       width: 20,
       height: 20,
       borderRadius: 10,
-      backgroundColor: colors.accentRed,
+      backgroundColor: colors.domainNutrition,
       alignItems: 'center',
       justifyContent: 'center',
       marginTop: 1,
