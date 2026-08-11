@@ -254,6 +254,7 @@ export default function HomeScreen() {
           disabled={notificationsBusy}
           trackColor={{ true: colors.domainNutrition, false: colors.borderStrong }}
           thumbColor={colors.bgSurface}
+          accessibilityLabel="Notifications de rappel d'entraînement"
         />
       </View>
 
