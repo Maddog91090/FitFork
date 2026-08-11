@@ -1,84 +1,92 @@
 ---
 name: FitFork
-description: A claymorphic, mascot-driven home fitness and nutrition app — puffy volume, four domain colors, one rounded typeface, a broccoli coach.
+description: A Material 3 fitness and nutrition app — four domain accent colors carried through Material's role system, light and dark schemes, native ripple feedback.
 colors:
-  amber-grille: "#B25900"
-  amber-grille-deep: "#8A5200"
-  vert-foret: "#187A57"
-  vert-foret-deep: "#0E4F38"
-  rouge-baie: "#C2325A"
-  rouge-baie-deep: "#A31C42"
-  cacao-chaud: "#7A5C34"
-  cacao-chaud-deep: "#6B4F26"
-  creme-chaude: "#FFFBF5"
-  blanc-surface: "#FFFFFF"
-  peche-creuse: "#FFF3E0"
-  encre-chaude: "#2E2418"
-  encre-attenuee: "#6B5A46"
-  encre-discrete: "#B8A78E"
-  blanc-sur-accent: "#FFFFFF"
-  trait-interieur: "#FBEAD3"
-  trait-exterieur: "#F0D9B8"
-  trait-renforce: "#A67F4C"
-  erreur: "#DC2626"
-  erreur-douce: "#FBEAE7"
-  succes: "#15803D"
-  succes-douce: "#E6F2EA"
-  attention: "#B45309"
-  attention-douce: "#FBF0E2"
-  macro-proteine: "#C2410C"
-  macro-glucides: "#0F766E"
-  macro-lipides: "#4338CA"
-  effort: "#DC2626"
-  repos: "#0369A1"
+  background-light: "#FFFBF5"
+  on-background-light: "#2E2418"
+  surface-light: "#FFFFFF"
+  on-surface-light: "#2E2418"
+  surface-variant-light: "#FFF3E0"
+  on-surface-variant-light: "#6B5A46"
+  outline-light: "#A67F4C"
+  outline-variant-light: "#F0D9B8"
+  primary-light: "#7A5C34"
+  on-primary-light: "#FFFFFF"
+  background-dark: "#17120C"
+  on-background-dark: "#EEE6DD"
+  surface-dark: "#2C2217"
+  on-surface-dark: "#EEE6DD"
+  surface-variant-dark: "#433423"
+  on-surface-variant-dark: "#D5C4AF"
+  outline-dark: "#A88357"
+  outline-variant-dark: "#654F34"
+  primary-dark: "#D4BC9B"
+  on-primary-dark: "#322615"
+  tertiary-nutrition-light: "#B25900"
+  tertiary-sport-light: "#187A57"
+  tertiary-progress-light: "#C2325A"
+  tertiary-neutral-light: "#7A5C34"
+  tertiary-nutrition-dark: "#FFB870"
+  tertiary-sport-dark: "#88E8C5"
+  tertiary-progress-dark: "#E28DA5"
+  tertiary-neutral-dark: "#D4BC9B"
+  error: "#DC2626"
+  error-soft: "#FBEAE7"
+  success: "#15803D"
+  success-soft: "#E6F2EA"
+  warning: "#B45309"
+  warning-soft: "#FBF0E2"
+  macro-protein: "#C2410C"
+  macro-carbs: "#0F766E"
+  macro-fat: "#4338CA"
 typography:
-  hero:
+  displayLarge:
     fontFamily: "Fredoka_700Bold"
     fontSize: "32px"
     lineHeight: "38px"
     letterSpacing: "-0.6px"
-  display:
+  displayMedium:
     fontFamily: "Fredoka_700Bold"
     fontSize: "26px"
     lineHeight: "32px"
     letterSpacing: "-0.4px"
-  title:
+  titleLarge:
     fontFamily: "Fredoka_600SemiBold"
     fontSize: "20px"
     lineHeight: "26px"
     letterSpacing: "-0.2px"
-  metric:
+  headlineLarge:
     fontFamily: "Fredoka_700Bold"
     fontSize: "28px"
     lineHeight: "32px"
     letterSpacing: "-0.4px"
-  heading:
+  titleMedium:
     fontFamily: "Fredoka_700Bold"
     fontSize: "16px"
     lineHeight: "22px"
     letterSpacing: "-0.1px"
-  subheading:
+  titleSmall:
     fontFamily: "Fredoka_600SemiBold"
     fontSize: "14px"
     lineHeight: "20px"
-  body:
+  bodyLarge:
     fontFamily: "Fredoka_400Regular"
     fontSize: "14px"
     lineHeight: "21px"
-  bodyStrong:
+  bodyMedium:
     fontFamily: "Fredoka_600SemiBold"
     fontSize: "14px"
     lineHeight: "21px"
-  label:
+  labelLarge:
     fontFamily: "Fredoka_700Bold"
     fontSize: "14px"
     lineHeight: "18px"
     letterSpacing: "0.1px"
-  caption:
+  labelMedium:
     fontFamily: "Fredoka_500Medium"
     fontSize: "12px"
     lineHeight: "17px"
-  captionStrong:
+  labelSmall:
     fontFamily: "Fredoka_600SemiBold"
     fontSize: "12px"
     lineHeight: "17px"
@@ -104,44 +112,40 @@ spacing:
   xxl: "32px"
   xxxl: "48px"
 components:
-  button-primary:
-    backgroundColor: "{colors.rouge-baie}"
-    textColor: "{colors.blanc-sur-accent}"
-    typography: "{typography.label}"
+  button-filled:
+    backgroundColor: "{colors.tertiary-progress-light}"
+    textColor: "{colors.on-primary-light}"
+    typography: "{typography.labelLarge}"
     rounded: "{rounded.lg}"
     padding: "14px 16px"
-  button-primary-active:
-    backgroundColor: "{colors.rouge-baie-deep}"
-    textColor: "{colors.blanc-sur-accent}"
-    typography: "{typography.label}"
-    rounded: "{rounded.lg}"
-    padding: "14px 16px"
-  button-secondary:
-    backgroundColor: "{colors.blanc-surface}"
-    textColor: "{colors.encre-chaude}"
-    typography: "{typography.label}"
+  button-outlined:
+    backgroundColor: "transparent"
+    borderColor: "{colors.outline-light}"
+    textColor: "{colors.on-surface-light}"
+    typography: "{typography.labelLarge}"
     rounded: "{rounded.lg}"
     padding: "14px 16px"
   card:
-    backgroundColor: "{colors.blanc-surface}"
+    backgroundColor: "{colors.surface-light}"
     rounded: "{rounded.lg}"
     padding: "12px"
   text-field:
-    backgroundColor: "{colors.blanc-surface}"
-    textColor: "{colors.encre-chaude}"
-    typography: "{typography.body}"
+    backgroundColor: "{colors.surface-light}"
+    textColor: "{colors.on-surface-light}"
+    typography: "{typography.bodyLarge}"
     rounded: "{rounded.sm}"
     padding: "12px"
-  choice-pill-selected:
-    backgroundColor: "{colors.rouge-baie}"
-    textColor: "{colors.blanc-sur-accent}"
-    typography: "{typography.subheading}"
+  filter-chip-selected:
+    backgroundColor: "{colors.tertiary-progress-light}"
+    textColor: "{colors.on-primary-light}"
+    typography: "{typography.labelLarge}"
     rounded: "{rounded.pill}"
     padding: "10px 14px"
-  choice-pill:
-    backgroundColor: "{colors.blanc-surface}"
-    textColor: "{colors.encre-chaude}"
-    typography: "{typography.subheading}"
+  filter-chip:
+    backgroundColor: "transparent"
+    borderColor: "{colors.tertiary-progress-light}"
+    textColor: "{colors.tertiary-progress-light}"
+    typography: "{typography.labelLarge}"
     rounded: "{rounded.pill}"
     padding: "10px 14px"
 ---
@@ -150,169 +154,136 @@ components:
 
 ## Overview
 
-**Creative North Star: "Le Brocoli Vivant" (The Living Broccoli)**
+FitFork is a Material 3 fitness and nutrition app. Its identity comes from four domain accent colors — nutrition, sport, progress, neutral — carried through Material's role system rather than a single fixed brand color, layered onto Material's standard components: filled/outlined buttons, elevated cards, filter chips, native ripple feedback on every touchable.
 
-FitFork's entire visual identity radiates from its mascot: a stylized cartoon broccoli character with big Pixar-style eyes and coral-orange sneakers, who lives permanently in the app and reacts to what the user does. Every other decision in this system exists to give that character a world it belongs in — puffy, warm-lit, hand-shaped surfaces instead of flat panels; four saturated domain colors instead of one cold brand accent; a single rounded typeface (Fredoka) that reads as friendly rather than clinical; and a deliberately bouncy, springy press feel on every tappable surface, because a claymorphic world should feel physically squishable, not just visually soft.
+The interaction philosophy is native-first: press feedback is the platform's own ripple (`android_ripple`), not a custom spring or scale animation. Shape and elevation follow Material's conventions directly — generous but not exaggerated corner radii, a single neutral elevation tier for raised surfaces, no colored shadows, no decorative overlays.
 
-The interaction philosophy is **ludique et rebondissant** — playful and bouncy. The bounce is not a subtle acknowledgment of a tap; it is a visible, springy overshoot on release, present on buttons, chips, and cells alike. This is a deliberate reversal of the flat, restrained "no bounce on a button" convention common to generic productivity apps — energy here comes from volume and motion, not from a loud palette or aggressive gradients.
-
-This system explicitly rejects **generic flat SaaS**: thin-bordered flat cards, blue-violet gradients, and the interchangeable "professional tool" look that could belong to any B2B dashboard. FitFork is a home-workout and home-cooking companion, not an enterprise tool — it should never look like one.
+The app supports both light and dark color schemes, following the system setting (`userInterfaceStyle: "automatic"`). Both schemes carry the same four domain accents, each independently tuned per scheme via Material's tonal-inversion method so neither scheme reads as an afterthought.
 
 **Key Characteristics:**
-- One mascot, three poses (`idle`, `celebrating`, `encouraging`), permanently present rather than a decorative one-off
-- Four domain colors (nutrition, sport, progress, neutral) — no single brand accent
-- Puffy claymorphic volume: generous radii, two-tier warm shadows, a diagonal light-catching sheen on every raised surface
-- One rounded typeface (Fredoka) carrying everything from hero text to button labels
-- Deliberately bouncy, springy motion as the default interaction feel, not an occasional flourish
-- Light-only by tested decision, not by omission
+- Four domain colors (nutrition, sport, progress, neutral), expressed through Material's `tertiary`/`onTertiary`/`tertiaryContainer` role triplet — the one role that changes per screen
+- Full light + dark support, WCAG AA-verified in both schemes for every role
+- Standard Material components: Filled/Outlined buttons, elevated Cards, filter chips — native `android_ripple` press feedback throughout
+- One rounded typeface (Fredoka) themed through Material's type scale, per `android.md`'s explicit allowance for a themed brand face
+- The mascot survives as the app's icon and splash screen identity only — it is not part of the functional UI's visual system
 
 ## Colors
 
-No single brand accent. Four **domain colors**, each owning one functional area of the app, plus a warm cream-and-cocoa neutral base — the palette reads as a kitchen table, not a dashboard.
+Material's role system: a handful of **fixed roles** (background, surface, outline, primary, error) that never change per screen, plus one **swappable role** (`tertiary`) selected per screen by domain. Every role has an independently-tuned light and dark value — dark values are not simply the light values dimmed, they follow Material's tonal-inversion method (see below).
 
-### Nutrition
-- **Ambre Grillé** (`#B25900` / `{colors.amber-grille}`): meals, recipes, macros, the meal-plan generation flow. Named for the toasted, oven-warm color of roasted food — it's meant to feel appetizing, not clinical-diet-app orange.
-- **Ambre Grillé Profond** (`#8A5200` / `{colors.amber-grille-deep}`): body-size text/icons on a nutrition screen, and a nutrition-domain button's pressed-state fill.
+### Fixed roles
 
-### Sport
-- **Vert Forêt** (`#187A57` / `{colors.vert-foret}`): workouts, exercises, training screens. A deep, natural forest green rather than a neon "fitness app" green — sober and energetic at once.
-- **Vert Forêt Profond** (`#0E4F38` / `{colors.vert-foret-deep}`): body-size text/icons, pressed-state fill, on sport screens.
+- **`background`/`onBackground`**: the screen's base fill and the text/icons directly on it. Light: `#FFFBF5`/`#2E2418`. Dark: `#17120C`/`#EEE6DD`.
+- **`surface`/`onSurface`**: cards, inputs, anything raised off the background. Light: `#FFFFFF`/`#2E2418`. Dark: `#2C2217`/`#EEE6DD`.
+- **`surfaceVariant`/`onSurfaceVariant`**: recessed or secondary areas. Light: `#FFF3E0`/`#6B5A46`. Dark: `#433423`/`#D5C4AF`.
+- **`outline`/`outlineVariant`**: borders and dividers — `outline` is the stronger one, required to clear 3:1 for non-text UI (e.g. an Outlined button's border). Light: `#A67F4C`/`#F0D9B8`. Dark: `#A88357`/`#654F34`.
+- **`primary`/`onPrimary`**: structural chrome — active tab tint, focus rings. Derived from Cacao Chaud (`#7A5C34`), sharing its source hue with the neutral domain's `tertiary` on purpose — chrome and content harmonize on a neutral-domain screen instead of clashing. Light: `#7A5C34`/`#FFFFFF`. Dark: `#D4BC9B`/`#322615` (Material's dark scheme convention: `primary` becomes a *light* tone used as text/icon tint, not a filled surface).
+- **`error`/`onError`/`errorContainer`/`onErrorContainer`**: unchanged in hue from before this system, `#DC2626`-based; dark values follow the same tonal-inversion method as everything else.
 
-### Progress
-- **Rouge Baie** (`#C2325A` / `{colors.rouge-baie}`): streaks, milestones, weight and progress tracking. A warm berry-red, the direct descendant of the app's original single accent color — the one domain that carries a bit of that history.
-- **Rouge Baie Profond** (`#A31C42` / `{colors.rouge-baie-deep}`): body-size text/icons, pressed-state fill, on progress screens. Also the current default domain for any `Button` that hasn't been given an explicit `domain` yet.
+### Swappable role: `tertiary` (selected per screen by domain)
 
-### Neutral
-- **Cacao Chaud** (`#7A5C34` / `{colors.cacao-chaud}`): anything that isn't domain-specific — settings, generic confirmations, the weight-tracking tab (deliberately paired with the tab bar's own neutral icon rather than the Progress domain).
-- **Cacao Chaud Profond** (`#6B4F26` / `{colors.cacao-chaud-deep}`): body-size text/icons, pressed-state fill, on neutral screens.
+| Domain | `tertiary` (light) | `tertiary` (dark) |
+| --- | --- | --- |
+| nutrition | `#B25900` (Ambre Grillé) | `#FFB870` |
+| sport | `#187A57` (Vert Forêt) | `#88E8C5` |
+| progress | `#C2325A` (Rouge Baie) | `#E28DA5` |
+| neutral | `#7A5C34` (Cacao Chaud) | `#D4BC9B` |
 
-### Neutral surfaces
-- **Crème Chaude** (`#FFFBF5` / `{colors.creme-chaude}`): the base screen background — warmer and lighter than a typical off-white, so the four saturated domain colors read as vivid rather than muddy against it.
-- **Blanc Surface** (`#FFFFFF` / `{colors.blanc-surface}`): cards, inputs, anything raised off the base.
-- **Pêche Creuse** (`#FFF3E0` / `{colors.peche-creuse}`): recessed or pressed-secondary areas — a soft peach, not gray.
-- **Encre Chaude** (`#2E2418` / `{colors.encre-chaude}`): primary text — warm near-black, never cool gray-black.
-- **Encre Atténuée** (`#6B5A46` / `{colors.encre-attenuee}`): secondary text, labels, captions. AA-compliant (6.0–6.6:1) on all three surface tones.
-- **Encre Discrète** (`#B8A78E` / `{colors.encre-discrete}`): decorative or redundant text only — fails AA **on purpose**. Never use for a label, value, placeholder, or error.
-- **Blanc sur Accent** (`#FFFFFF` / `{colors.blanc-sur-accent}`): text/icons sitting on top of a domain-color fill.
+A component reads `tertiary`/`onTertiary`/`tertiaryContainer` for whichever domain its screen belongs to — a `Button` on a nutrition screen fills with nutrition's `tertiary`, a filter chip on a sport screen selects with sport's `tertiary`, and so on. This is the same "one domain per screen" idea the previous claymorphic system used, carried into Material's role naming.
 
-### Lines
-- **Trait Intérieur** (`#FBEAD3` / `{colors.trait-interieur}`): a divider inside a surface.
-- **Trait Extérieur** (`#F0D9B8` / `{colors.trait-exterieur}`): a border around a surface.
-- **Trait Renforcé** (`#A67F4C` / `{colors.trait-renforce}`): the one line color required to clear the 3:1 WCAG 1.4.11 threshold for non-text UI components (e.g. a Switch's "off" track) — darker than Trait Extérieur on purpose.
+### Dark scheme derivation
 
-### Status
-- **Erreur** (`#DC2626`) / **Erreur Douce** (`#FBEAE7`), **Succès** (`#15803D`) / **Succès Douce** (`#E6F2EA`), **Attention** (`#B45309`) / **Attention Douce** (`#FBF0E2`): unchanged from before the claymorphic system, and not part of its scope.
+Material inverts intensity between light and dark: in light mode a domain color fills a large surface with white text on top; in dark mode a dark-desaturated version of the same hue fills the surface, and the original saturated hue becomes the text/icon color on top instead (avoids large saturated fills "vibrating" against a dark background). Concretely: each dark `tertiaryContainer` is a ~20-25%-lightness version of the same hue as its light source color, and `onTertiaryContainer` is a ~80-85%-lightness version of that same hue — never a different hue, just a different point on the same hue's lightness ramp. Every pair clears WCAG AA (4.5:1 text-on-fill, 3:1 non-text) — verified by a permanent Jest test (`src/__tests__/materialColors.test.ts`), not eyeballed.
 
-### Domain vocabulary (finer-grained than the four screen domains)
-- **Macro Protéine** (`#C2410C`), **Macro Glucides** (`#0F766E`), **Macro Lipides** (`#4338CA`): a recipe's protein/carbs/fat always keep these three hues, wherever they appear (cards, charts, legends) — never remapped per screen, unlike the four domain colors above which are chosen per-screen.
-- **Effort** (`#DC2626`), **Repos** (`#0369A1`): training-intensity vocabulary. Currently unused in any shipped screen — no effort/intensity data exists yet in the exercise/session data model.
+### Status and domain vocabulary (unchanged, not part of this system's scope)
+
+**Erreur** (`#DC2626`) / **Erreur Douce** (`#FBEAE7`), **Succès** (`#15803D`) / **Succès Douce** (`#E6F2EA`), **Attention** (`#B45309`) / **Attention Douce** (`#FBF0E2`); **Macro Protéine** (`#C2410C`), **Macro Glucides** (`#0F766E`), **Macro Lipides** (`#4338CA`); **Effort** (`#DC2626`), **Repos** (`#0369A1`).
 
 ### Named Rules
-**The One Domain Rule.** A screen that's fundamentally about nutrition uses Ambre Grillé for its accents; a sport screen uses Vert Forêt. Don't mix two domain colors as accents on the same screen without a specific reason — this is the old "the accent is scarce" rule, now applied per-domain instead of per-app.
 
-**The Domain Vocabulary Never Remaps Rule.** Macro Protéine/Glucides/Lipides and Effort/Repos are fixed hues independent of screen domain — a recipe's protein number is always Macro Protéine—colored, even on a Vert Forêt sport screen.
+**The One Domain Rule.** A screen fundamentally about nutrition uses nutrition's `tertiary` for its accents; a sport screen uses sport's. Don't mix two domains' `tertiary` as accents on the same screen without a specific reason.
 
-**The Legacy Red Rule.** `accentRed`/`accentRedDeep`/`accentRedSoft` still exist in code as a transitional shim (their values equal Rouge Baie/Rouge Baie Profond, plus a bespoke soft rose) for the handful of screens not yet migrated to explicit domain tokens. Never reach for them in new or touched code — use the domain tokens directly. They are being retired screen-by-screen, not a second, permanent color system.
+**The Fixed-Role Rule.** `background`/`surface`/`outline`/`primary`/`error` never change per screen or per domain — only `tertiary` (and its `onTertiary`/`tertiaryContainer` pair) is domain-aware.
 
 ## Typography
 
-**Display & Body Font:** Fredoka (with system-sans fallback) — one rounded, friendly sans family carrying everything: hero text, screen titles, big numbers, running body copy, and button labels. There is no second family and no serif/sans distinction.
+**Display & Body Font:** Fredoka — one rounded, friendly sans family, themed through Material's type scale rather than swapped for Roboto (`android.md` explicitly allows theming a brand face through the type scale; changing font is not required for platform conformance).
 
-**Character:** Rounded, warm, approachable — the opposite of a clinical health-tracker's neutral grotesk. Weight lives entirely in which Fredoka cut is loaded (`Fredoka_400Regular` / `_500Medium` / `_600SemiBold` / `_700Bold`), never in a separate `fontWeight` property — React Native does not synthesize weights for custom fonts, so mixing `fontFamily` and `fontWeight` silently does nothing.
+**Character:** Weight lives entirely in which Fredoka cut is loaded (`Fredoka_400Regular` / `_500Medium` / `_600SemiBold` / `_700Bold`), never in a separate `fontWeight` — React Native does not synthesize weights for custom fonts.
 
-### Hierarchy
-- **hero** (700, 32px/38px, −0.6px): the one thing a screen is fundamentally about — a user's name, a headline moment.
-- **display** (700, 26px/32px, −0.4px): screen titles.
-- **title** (600, 20px/26px, −0.2px): card titles, section headings that carry weight.
-- **metric** (700, 28px/32px, −0.4px): a single big number standing alone (calories, weight). Not for a 3–4-up row of numbers on a phone — it wraps; use `title` there instead.
-- **heading** / **subheading** (700/16px and 600/14px): headings inside content.
-- **body** / **bodyStrong** (400/14px and 600/14px, 21px line height): running text.
-- **label** (700, 14px/18px, +0.1px): buttons, tabs, chips.
-- **caption** / **captionStrong** (500/12px and 600/12px): metadata, secondary rows.
-- **overline** (700, 10px/14px, +1.2px, uppercase): eyebrows, field labels, step counters. Sets its own uppercase transform — never re-declare it at the call site.
+### Hierarchy (Material role names)
 
-No italic face is loaded; if you want emphasis, change the step or the color, not the style.
+- **displayLarge** (700, 32px/38px, −0.6px): the one thing a screen is fundamentally about.
+- **displayMedium** (700, 26px/32px, −0.4px): screen titles.
+- **titleLarge** (600, 20px/26px, −0.2px): card titles, weighty section headings.
+- **headlineLarge** (700, 28px/32px, −0.4px): a single big standalone number (calories, weight).
+- **titleMedium** / **titleSmall** (700/16px and 600/14px): headings inside content.
+- **bodyLarge** / **bodyMedium** (400/14px and 600/14px, 21px line height): running text.
+- **labelLarge** (700, 14px/18px, +0.1px): buttons, tabs, chips.
+- **labelMedium** / **labelSmall** (500/12px and 600/12px): metadata, secondary rows.
+- **overline** (700, 10px/14px, +1.2px, uppercase): eyebrows, field labels, step counters — a custom addition beyond Material's canonical 15 type roles, same as Material itself allows.
 
 ### Named Rules
-**The One Family Rule.** Fredoka carries every text role in the app. Never introduce a second typeface, and never spread `typography.*` partially — spread the whole role object (`{...typography.title, color: ...}`) so family, size, leading, and tracking always travel together.
+
+**The One Family Rule.** Fredoka carries every text role. Never spread `materialTypography.*` partially — spread the whole role object so family, size, leading, and tracking travel together.
 
 ## Layout
 
-Screens pad horizontally by `spacing.lg` (16px) and separate sections by `spacing.xl` (24px). Content caps at 560px wide and centers itself (`centeredContent`) — a no-op on phone-width screens, but it keeps text and cards from stretching edge-to-edge on the web/tablet build the same codebase also targets. No breakpoint system beyond that single cap; this is a phone-first layout, not a responsive grid.
+Unchanged from before: screens pad horizontally by `spacing.lg` (16px), separate sections by `spacing.xl` (24px), content caps at 560px and centers (`centeredContent`). `orientation` is unlocked in `app.json` as of this phase (defensive only — no adaptive tablet/landscape layout work has happened yet; that is Phase 6).
 
-## Elevation & Depth
+## Elevation
 
-Claymorphic, two parts used together — never one without the other:
-
-1. **Shadow tiers**, all warm-tinted (`#3A2E22`, never pure black) so they read as depth in a puffy material rather than a hard flat drop shadow.
-2. **The clay sheen** — a diagonal light-catching gradient overlay laid on top of every raised surface, simulating an inset highlight that React Native's shadow system can't produce natively.
-
-### Shadow Vocabulary
-- **subtle** (`shadowColor: #3A2E22, opacity 0.06, radius 10, offset 0/2, elevation 1`): the lightest tier.
-- **card** (`shadowColor: #3A2E22, opacity 0.12, radius 18, offset 0/8, elevation 4`): the default for Cards and inputs.
-- **raised** (`shadowColor: #3A2E22, opacity 0.18, radius 26, offset 0/12, elevation 8`): buttons and anything meant to feel like it's sitting highest.
+Single-tier, neutral Material elevation — not the claymorphic three-tier warm-tinted system. `materialElevation`: `shadowColor: #000000, shadowOpacity: 0.16, shadowRadius: 6, shadowOffset: {0, 2}, elevation: 2`. Used by `Card` only; `Button` and filter chips are flat (no shadow), matching Material's own default elevation for filled buttons and chips.
 
 ### Named Rules
-**The Puffy Sheen Rule.** Every raised surface (Card, primary Button) gets a diagonal gradient overlay — lighter top-left catching the light, fading to a faint warm dark bottom-right — sized to fill the surface exactly, with its own matching border radius, and `pointerEvents="none"`. The parent surface never gets `overflow: hidden`, because that would also clip the parent's own drop shadow.
 
-**The Soft-by-Design Rule.** Shadows stay low-opacity on purpose. Deepening a shadow to make an element stand out is the wrong lever here — reach for type weight and spacing first.
+**The Flat-by-Default Rule.** Only `Card` carries elevation. Buttons, chips, and tab icons are flat — ripple, fill, and border carry the interaction feedback instead of a shadow.
 
 ## Shapes
 
-Radius is generous everywhere in this system — there is no small, tight-cornered surface anywhere on screen. `sm` (16px) is the smallest radius actually in active use (small cells, inputs). `md`/`lg` (20/26px) cover cards and buttons. `xl` (32px) is for the largest surfaces. `pill` (28px) is for chips and filter tags. `full` (999px) is for circles. `xs` (10px) exists in the scale but isn't used anywhere today — reaching for it is a signal to double-check the surface really needs to look that tight in this direction.
+Unchanged radius scale: `xs` (10px, unused), `sm` (16px, inputs), `md`/`lg` (20/26px, cards and buttons), `xl` (32px, largest surfaces), `pill` (28px, chips), `full` (999px, circles).
 
 ## Components
 
-The interaction character across every component is **ludique et rebondissant** (playful and bouncy) — a visible, springy overshoot on release, not a static snap.
-
 ### Buttons
-- **Shape:** `rounded.lg` (26px), no hard outline ever.
-- **Primary:** filled with the screen's domain color (defaults to Rouge Baie if no `domain` is given), white text (`blanc-sur-accent`), the puffy sheen overlay on top, `shadow.raised` tinted with the domain's `*Deep` color.
-- **Secondary:** `blanc-surface` fill, `encre-chaude` text, no sheen overlay, shadow tinted with `encre-chaude` instead of a domain color — a secondary button ignores `domain` entirely regardless of screen context.
-- **Pressed:** primary darkens to the domain's `*Deep` fill and squishes to `scale: 0.9`; both animate from the *same* continuously-sprung value so the color-darken and the squish are read as genuinely synchronized on every frame, not two effects merely triggered together.
-- **Disabled:** `blanc-surface` fill regardless of variant, `encre-attenuee` label, shadow opacity dropped to near-zero.
+- **Filled** (`variant="primary"`, default): fills with the screen domain's `tertiary`, `onTertiary` text, native ripple in `onTertiary` at ~12% opacity. No shadow, no gradient overlay.
+- **Outlined** (`variant="secondary"`): transparent fill, 1px `outline` border, `onSurface` text, ripple in the domain's `tertiary` at ~12% opacity.
+- **Disabled:** `surfaceVariant` fill (Filled) or transparent (Outlined), `onSurfaceVariant` label, border becomes `outlineVariant`.
+- **Press:** the platform's own ripple — no custom animation, no `useReducedMotion` dependency (ripple already respects the system's Remove Animations setting on its own).
 
-### Chips / Choice Pills
-- **Style:** unselected = `blanc-surface` fill with `card` shadow; selected = the screen's domain color fill, shadow tinted to match, white text.
-- **Press:** the springy scale-only pattern (no color animation on press — only the selected/unselected fill state changes color).
-- **Used by:** single-select day/filter tabs (`ChoiceGroup`) and multi-select tag filters (`TagFilterGroup`) — same visual pill, different selection semantics.
+### Filter Chips
+- **Style:** unselected = transparent fill, 1px border in the domain's `tertiary`, `tertiary`-colored label; selected = filled `tertiary`, `onTertiary` label.
+- **Press:** native ripple, same domain-tinted approach as buttons.
+- **Used by:** single-select (`ChoiceGroup`, `accessibilityRole="radio"`) and multi-select (`TagFilterGroup`, `accessibilityRole="checkbox"`) — same visual chip, different selection semantics.
 
-### Cards / Containers
-- **Corner Style:** `rounded.lg` (26px).
-- **Background:** `blanc-surface`, with the puffy sheen overlay.
-- **Shadow Strategy:** `shadow.card`.
+### Cards
+- **Corner:** `rounded.lg` (26px).
+- **Background:** `surface`.
+- **Elevation:** `materialElevation` (single neutral tier).
 - **Border:** none.
-- **Internal Padding:** `spacing.md` (12px).
+- **Padding:** `spacing.md` (12px).
 
-### Inputs / Fields
-- **Style:** `blanc-surface` fill, `rounded.sm` (16px), 1px `trait-exterieur` border, `shadow.card`.
-- **Focus:** border thickens to 2px (currently still the legacy Rouge-Baie-equivalent `accentRed` color, not yet domain-aware) — padding compensates by 1px so the box doesn't visibly jump when the border thickens.
-- **Label:** `overline` above the field.
+### Empty States
+- Same structure as before (`illustration`/`icon`/`title`/`message`/`actionLabel`/`onAction`/`domain`) wrapped in a `Card`; `title` uses `titleLarge`/`onSurface`, `message` uses `bodyLarge`/`onSurfaceVariant`.
 
 ### Navigation (bottom tab bar)
-- **Style:** claymorphic raster icons — not tintable vector icons — for each of the 6 destinations, drawn in the same puffy style as the mascot itself. Active/inactive state is conveyed by opacity (full opacity active, `state.disabledOpacity` 0.55 inactive), not by a tint-color swap, since these are static images.
-- **Labels:** small caption text under each icon, colored by `encre-chaude`/`encre-attenuee` for active/inactive.
+- **Style:** `MaterialIcons` from `@expo/vector-icons`, tinted per-icon from its own `focused` prop — `primary` when active, `onSurfaceVariant` when inactive. No opacity trick; a genuine tint swap, same mechanism Material's own tab bars use.
+- Still 6 destinations as of this phase — the restructuring to 5 is Phase 5 scope, not a Phase 4 change.
 
-### Mascot (Signature Component)
-A stylized cartoon broccoli character with big Pixar-style eyes and coral-orange sneakers — the single most defining element of this design system, and the one place in the app where energy and personality are concentrated. Three poses today:
-- **idle** — the default, continuous presence. A slow, perpetual breathing scale-pulse (2.4s full cycle) so it reads as alive even when nothing is happening.
-- **celebrating** — a triggered reward moment (milestones, session completion). Bounces in with a pronounced-overshoot spring; resets its scale to the pre-bounce start before re-springing, so switching pose mid-mount always produces a visible bounce rather than a no-op.
-- **encouraging** — reassurance after a setback (currently: a failed plan generation). Shares `idle`'s calm breathing rather than bouncing — a triumphant entrance would read as discordant on a setback moment. Must never look mocking, sad, or apologetic.
+### Mascot
+Present only as the app's icon, splash screen, and Android adaptive icon — not part of the functional UI's component system as of this phase. Its removal from screens (header placements, empty states, celebration/encouragement moments) is Phase 5 scope; the `Mascot.tsx` component itself is untouched by this phase and still renders in every screen that hasn't migrated yet.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** pull every color, size, radius, shadow, duration, and spring config from `src/theme/tokens.ts` — no exceptions, no inline hex or magic numbers.
-- **Do** give every primary `Button` and domain-aware pill an explicit `domain` prop matching the screen's content (nutrition/sport/progress/neutral) rather than relying on the `'progress'` default.
-- **Do** give every tappable element a visible pressed state, a minimum 44pt touch size, and an `accessibilityRole`.
-- **Do** use the springy, bouncy press feel everywhere (`PressableScale` for chips/cells, `Button`'s own animation for buttons) — it's the deliberate default feel, not a bug to tone down.
-- **Do** keep the mascot's `encouraging`/`celebrating` poses as the sole reservoir of exclamation marks and hype language; everywhere else, copy stays sober.
-- **Do** name colors and describe components by what they mean in this system (Ambre Grillé, Rouge Baie), not by generic Material role names.
+- **Do** pull every color, size, radius, spacing, and typography value from `src/theme/tokens.ts`'s Material exports (`useMaterialColors`, `useMaterialTertiary`, `materialTypography`, `materialElevation`) — no inline hex or magic numbers in new/touched code.
+- **Do** give every domain-aware component an explicit `domain` prop matching the screen's content rather than relying on the `'progress'` default.
+- **Do** give every tappable element `android_ripple`, a minimum 48dp touch size, and an explicit `accessibilityRole`.
+- **Do** verify any new color role's contrast against `src/__tests__/materialColors.test.ts`'s pattern — extend that file rather than eyeballing a new pair.
 
 ### Don't:
-- **Don't** reach for `accentRed`/`accentRedDeep`/`accentRedSoft` in new or touched code — they're a transitional shim, use the domain tokens directly.
-- **Don't** mix two domain colors as accents on one screen without a specific reason.
-- **Don't** use `fontWeight` anywhere, or pair `fontFamily` with `fontWeight` — weight lives in which Fredoka cut is loaded.
-- **Don't** let this system drift toward flat generic SaaS — no thin-bordered flat cards, no blue-violet gradients, no interchangeable "professional tool" look.
-- **Don't** deepen a shadow to create emphasis — reach for type weight and spacing first; shadows stay soft and low-opacity by design.
-- **Don't** place the mascot in an error state, or give the `encouraging` pose any hint of mockery, sadness, or apology — a failure is never read as the app poking fun at the user.
+- **Don't** reach for the legacy claymorphic tokens (`lightColors`, `useThemeColors`, `typography`, `shadow`, `clayOverlay`) in new or touched code — they exist only for the screens not yet migrated to Material (Phase 5).
+- **Don't** mix two domains' `tertiary` as accents on one screen without a specific reason.
+- **Don't** use `fontWeight` anywhere, or pair `fontFamily` with `fontWeight`.
+- **Don't** add a custom spring/scale press animation to a new component — the native ripple is the interaction feedback, full stop.
+- **Don't** add elevation/shadow to anything but `Card` without a specific reason — flat is the default.
