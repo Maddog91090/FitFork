@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { translateAuthError } from '../../lib/authErrors';
@@ -15,6 +16,7 @@ import { centeredContent, spacing, typography, useThemeColors, type ThemeColors 
 export default function ResetPasswordScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { updatePassword } = useAuth();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -38,7 +40,7 @@ export default function ResetPasswordScreen() {
   };
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { paddingTop: insets.top }]}>
       <View style={styles.content}>
         <Text style={styles.brand}>Nouveau mot de passe</Text>
 

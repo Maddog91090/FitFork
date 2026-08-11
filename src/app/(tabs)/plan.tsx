@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, Image, Pressable, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getCurrentPlan, updatePlanEntry, fetchRecipes, type Recipe, type SavedPlan } from '../../lib/mealPlanData';
@@ -30,6 +31,7 @@ const DAY_TAB_OPTIONS = DAY_LABELS.map((label, index) => ({ value: String(index)
 export default function PlanScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [plan, setPlan] = useState<SavedPlan | null>(null);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -100,7 +102,7 @@ export default function PlanScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <ActivityIndicator color={colors.domainNutrition} />
       </View>
     );
@@ -108,7 +110,7 @@ export default function PlanScreen() {
 
   if (error && !plan) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <ErrorNotice message={error} onRetry={load} />
       </View>
     );
@@ -116,7 +118,7 @@ export default function PlanScreen() {
 
   if (!plan || plan.entries.length === 0) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <EmptyState
           icon={<Mascot pose="idle" size={120} />}
           title="Aucun plan pour l'instant"
@@ -132,7 +134,7 @@ export default function PlanScreen() {
   const dayEntries = plan.entries.filter((e) => e.dayIndex === activeDayIndex);
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+    <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
       {error && <ErrorNotice message={error} onRetry={load} />}
 
       <ChoiceGroup

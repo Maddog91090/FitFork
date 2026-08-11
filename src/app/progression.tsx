@@ -1,6 +1,7 @@
 // src/app/progression.tsx
 import { useCallback, useMemo, useState } from 'react';
 import { View, Text, Image, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { fetchMyCompletions } from '../lib/workoutCompletionsData';
@@ -23,6 +24,7 @@ import {
 export default function ProgressionScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [checking, setChecking] = useState(true);
   const [stats, setStats] = useState<GamificationStats | null>(null);
@@ -55,7 +57,7 @@ export default function ProgressionScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <ActivityIndicator color={colors.domainProgress} />
       </View>
     );
@@ -63,7 +65,7 @@ export default function ProgressionScreen() {
 
   if (!stats) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <BackLink />
         <ErrorNotice message={error ?? 'Impossible de charger ta progression.'} onRetry={load} />
       </View>
@@ -73,7 +75,7 @@ export default function ProgressionScreen() {
   const unlockedIds = new Set(unlockedBadgeIds(stats));
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+    <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
       <BackLink />
       {error && <ErrorNotice message={error} onRetry={load} />}
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getTrainingProfile, upsertTrainingProfile } from '../../lib/profile';
@@ -34,6 +35,7 @@ function todayDateString(): string {
 export default function WorkoutScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [trainingProfile, setTrainingProfile] = useState<TrainingProfile | null>(null);
   const [checking, setChecking] = useState(true);
@@ -156,7 +158,7 @@ export default function WorkoutScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <ActivityIndicator color={colors.domainSport} />
       </View>
     );
@@ -164,7 +166,7 @@ export default function WorkoutScreen() {
 
   if (!trainingProfile) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <ErrorNotice message={error ?? 'Impossible de charger ton profil sportif.'} onRetry={load} />
       </View>
     );
@@ -173,7 +175,7 @@ export default function WorkoutScreen() {
   const levelProgram = getLevelProgram(trainingProfile.experienceLevel);
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+    <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
       {error && <Text style={styles.error}>{error}</Text>}
 
       <View style={styles.headerRow}>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { useLinkingURL } from 'expo-linking';
 import * as QueryParams from 'expo-auth-session/build/QueryParams';
@@ -17,6 +18,7 @@ import { centeredContent, spacing, typography, useThemeColors, type ThemeColors 
 export default function AuthCallbackScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const url = useLinkingURL();
   const [error, setError] = useState<string | null>(null);
 
@@ -52,7 +54,7 @@ export default function AuthCallbackScreen() {
 
   if (error) {
     return (
-      <View style={styles.screen}>
+      <View style={[styles.screen, { paddingTop: insets.top }]}>
         <View style={styles.content}>
           <Text style={styles.error}>{error}</Text>
           <Link href="/login" style={styles.link}>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, Image, ActivityIndicator, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { fetchRecipes, type Recipe } from '../../lib/mealPlanData';
@@ -45,6 +46,7 @@ function parsePrepTimeFilter(value: string): PrepTimeFilter {
 export default function RecipesScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [checking, setChecking] = useState(true);
@@ -88,14 +90,14 @@ export default function RecipesScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <ActivityIndicator color={colors.domainNutrition} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+    <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
       {error && <ErrorNotice message={error} onRetry={load} />}
 
       <ChoiceGroup options={MEAL_TYPE_OPTIONS} value={mealType} onChange={setMealType} domain="nutrition" />

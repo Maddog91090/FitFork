@@ -9,6 +9,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../lib/auth-context';
 import { upsertProfile, upsertTrainingProfile } from '../lib/profile';
 import { enableNotifications } from '../lib/pushNotifications';
@@ -96,6 +97,7 @@ export function validateStep(step: number, fields: OnboardingFields): string | n
 export default function OnboardingScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [step, setStep] = useState(0);
   const [sex, setSex] = useState<Sex | null>(null);
@@ -201,7 +203,7 @@ export default function OnboardingScreen() {
   if (showNotificationPrompt) {
     return (
       <View style={styles.screen}>
-        <View style={styles.content}>
+        <View style={[styles.content, { paddingTop: insets.top }]}>
           <View style={styles.notificationPrompt}>
             <Text style={styles.title}>Activer les notifications ?</Text>
             <View style={styles.notificationActions}>

@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, StyleSheet, Pressable, Switch } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../../lib/profile';
@@ -28,6 +29,7 @@ const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'snack', 'dinner'];
 export default function HomeScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { session, loading, signOut } = useAuth();
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [macros, setMacros] = useState<MacroTargets | null>(null);
@@ -130,14 +132,14 @@ export default function HomeScreen() {
 
   if (loading || !session || checkingProfile) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <ActivityIndicator color={colors.domainNutrition} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+    <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
       <View style={styles.headerRow}>
         <View style={styles.headerText}>
           <Text style={styles.greeting}>Bonjour</Text>

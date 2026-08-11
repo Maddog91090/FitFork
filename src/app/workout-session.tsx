@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAudioPlayer } from 'expo-audio';
 import { useKeepAwake } from 'expo-keep-awake';
@@ -40,6 +41,7 @@ export default function WorkoutSessionScreen() {
   useKeepAwake();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const params = useLocalSearchParams<{ level: string; sessionIndex: string }>();
   const beepPlayer = useAudioPlayer(require('../../assets/audio/beep.wav'));
@@ -93,7 +95,7 @@ export default function WorkoutSessionScreen() {
 
   if (!workoutSession) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <Text style={styles.error}>Séance introuvable.</Text>
       </View>
     );
@@ -102,7 +104,7 @@ export default function WorkoutSessionScreen() {
   if (finished) {
     return (
       <View style={styles.screen}>
-        <View style={styles.finishedContainer}>
+        <View style={[styles.finishedContainer, { paddingTop: insets.top }]}>
           <Mascot pose="celebrating" size={140} />
           <Text style={styles.finishedTitle}>Séance terminée</Text>
           {error && <Text style={styles.error}>{error}</Text>}
@@ -118,7 +120,7 @@ export default function WorkoutSessionScreen() {
 
   return (
     <View style={styles.screen}>
-      <View style={styles.exitRow}>
+      <View style={[styles.exitRow, { paddingTop: spacing.lg + insets.top }]}>
         <PressableScale
           onPress={() => router.replace('/(tabs)/workout')}
           accessibilityRole="button"
