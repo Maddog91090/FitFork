@@ -65,5 +65,12 @@ describe('GeneratePlanScreen', () => {
     const { getByText, getByTestId } = await render(<GeneratePlanScreen />);
     fireEvent.press(getByText('Générer le plan'));
     await waitFor(() => expect(getByTestId('mascot-image')).toBeTruthy());
+    // Assert the resolved image source itself (not just that some image
+    // rendered) so this test actually distinguishes the encouraging pose
+    // from celebrating/idle — see MASCOT_SOURCES in Mascot.tsx. expo-image's
+    // Image normalizes a single `require()` source into a one-element array.
+    expect(getByTestId('mascot-image').props.source).toEqual([
+      require('../../assets/images/mascot/mascot-encouraging.png'),
+    ]);
   });
 });
