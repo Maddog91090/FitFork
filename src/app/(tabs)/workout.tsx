@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Image } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Image, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
@@ -15,7 +15,6 @@ import {
   type WorkoutCompletionRow,
 } from '../../lib/workoutCompletionsData';
 import { Card } from '../../components/ui/Card';
-import { PressableScale } from '../../components/ui/PressableScale';
 import { Button } from '../../components/ui/Button';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
 import {
@@ -27,6 +26,7 @@ import {
   state,
   useMaterialColors,
   useMaterialTertiary,
+  withRippleAlpha,
   type MaterialColorScheme,
   type MaterialTertiary,
 } from '../../theme/tokens';
@@ -231,23 +231,24 @@ export default function WorkoutScreen() {
             <View style={styles.startRow}>
               <Button title="Commencer" onPress={() => handleStartSession(index)} domain="sport" />
             </View>
-            <SessionDetail session={sessionItem} styles={styles} />
+            <SessionDetail session={sessionItem} styles={styles} sport={sport} />
             <View style={styles.completionRow}>
               {todayCompletion ? (
                 <>
                   <View style={styles.completionDoneBadge}>
                     <Text style={styles.completionDoneText}>Fait aujourd'hui ✓</Text>
                   </View>
-                  <PressableScale
+                  <Pressable
                     onPress={handleToggleCompletion}
                     disabled={loggingCompletion}
                     hitSlop={state.hitSlop}
                     accessibilityRole="button"
                     accessibilityState={{ disabled: loggingCompletion }}
+                    android_ripple={{ color: withRippleAlpha(sport.tertiaryContainer) }}
                     style={styles.completionUndoTouchable}
                   >
                     <Text style={styles.completionUndoLink}>Annuler</Text>
-                  </PressableScale>
+                  </Pressable>
                 </>
               ) : (
                 <Button
@@ -283,7 +284,7 @@ export default function WorkoutScreen() {
 
 type Styles = ReturnType<typeof createStyles>;
 
-function SessionDetail({ session, styles }: { session: Session; styles: Styles }) {
+function SessionDetail({ session, styles, sport }: { session: Session; styles: Styles; sport: MaterialTertiary }) {
   if (session.type === 'circuit') {
     return (
       <View style={styles.sessionDetail}>
@@ -293,15 +294,16 @@ function SessionDetail({ session, styles }: { session: Session; styles: Styles }
           {session.recoveryLabel}.
         </Text>
         {session.exercises.map((exercise) => (
-          <PressableScale
+          <Pressable
             key={exercise.name}
             onPress={() => router.push(`/exercise/${exercise.exerciseId}`)}
             accessibilityRole="link"
             hitSlop={4}
+            android_ripple={{ color: withRippleAlpha(sport.tertiary) }}
             style={styles.exerciseCard}
           >
             <Text style={styles.exerciseLine}>{exercise.name}</Text>
-          </PressableScale>
+          </Pressable>
         ))}
       </View>
     );
@@ -312,16 +314,17 @@ function SessionDetail({ session, styles }: { session: Session; styles: Styles }
       <Text style={styles.exerciseListLabel}>Aperçu des exercices</Text>
       <Text style={styles.sessionMeta}>En séries, {session.restLabel}.</Text>
       {session.exercises.map((exercise) => (
-        <PressableScale
+        <Pressable
           key={exercise.name}
           onPress={() => router.push(`/exercise/${exercise.exerciseId}`)}
           accessibilityRole="link"
           hitSlop={4}
+          android_ripple={{ color: withRippleAlpha(sport.tertiary) }}
           style={styles.exerciseCard}
         >
           <Text style={styles.exerciseLine}>{exercise.name}</Text>
           <Text style={styles.exerciseDetail}>{exercise.detail}</Text>
-        </PressableScale>
+        </Pressable>
       ))}
     </View>
   );
@@ -365,6 +368,7 @@ function createStyles(colors: MaterialColorScheme, sport: MaterialTertiary) {
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md,
       marginBottom: spacing.sm,
+      overflow: 'hidden',
     },
     exerciseLine: { ...materialTypography.bodyMedium, color: colors.onSurface },
     exerciseDetail: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginTop: 2 },

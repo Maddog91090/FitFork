@@ -12,16 +12,17 @@ import { computeStats, type GamificationStats } from '../../lib/workoutGamificat
 import { todayDayIndex, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { PressableScale } from '../../components/ui/PressableScale';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
 import { MacroIcon } from '../../components/icons/MacroIcon';
 import {
   centeredContent,
   lightColors,
   materialTypography,
+  radius,
   spacing,
   useMaterialColors,
   useMaterialTertiary,
+  withRippleAlpha,
   type MaterialColorScheme,
 } from '../../theme/tokens';
 
@@ -189,7 +190,12 @@ export default function HomeScreen() {
       )}
 
       {gamification && (
-        <PressableScale onPress={() => router.push('/progression')} accessibilityRole="button">
+        <Pressable
+          onPress={() => router.push('/progression')}
+          accessibilityRole="button"
+          android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant) }}
+          style={styles.gamificationTouchable}
+        >
           <Card style={styles.gamificationCard}>
             <Text style={styles.sectionLabel}>Progression</Text>
             <View style={styles.gamificationRow}>
@@ -207,7 +213,7 @@ export default function HomeScreen() {
               </View>
             </View>
           </Card>
-        </PressableScale>
+        </Pressable>
       )}
 
       <Text style={styles.sectionLabel}>Actions rapides</Text>
@@ -281,6 +287,7 @@ function createStyles(colors: MaterialColorScheme) {
     greeting: { ...materialTypography.displayLarge, color: colors.onSurface },
     name: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginBottom: spacing.lg },
     macroCard: { marginBottom: spacing.lg },
+    gamificationTouchable: { borderRadius: radius.lg, overflow: 'hidden' },
     gamificationCard: { marginBottom: spacing.lg },
     gamificationRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
     gamificationItem: { alignItems: 'center', flex: 1 },
