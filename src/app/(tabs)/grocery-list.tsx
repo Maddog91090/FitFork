@@ -6,6 +6,7 @@ import { getCurrentPlan, fetchRecipeIngredients } from '../../lib/mealPlanData';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
+import { Mascot } from '../../components/ui/Mascot';
 import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 type AggregatedIngredient = { name: string; quantity: number; unit: string };
@@ -73,7 +74,7 @@ export default function GroceryListScreen() {
   if (loading || !session || checking) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+        <ActivityIndicator color={colors.domainNutrition} />
       </View>
     );
   }
@@ -82,11 +83,12 @@ export default function GroceryListScreen() {
     return (
       <View style={styles.centered}>
         <EmptyState
-          illustration={require('../../../assets/images/illustrations/empty-grocery.png')}
+          icon={<Mascot pose="idle" size={120} />}
           title="Aucun plan pour l'instant"
           message="Génère un plan de repas pour obtenir ta liste de courses."
           actionLabel="Générer un plan"
           onAction={() => router.push('/generate-plan')}
+          domain="nutrition"
         />
       </View>
     );
