@@ -91,7 +91,7 @@ function createStyles(colors: ThemeColors) {
       width: 20,
       height: 20,
       borderRadius: 10,
-      backgroundColor: colors.accentRed,
+      backgroundColor: colors.domainSport,
       alignItems: 'center',
       justifyContent: 'center',
       marginTop: 1,
