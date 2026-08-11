@@ -11,6 +11,7 @@ import { generateWeeklyPlan, DAY_LABELS, type MealSlot, type MealType } from '..
 import { Button } from '../components/ui/Button';
 import { PressableScale } from '../components/ui/PressableScale';
 import { BackLink } from '../components/ui/BackLink';
+import { Mascot } from '../components/ui/Mascot';
 import {
   centeredContent,
   radius,
@@ -146,8 +147,13 @@ export default function GeneratePlanScreen() {
           </View>
         </View>
       ))}
-      {error && <Text style={styles.error}>{error}</Text>}
-      <Button title="Générer le plan" onPress={handleGenerate} loading={generating} />
+      {error && (
+        <View style={styles.errorContainer}>
+          <Mascot pose="encouraging" size={100} />
+          <Text style={styles.error}>{error}</Text>
+        </View>
+      )}
+      <Button title="Générer le plan" onPress={handleGenerate} loading={generating} domain="nutrition" />
     </ScrollView>
   );
 }
@@ -173,9 +179,10 @@ function createStyles(colors: ThemeColors) {
       justifyContent: 'center',
       ...shadow.card,
     },
-    cellSelected: { backgroundColor: colors.accentRed, shadowColor: colors.accentRed, shadowOpacity: 0.25 },
+    cellSelected: { backgroundColor: colors.domainNutrition, shadowColor: colors.domainNutrition, shadowOpacity: 0.25 },
     cellLabel: { ...typography.caption, color: colors.textSecondary },
     cellLabelSelected: { ...typography.captionStrong, color: colors.textOnAccent },
-    error: { ...typography.body, color: colors.error, marginTop: spacing.md, marginBottom: spacing.sm },
+    errorContainer: { alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
+    error: { ...typography.body, color: colors.error, textAlign: 'center' },
   });
 }
