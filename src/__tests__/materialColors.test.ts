@@ -60,4 +60,25 @@ describe('Material color contrast (WCAG AA)', () => {
     const t = darkTertiaryByDomain[domain];
     expect(contrastRatio(t.tertiary, darkMaterialColors.background)).toBeGreaterThanOrEqual(3);
   });
+
+  // The pair that actually ships: Button/ChoiceGroup/TagFilterGroup all paint
+  // a `tertiary` fill with `onTertiary` text/ripple on top — never
+  // `tertiaryContainer`/`onTertiaryContainer`.
+  it.each(DOMAINS)('light %s: onTertiary clears 4.5:1 on tertiary', (domain) => {
+    const t = lightTertiaryByDomain[domain];
+    expect(contrastRatio(t.onTertiary, t.tertiary)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it.each(DOMAINS)('dark %s: onTertiary clears 4.5:1 on tertiary', (domain) => {
+    const t = darkTertiaryByDomain[domain];
+    expect(contrastRatio(t.onTertiary, t.tertiary)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  // The outlined/unselected chip variant paints `tertiary` as text/border
+  // color directly against the screen background — 14px bold labelLarge text
+  // does not qualify as WCAG "large text", so this must clear 4.5:1, not 3.0.
+  it.each(DOMAINS)('light %s: tertiary (as text) clears 4.5:1 against background', (domain) => {
+    const t = lightTertiaryByDomain[domain];
+    expect(contrastRatio(t.tertiary, lightMaterialColors.background)).toBeGreaterThanOrEqual(4.5);
+  });
 });

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import type { ChoiceOption } from './ChoiceGroup';
-import { useMaterialTertiary } from '../theme/tokens';
+import { useMaterialTertiary, withRippleAlpha } from '../theme/tokens';
 import { createPillStyles } from './choicePillStyles';
 import type { ButtonDomain } from './ui/Button';
 
@@ -35,8 +35,8 @@ export function TagFilterGroup<T extends string>({ options, value, onChange, dom
             onPress={() => toggle(option.value)}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: selected }}
-            android_ripple={{ color: selected ? tertiary.onTertiary + '1F' : tertiary.tertiary + '1F' }}
-            style={[styles.pill, selected && styles.pillSelected]}
+            android_ripple={{ color: selected ? withRippleAlpha(tertiary.onTertiary) : withRippleAlpha(tertiary.tertiary) }}
+            style={({ pressed }) => [styles.pill, selected && styles.pillSelected, pressed && styles.pressed]}
           >
             <Text style={selected ? styles.labelSelected : styles.label}>{option.label}</Text>
           </Pressable>

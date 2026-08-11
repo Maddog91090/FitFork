@@ -419,7 +419,12 @@ export const darkTertiaryByDomain: Record<MaterialDomain, MaterialTertiary> = {
   neutral: { tertiary: '#D4BC9B', onTertiary: '#322615', tertiaryContainer: '#4F3B22', onTertiaryContainer: '#E8DBC9' },
 };
 
-/** Becomes reachable once `userInterfaceStyle` is `"automatic"` in app.json (this plan's Task 8) — until then, Expo may lock the resolved color scheme to the app's configured style rather than the system setting. */
+/**
+ * `userInterfaceStyle` is `"light"` in `app.json` for now (deliberately, until
+ * a later phase migrates the remaining screens off the old claymorphic
+ * tokens), so this hook's dark branch is built and tested but not yet
+ * reachable on-device.
+ */
 export function useMaterialColors(): MaterialColorScheme {
   const scheme = useColorScheme();
   return scheme === 'dark' ? darkMaterialColors : lightMaterialColors;
@@ -465,3 +470,13 @@ export const materialElevation = {
   shadowOffset: { width: 0, height: 2 },
   elevation: 2,
 } as const;
+
+/**
+ * Adds ~12% alpha to a hex color for Material ripple tints — `'1F'` is `0x1F`
+ * (31/255 ≈ 12%) appended as the alpha channel. Shared by `Button`,
+ * `ChoiceGroup`, and `TagFilterGroup`'s `android_ripple` colors so the
+ * "12% ripple alpha" convention lives in one place.
+ */
+export function withRippleAlpha(hex: string): string {
+  return hex + '1F';
+}

@@ -12,6 +12,11 @@ colors:
   outline-variant-light: "#F0D9B8"
   primary-light: "#7A5C34"
   on-primary-light: "#FFFFFF"
+  primary-container-light: "#6B4F26"
+  on-primary-container-light: "#FFFFFF"
+  on-error-light: "#FFFFFF"
+  error-container-light: "#FBEAE7"
+  on-error-container-light: "#2E2418"
   background-dark: "#17120C"
   on-background-dark: "#EEE6DD"
   surface-dark: "#2C2217"
@@ -22,14 +27,27 @@ colors:
   outline-variant-dark: "#654F34"
   primary-dark: "#D4BC9B"
   on-primary-dark: "#322615"
+  primary-container-dark: "#4F3B22"
+  on-primary-container-dark: "#E8DBC9"
+  on-error-dark: "#3D0A0A"
+  error-container-dark: "#611010"
+  on-error-container-dark: "#F4BDBD"
   tertiary-nutrition-light: "#B25900"
   tertiary-sport-light: "#187A57"
   tertiary-progress-light: "#C2325A"
   tertiary-neutral-light: "#7A5C34"
+  on-tertiary-nutrition-light: "#FFFFFF"
+  on-tertiary-sport-light: "#FFFFFF"
+  on-tertiary-progress-light: "#FFFFFF"
+  on-tertiary-neutral-light: "#FFFFFF"
   tertiary-nutrition-dark: "#FFB870"
   tertiary-sport-dark: "#88E8C5"
   tertiary-progress-dark: "#E28DA5"
   tertiary-neutral-dark: "#D4BC9B"
+  on-tertiary-nutrition-dark: "#472400"
+  on-tertiary-sport-dark: "#0C3C2B"
+  on-tertiary-progress-dark: "#390F1A"
+  on-tertiary-neutral-dark: "#322615"
   error: "#DC2626"
   error-soft: "#FBEAE7"
   success: "#15803D"
@@ -114,7 +132,7 @@ spacing:
 components:
   button-filled:
     backgroundColor: "{colors.tertiary-progress-light}"
-    textColor: "{colors.on-primary-light}"
+    textColor: "{colors.on-tertiary-progress-light}"
     typography: "{typography.labelLarge}"
     rounded: "{rounded.lg}"
     padding: "14px 16px"
@@ -137,7 +155,7 @@ components:
     padding: "12px"
   filter-chip-selected:
     backgroundColor: "{colors.tertiary-progress-light}"
-    textColor: "{colors.on-primary-light}"
+    textColor: "{colors.on-tertiary-progress-light}"
     typography: "{typography.labelLarge}"
     rounded: "{rounded.pill}"
     padding: "10px 14px"
@@ -158,7 +176,7 @@ FitFork is a Material 3 fitness and nutrition app. Its identity comes from four 
 
 The interaction philosophy is native-first: press feedback is the platform's own ripple (`android_ripple`), not a custom spring or scale animation. Shape and elevation follow Material's conventions directly — generous but not exaggerated corner radii, a single neutral elevation tier for raised surfaces, no colored shadows, no decorative overlays.
 
-The app supports both light and dark color schemes, following the system setting (`userInterfaceStyle: "automatic"`). Both schemes carry the same four domain accents, each independently tuned per scheme via Material's tonal-inversion method so neither scheme reads as an afterthought.
+The color system is built for both light and dark schemes — the six Material-ized components genuinely switch via `useColorScheme()`, and both schemes carry the same four domain accents, each independently tuned per scheme via Material's tonal-inversion method so neither scheme reads as an afterthought. `userInterfaceStyle` is `"light"` in `app.json` for now, so the dark scheme is not yet reachable on-device end-to-end — see "Known limitations."
 
 **Key Characteristics:**
 - Four domain colors (nutrition, sport, progress, neutral), expressed through Material's `tertiary`/`onTertiary`/`tertiaryContainer` role triplet — the one role that changes per screen
@@ -178,7 +196,7 @@ Material's role system: a handful of **fixed roles** (background, surface, outli
 - **`surfaceVariant`/`onSurfaceVariant`**: recessed or secondary areas. Light: `#FFF3E0`/`#6B5A46`. Dark: `#433423`/`#D5C4AF`.
 - **`outline`/`outlineVariant`**: borders and dividers — `outline` is the stronger one, required to clear 3:1 for non-text UI (e.g. an Outlined button's border). Light: `#A67F4C`/`#F0D9B8`. Dark: `#A88357`/`#654F34`.
 - **`primary`/`onPrimary`**: structural chrome — active tab tint, focus rings. Derived from Cacao Chaud (`#7A5C34`), sharing its source hue with the neutral domain's `tertiary` on purpose — chrome and content harmonize on a neutral-domain screen instead of clashing. Light: `#7A5C34`/`#FFFFFF`. Dark: `#D4BC9B`/`#322615` (Material's dark scheme convention: `primary` becomes a *light* tone used as text/icon tint, not a filled surface).
-- **`error`/`onError`/`errorContainer`/`onErrorContainer`**: unchanged in hue from before this system, `#DC2626`-based; dark values follow the same tonal-inversion method as everything else.
+- **`error`/`onError`/`errorContainer`/`onErrorContainer`**: unchanged in hue from before this system, `#DC2626`-based; dark values follow the same tonal-inversion method as everything else. One value did change from the plan's original design during implementation: light-mode `onErrorContainer` is `lightColors.textPrimary` (`#2E2418`), not `lightColors.error` as originally planned — the error hue itself failed 4.5:1 against the light `errorContainer` fill (`#FBEAE7`), so it was repointed to the app's ink color, which clears it.
 
 ### Swappable role: `tertiary` (selected per screen by domain)
 
@@ -287,3 +305,8 @@ Present only as the app's icon, splash screen, and Android adaptive icon — not
 - **Don't** use `fontWeight` anywhere, or pair `fontFamily` with `fontWeight`.
 - **Don't** add a custom spring/scale press animation to a new component — the native ripple is the interaction feedback, full stop.
 - **Don't** add elevation/shadow to anything but `Card` without a specific reason — flat is the default.
+
+## Known limitations
+
+- **`PressableScale` is still alive and still correct to use.** It has not been removed — it remains the right component for any screen not yet migrated to Material (see "Don't reach for the legacy claymorphic tokens" above; the same applies to `PressableScale` itself, which several unmigrated screens still import directly).
+- **The app is not scheme-aware end-to-end yet.** Dark-mode tokens (`darkMaterialColors`, `darkTertiaryByDomain`) exist and are WCAG-tested, and the six Material-ized components (`Button`, `Card`, `ChoiceGroup`, `TagFilterGroup`, `EmptyState`, `TabIcon`) genuinely switch scheme via `useColorScheme()`. But `userInterfaceStyle` is `"light"` in `app.json` for now — deliberately, until a later phase migrates the remaining screens off the old claymorphic tokens — so the dark branch is not reachable on-device yet, and turning on `"automatic"` before that migration would leave those unmigrated screens' scheme-blind claymorphic colors mismatched against the six components that do switch.

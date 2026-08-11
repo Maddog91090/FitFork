@@ -7,6 +7,7 @@ import {
   state,
   useMaterialColors,
   useMaterialTertiary,
+  withRippleAlpha,
   type MaterialColorScheme,
   type MaterialDomain,
   type MaterialTertiary,
@@ -30,7 +31,7 @@ export function Button({
   title,
   onPress,
   variant = 'primary',
-  domain = 'progress',
+  domain,
   disabled = false,
   loading = false,
 }: ButtonProps) {
@@ -47,9 +48,9 @@ export function Button({
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       android_ripple={{
-        color: variant === 'primary' ? tertiary.onTertiary + '1F' : tertiary.tertiary + '1F',
+        color: variant === 'primary' ? withRippleAlpha(tertiary.onTertiary) : withRippleAlpha(tertiary.tertiary),
       }}
-      style={[styles.base, isDisabled && styles.disabledBase]}
+      style={({ pressed }) => [styles.base, isDisabled && styles.disabledBase, pressed && styles.pressed]}
     >
       {loading ? (
         <ActivityIndicator color={variant === 'primary' ? tertiary.onTertiary : colors.onSurface} />
@@ -64,6 +65,7 @@ function createStyles(colors: MaterialColorScheme, tertiary: MaterialTertiary, v
   return StyleSheet.create({
     base: {
       borderRadius: radius.lg,
+      overflow: 'hidden',
       paddingVertical: spacing.md + 2,
       paddingHorizontal: spacing.lg,
       minHeight: state.minTouchSize,
@@ -76,6 +78,9 @@ function createStyles(colors: MaterialColorScheme, tertiary: MaterialTertiary, v
     disabledBase: {
       backgroundColor: variant === 'primary' ? colors.surfaceVariant : 'transparent',
       borderColor: variant === 'secondary' ? colors.outlineVariant : 'transparent',
+    },
+    pressed: {
+      opacity: 0.85,
     },
     label: {
       ...materialTypography.labelLarge,
