@@ -383,8 +383,8 @@ export const darkMaterialColors: MaterialColorScheme = {
   onSurface: '#EEE6DD',
   surfaceVariant: '#433423',
   onSurfaceVariant: '#D5C4AF',
-  outline: '#B3874C',
-  outlineVariant: '#6B512E',
+  outline: '#A88357',
+  outlineVariant: '#654F34',
   primary: '#D4BC9B',
   onPrimary: '#322615',
   primaryContainer: '#4F3B22',
@@ -419,7 +419,7 @@ export const darkTertiaryByDomain: Record<MaterialDomain, MaterialTertiary> = {
   neutral: { tertiary: '#D4BC9B', onTertiary: '#322615', tertiaryContainer: '#4F3B22', onTertiaryContainer: '#E8DBC9' },
 };
 
-/** `userInterfaceStyle` is `"automatic"` in app.json as of this phase, so this genuinely switches with the system setting. */
+/** Becomes reachable once `userInterfaceStyle` is `"automatic"` in app.json (this plan's Task 8) — until then, Expo may lock the resolved color scheme to the app's configured style rather than the system setting. */
 export function useMaterialColors(): MaterialColorScheme {
   const scheme = useColorScheme();
   return scheme === 'dark' ? darkMaterialColors : lightMaterialColors;
