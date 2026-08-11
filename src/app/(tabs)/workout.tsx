@@ -320,7 +320,7 @@ function SessionDetail({ session, styles, sport }: { session: Session; styles: S
           accessibilityRole="link"
           hitSlop={4}
           android_ripple={{ color: withRippleAlpha(sport.tertiary) }}
-          style={styles.exerciseCard}
+          style={({ pressed }) => [styles.exerciseCard, pressed && styles.exerciseCardPressed]}
         >
           <Text style={styles.exerciseLine}>{exercise.name}</Text>
           <Text style={styles.exerciseDetail}>{exercise.detail}</Text>
