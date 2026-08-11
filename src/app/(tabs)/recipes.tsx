@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, Image, ActivityIndicator, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../lib/auth-context';
 import { fetchRecipes, type Recipe } from '../../lib/mealPlanData';
 import type { MealType } from '../../lib/mealPlan';
@@ -11,8 +12,15 @@ import { TagFilterGroup } from '../../components/TagFilterGroup';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
-import { Mascot } from '../../components/ui/Mascot';
-import { centeredContent, radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+import {
+  centeredContent,
+  materialTypography,
+  radius,
+  spacing,
+  useMaterialColors,
+  useMaterialTertiary,
+  type MaterialColorScheme,
+} from '../../theme/tokens';
 
 const MEAL_TYPE_OPTIONS: { value: MealType | 'all'; label: string }[] = [
   { value: 'all', label: 'Tous' },
@@ -44,7 +52,8 @@ function parsePrepTimeFilter(value: string): PrepTimeFilter {
 }
 
 export default function RecipesScreen() {
-  const colors = useThemeColors();
+  const colors = useMaterialColors();
+  const nutrition = useMaterialTertiary('nutrition');
   const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
@@ -91,7 +100,7 @@ export default function RecipesScreen() {
   if (loading || !session || checking) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator color={colors.domainNutrition} />
+        <ActivityIndicator color={nutrition.tertiary} />
       </View>
     );
   }
@@ -106,7 +115,9 @@ export default function RecipesScreen() {
 
       {filteredRecipes.length === 0 ? (
         <EmptyState
-          icon={<Mascot pose="idle" size={120} />}
+          icon={
+            <MaterialIcons testID="empty-state-icon" name="restaurant-menu" size={64} color={colors.onSurfaceVariant} />
+          }
           title="Aucune recette ne correspond"
           message="Essaie d'assouplir tes filtres pour voir plus de résultats."
         />
@@ -135,10 +146,10 @@ export default function RecipesScreen() {
   );
 }
 
-function createStyles(colors: ThemeColors) {
+function createStyles(colors: MaterialColorScheme) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.bgBase },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+    screen: { flex: 1, backgroundColor: colors.background },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
     container: { padding: spacing.lg, ...centeredContent },
     recipeCard: { marginBottom: spacing.sm },
     recipeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
@@ -146,12 +157,12 @@ function createStyles(colors: ThemeColors) {
       width: 56,
       height: 56,
       borderRadius: radius.sm,
-      backgroundColor: colors.bgSunken,
+      backgroundColor: colors.surfaceVariant,
       overflow: 'hidden',
     },
     thumb: { width: '100%', height: '100%' },
     recipeText: { flex: 1 },
-    recipeName: { ...typography.bodyStrong, color: colors.textPrimary },
-    recipeMeta: { ...typography.caption, color: colors.textSecondary },
+    recipeName: { ...materialTypography.bodyMedium, color: colors.onSurface },
+    recipeMeta: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant },
   });
 }
