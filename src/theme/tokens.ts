@@ -315,6 +315,7 @@ export const state = {
   pressedScale: 0.9,
   disabledOpacity: 0.55,
   hitSlop: 8,
-  /** Minimum tappable square, per platform accessibility guidance. */
-  minTouchSize: 44,
+  /** Minimum tappable square. 48dp is Android's Material guidance (this app's
+   *  platform, per PRODUCT.md) — taller than iOS's 44pt floor. */
+  minTouchSize: 48,
 } as const;
