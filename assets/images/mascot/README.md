@@ -45,10 +45,10 @@ that shipped.
 | --- | --- | --- |
 | `mascot-idle.png` | Idle / at-rest, shown continuously | Not yet wired into a screen — this is the foundation component; screen placements are a follow-up plan. |
 | `mascot-celebrating.png` | Celebration (milestone, streak, completion) | Not yet wired into a screen — same as above. |
+| `mascot-encouraging.png` | Encouraging (after a setback — never mocking, never sad-looking) | Used on `generate-plan.tsx`'s generation-failure state (Phase 3). |
 
 Being transparent, each pose works on `bgBase`, `bgSurface`, or `bgSunken`
 with no seam.
 
-Two more poses are planned but not part of this base set — see "Follow-up
-work" in the plan above: a moving/transition pose and an
-encouraging-after-a-setback pose (never mocking, never sad-looking).
+One more pose is planned but not part of this set — see "Follow-up work"
+in the Phase 2 plan: a moving/transition pose.

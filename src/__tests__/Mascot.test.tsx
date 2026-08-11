@@ -2,7 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { Mascot, type MascotPose } from '../components/ui/Mascot';
 
-const POSES: MascotPose[] = ['idle', 'celebrating'];
+const POSES: MascotPose[] = ['idle', 'celebrating', 'encouraging'];
 
 describe('Mascot', () => {
   it.each(POSES)('renders an image for the %s pose', async (pose) => {
