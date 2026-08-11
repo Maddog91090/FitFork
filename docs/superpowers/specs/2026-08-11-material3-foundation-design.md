@@ -3,6 +3,19 @@
 **Date** : 2026-08-11
 **Statut** : Spec validée, en attente d'implémentation
 
+**Correction post-brainstorming (pendant l'écriture du plan) :** la version
+initiale de cette spec disait que `PressableScale` serait retiré en Phase
+4. Un grep complet de ses usages a montré qu'il est aussi consommé par
+`BackLink.tsx` et par 4 écrans hors périmètre de cette phase (`home.tsx`,
+`workout.tsx`, `workout-session.tsx`, `generate-plan.tsx`) — le supprimer
+casserait ces consommateurs que la spec interdit par ailleurs de toucher.
+`PressableScale.tsx` reste donc en place ; seuls les composants
+effectivement reconstruits ici (`Button`, `ChoiceGroup`,
+`TagFilterGroup`) cessent de le consommer. Son retrait complet est
+repoussé en Phase 5, une fois `BackLink` et les écrans restants migrés.
+Voir le tableau des composants et la section Motion, mis à jour en
+conséquence.
+
 ## Contexte et motivation
 
 `/impeccable audit` (variante native Android) score l'app à 15-16/20 après
@@ -48,8 +61,10 @@ claymorphic :
 
 - Nouveau système de tokens Material 3 (clair + sombre).
 - Reconstruction des composants partagés : `Button`, `Card`,
-  `ChoiceGroup`, `TagFilterGroup`, `EmptyState`, `TabIcon`. Retrait de
-  `PressableScale` (le ripple Material le remplace partout).
+  `ChoiceGroup`, `TagFilterGroup`, `EmptyState`, `TabIcon`. `Button`,
+  `ChoiceGroup` et `TagFilterGroup` cessent chacun de consommer
+  `PressableScale` en se reconstruisant sur `Pressable` + ripple — voir la
+  correction ci-dessous sur le sort du fichier lui-même.
 - Changements `app.json`.
 - Remplacement de `DESIGN.md`.
 - **Aucun écran sous `src/app/` n'est modifié.** Les écrans continuent de
@@ -138,16 +153,23 @@ refonte typographique.
 | `ChoiceGroup` | Material filter chips (sélection unique) | Remplissage sélectionné = `tertiary` du domaine ; ripple au lieu du spring scale-only. |
 | `TagFilterGroup` | Material filter chips (sélection multiple) | Même traitement que `ChoiceGroup`, sémantique multi-sélection inchangée. |
 | `EmptyState` | Structure identique, restylée | Toujours `illustration`/`icon`/`title`/`message`/`actionLabel`/`onAction`/`domain` — seule l'implémentation interne change de tokens. |
-| `PressableScale` | **Retiré** | Plus aucun composant n'a de spring scale-only ; le ripple Material `android_ripple` sur un `Pressable` nu couvre tous les usages actuels (`BackLink`, lignes de liste, cellules). |
+| `PressableScale` | **Conservé, pas retiré** (correction, voir note ci-dessous) | `Button`, `ChoiceGroup`, `TagFilterGroup` cessent de le consommer (ripple `android_ripple` à la place). Le fichier lui-même reste : `BackLink` et 4 écrans hors périmètre (`home.tsx`, `workout.tsx`, `workout-session.tsx`, `generate-plan.tsx`) en dépendent encore et ne sont pas touchés avant la Phase 5. |
 | `TabIcon` (raster custom, `assets/images/icons/tab-*.png`) | `MaterialIcons` de `@expo/vector-icons` | Déjà une dépendance du projet, zéro ajout. Tintable via `tabBarActiveTintColor`/`tabBarInactiveTintColor` (retour au mécanisme de teinte, contrairement à l'opacité actuelle nécessaire pour des images raster). Mapping icône-par-icône (Accueil/Plan/Recettes/Muscu/Courses/Poids → noms `MaterialIcons` équivalents) décidé pendant le plan. |
 | `MacroIcon` (raster custom) | Conservé tel quel pour l'instant | Aucun équivalent Material direct pour des icônes de macro-nutriments ; hors du périmètre "conformité plateforme" de l'audit (ce ne sont pas des contrôles d'interaction). Réévalué en Phase 5 si besoin. |
 | `Mascot` | Inchangé, toujours dans `src/components/ui/` | Le composant lui-même n'est pas modifié ni supprimé — seul son usage dans les écrans disparaît, en Phase 5. |
 
 ## Motion
 
-- Le ripple Material (`Pressable`'s prop `android_ripple`) remplace
-  entièrement `motion.spring.snappy` et le spring scale-only de
-  `PressableScale` — décision déjà confirmée par l'utilisateur.
+- Le ripple Material (`Pressable`'s prop `android_ripple`) remplace le
+  spring couleur+scale de `Button` et le spring scale-only que
+  `ChoiceGroup`/`TagFilterGroup` consommaient via `PressableScale` —
+  décision déjà confirmée par l'utilisateur, mais seulement pour ces
+  composants reconstruits ici (voir correction ci-dessus sur
+  `PressableScale`).
+- `motion.spring.snappy` reste dans les tokens malgré ça :
+  `PressableScale.tsx` (conservé, voir correction ci-dessus) le consomme
+  toujours pour `BackLink` et les 4 écrans hors périmètre. Il ne devient
+  supprimable qu'en Phase 5, une fois plus aucun consommateur restant.
 - `motion.spring.celebrate` (rebond de la mascotte) reste dans les
   tokens : la mascotte elle-même n'est pas touchée en Phase 4, et ses
   poses `celebrating`/`encouraging` restent utilisées par les écrans
