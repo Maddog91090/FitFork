@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { getExercise } from '../../lib/exercises';
 import { BackLink } from '../../components/ui/BackLink';
 import { ExercisePhotoPair } from '../../components/ui/ExercisePhotoPair';
-import { centeredContent, radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 export default function ExerciseDetailScreen() {
   const colors = useThemeColors();
