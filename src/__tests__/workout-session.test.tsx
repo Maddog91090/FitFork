@@ -186,4 +186,16 @@ describe('WorkoutSessionScreen', () => {
     expect(getByTestId('exercise-photo-start').props.source).toBe(201);
     expect(getByTestId('exercise-photo-end').props.source).toBe(202);
   });
+
+  it('shows no exercise photos during a rest step', async () => {
+    mockParams('beginner', '0');
+    const { findByText, getByText, queryByTestId } = await render(<WorkoutSessionScreen />);
+
+    await findByText('Exercice A');
+    await fireEvent.press(getByText('Passer'));
+
+    await findByText('Repos');
+    expect(queryByTestId('exercise-photo-start')).toBeNull();
+    expect(queryByTestId('exercise-photo-end')).toBeNull();
+  });
 });

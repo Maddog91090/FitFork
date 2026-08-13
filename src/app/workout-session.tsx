@@ -121,6 +121,15 @@ export default function WorkoutSessionScreen() {
   const activeExercise =
     currentStep.kind === 'manual' || currentStep.kind === 'work' ? getExercise(currentStep.exerciseId) : undefined;
 
+  const photoPair = activeExercise ? (
+    <ExercisePhotoPair
+      imageStart={activeExercise.imageStart}
+      imageEnd={activeExercise.imageEnd}
+      showLabels={false}
+      style={styles.photoRowSpacing}
+    />
+  ) : null;
+
   return (
     <View style={styles.screen}>
       <View style={styles.exitRow}>
@@ -136,15 +145,7 @@ export default function WorkoutSessionScreen() {
       {currentStep.kind === 'manual' ? (
         <View style={styles.stepContainer}>
           <Text style={styles.exerciseName}>{currentStep.exerciseName}</Text>
-          {activeExercise && (
-            <View style={styles.photoRowSpacing}>
-              <ExercisePhotoPair
-                imageStart={activeExercise.imageStart}
-                imageEnd={activeExercise.imageEnd}
-                showLabels={false}
-              />
-            </View>
-          )}
+          {photoPair}
           <Text style={styles.detail}>{currentStep.detail}</Text>
           <Button title="Terminé" onPress={advance} />
         </View>
@@ -152,15 +153,7 @@ export default function WorkoutSessionScreen() {
         <View style={styles.stepContainer}>
           <Text style={styles.stepKindLabel}>{stepKindLabel(currentStep)}</Text>
           <Text style={styles.exerciseName}>{stepHeadline(currentStep)}</Text>
-          {activeExercise && (
-            <View style={styles.photoRowSpacing}>
-              <ExercisePhotoPair
-                imageStart={activeExercise.imageStart}
-                imageEnd={activeExercise.imageEnd}
-                showLabels={false}
-              />
-            </View>
-          )}
+          {photoPair}
           <Text style={styles.countdown}>{timer.remainingSeconds}</Text>
           <View style={styles.controlsRow}>
             <Button
@@ -198,7 +191,7 @@ function createStyles(colors: ThemeColors) {
       ...centeredContent,
     },
     stepKindLabel: { ...typography.overline, color: colors.textSecondary, marginBottom: spacing.sm },
-    photoRowSpacing: { marginBottom: spacing.lg },
+    photoRowSpacing: { alignSelf: 'stretch', marginBottom: spacing.lg },
     exerciseName: { ...typography.display, color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.lg },
     detail: { ...typography.title, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xl },
     countdown: { ...typography.hero, color: colors.domainSport, marginBottom: spacing.xl },

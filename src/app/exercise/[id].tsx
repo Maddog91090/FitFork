@@ -26,9 +26,11 @@ export default function ExerciseDetailScreen() {
       <BackLink />
       <Text style={styles.title}>{exercise.name}</Text>
 
-      <View style={styles.photoRowSpacing}>
-        <ExercisePhotoPair imageStart={exercise.imageStart} imageEnd={exercise.imageEnd} />
-      </View>
+      <ExercisePhotoPair
+        imageStart={exercise.imageStart}
+        imageEnd={exercise.imageEnd}
+        style={styles.photoRowSpacing}
+      />
 
       <Text style={styles.sectionTitle}>Comment faire</Text>
       {exercise.instructions.map((step, index) => (

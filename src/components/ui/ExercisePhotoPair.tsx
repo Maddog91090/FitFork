@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { View, Text, Image, StyleSheet, type ImageSourcePropType } from 'react-native';
+import { View, Text, Image, StyleSheet, type ImageSourcePropType, type StyleProp, type ViewStyle } from 'react-native';
 import { radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 type ExercisePhotoPairProps = {
@@ -7,14 +7,15 @@ type ExercisePhotoPairProps = {
   imageEnd: ImageSourcePropType;
   /** Shows "Position de départ" / "Position finale" captions under each photo. Defaults to `true`. */
   showLabels?: boolean;
+  style?: StyleProp<ViewStyle>;
 };
 
-export function ExercisePhotoPair({ imageStart, imageEnd, showLabels = true }: ExercisePhotoPairProps) {
+export function ExercisePhotoPair({ imageStart, imageEnd, showLabels = true, style }: ExercisePhotoPairProps) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
-    <View style={styles.photoRow}>
+    <View style={[styles.photoRow, style]}>
       <View style={styles.photoColumn}>
         <View style={styles.photoFrame}>
           <Image testID="exercise-photo-start" source={imageStart} style={styles.photo} />
