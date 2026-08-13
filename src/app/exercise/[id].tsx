@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { getExercise } from '../../lib/exercises';
 import { BackLink } from '../../components/ui/BackLink';
+import { ExercisePhotoPair } from '../../components/ui/ExercisePhotoPair';
 import { centeredContent, radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 export default function ExerciseDetailScreen() {
@@ -25,19 +26,8 @@ export default function ExerciseDetailScreen() {
       <BackLink />
       <Text style={styles.title}>{exercise.name}</Text>
 
-      <View style={styles.photoRow}>
-        <View style={styles.photoColumn}>
-          <View style={styles.photoFrame}>
-            <Image source={exercise.imageStart} style={styles.photo} />
-          </View>
-          <Text style={styles.photoLabel}>Position de départ</Text>
-        </View>
-        <View style={styles.photoColumn}>
-          <View style={styles.photoFrame}>
-            <Image source={exercise.imageEnd} style={styles.photo} />
-          </View>
-          <Text style={styles.photoLabel}>Position finale</Text>
-        </View>
+      <View style={styles.photoRowSpacing}>
+        <ExercisePhotoPair imageStart={exercise.imageStart} imageEnd={exercise.imageEnd} />
       </View>
 
       <Text style={styles.sectionTitle}>Comment faire</Text>
@@ -65,22 +55,7 @@ function createStyles(colors: ThemeColors) {
     },
     container: { padding: spacing.lg, ...centeredContent },
     title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
-    photoRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
-    photoColumn: { flex: 1 },
-    photoFrame: {
-      width: '100%',
-      aspectRatio: 4 / 3,
-      borderRadius: radius.md,
-      backgroundColor: colors.bgSunken,
-      overflow: 'hidden',
-    },
-    photo: { width: '100%', height: '100%' },
-    photoLabel: {
-      ...typography.caption,
-      color: colors.textSecondary,
-      textAlign: 'center',
-      marginTop: spacing.xs,
-    },
+    photoRowSpacing: { marginBottom: spacing.lg },
     sectionTitle: {
       ...typography.overline,
       color: colors.textSecondary,
