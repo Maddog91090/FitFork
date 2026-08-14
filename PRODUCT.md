@@ -40,9 +40,9 @@ The confirmed differentiator: automatic, one-click generation of a full weekly m
 
 - User-facing product name: **FitFork**. (`app.json`'s `name`/`slug` still read `meal-workout-planner`/`fitpro` — legacy scaffold values from project creation, not the brand name.)
 - Mascot: a stylized cartoon broccoli character, Pixar-style 3D shading, big expressive eyes, coral-orange sneakers — the app's primary brand identity, also used as the app icon, splash screen, and Android adaptive icon. Full concept history and the validated shared generation prompt live in `assets/images/mascot/README.md`. Current poses: `idle` (continuous presence), `celebrating` (milestones/completion), `encouraging` (reassurance after a setback — never mocking, never sad, never apologetic).
-- Visual system: an established "claymorphic" design system — generous border radius, two-tier warm shadows, gradient clay-sheen overlays, Fredoka as the single rounded typeface. This deliberately overrides Material 3's default look; it is a confirmed brand choice reaffirmed across three implementation phases, not an oversight to correct.
-- Color: four domain-based accent colors (nutrition = amber, sport = green, progress = rose, neutral = brown) replace a single brand accent, applied by what the content *is* rather than as flat decoration.
-- Light-only by design: dark mode was built, tested on-device, and deliberately reverted. The app ships light-only.
+- Visual system: Material 3, themed through Material's own role system (buttons, cards, filter chips, native ripple feedback) rather than the earlier custom "claymorphic" system (generous radius, warm two-tier shadows, gradient clay-sheen overlays). Claymorphic was the confirmed choice for three phases; a later phase (4-5c) deliberately superseded it — every screen has migrated off the claymorphic tokens (`useThemeColors` has zero remaining consumers). Fredoka remains the single rounded typeface, themed through Material's type scale.
+- Color: four domain-based accent colors (nutrition = amber, sport = green, progress = rose, neutral = brown) replace a single brand accent, applied by what the content *is* rather than as flat decoration — expressed via Material's swappable `tertiary` role.
+- Light and dark, both first-class: dark mode was built, tested on-device, reverted once, then deliberately rebuilt and reactivated (`userInterfaceStyle: "automatic"`) once every screen had a scheme-aware Material equivalent. Both schemes are WCAG AA-verified (`src/__tests__/materialColors.test.ts`).
 - Tone: French, tutoiement, sober functional copy — no exclamation marks, no hype. Energy is reserved for the mascot's celebration/encouragement moments only, never for body copy.
 - Full design-system documentation lives in `.claude/skills/fitfork-design/SKILL.md`.
 
@@ -58,7 +58,7 @@ The confirmed differentiator: automatic, one-click generation of a full weekly m
 2. Usable without a coach or gym — exercise instructions, session structure, and copy all assume a solo user working out at home.
 3. Motivation lives in the mascot, not the copy — functional text stays sober; personality and encouragement concentrate in mascot placements (idle presence, celebration, encouragement-after-setback), never in body copy.
 4. One accent color per domain, not one brand color — nutrition/sport/progress/neutral each get their own token family, chosen by what the content is, not by decoration.
-5. Ship light-only, deliberately — this was tested (dark mode existed, was reverted after real feedback), not simply never attempted.
+5. Support light and dark deliberately, not by default — the app tested a light-only decision, reverted it, then rebuilt dark mode properly (full Material migration, WCAG-verified both schemes) before turning it back on.
 
 ## Accessibility & Inclusion
 
