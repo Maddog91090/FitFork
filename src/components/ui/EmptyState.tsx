@@ -3,10 +3,10 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Image, type ImageProps } from 'expo-image';
 import { Card } from './Card';
 import { Button, type ButtonDomain } from './Button';
-import { materialTypography, spacing, useMaterialColors, type MaterialColorScheme } from '../../theme/tokens';
+import { spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 type EmptyStateProps = {
-  /** Brand illustration for this slot. Generated on the light surface color, so it sits on the card seamlessly. */
+  /** Brand illustration for this slot. Generated on bgSurface, so it sits on the card seamlessly. */
   illustration?: ImageProps['source'];
   /** Fallback for empty states that have no illustration of their own yet. */
   icon?: React.ReactNode;
@@ -28,7 +28,7 @@ export function EmptyState({
   onAction,
   domain,
 }: EmptyStateProps) {
-  const colors = useMaterialColors();
+  const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const hasAction = Boolean(actionLabel && onAction);
   return (
@@ -45,7 +45,7 @@ export function EmptyState({
   );
 }
 
-function createStyles(colors: MaterialColorScheme) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     card: {
       alignItems: 'center',
@@ -60,14 +60,14 @@ function createStyles(colors: MaterialColorScheme) {
       marginBottom: spacing.md,
     },
     title: {
-      ...materialTypography.titleLarge,
-      color: colors.onSurface,
+      ...typography.title,
+      color: colors.textPrimary,
       marginBottom: spacing.xs,
       textAlign: 'center',
     },
     message: {
-      ...materialTypography.bodyLarge,
-      color: colors.onSurfaceVariant,
+      ...typography.body,
+      color: colors.textSecondary,
       textAlign: 'center',
     },
     messageSpaced: {

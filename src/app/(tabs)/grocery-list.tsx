@@ -10,18 +10,16 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
 import {
   centeredContent,
-  materialTypography,
+  typography,
   spacing,
-  useMaterialColors,
-  useMaterialTertiary,
-  type MaterialColorScheme,
+  useThemeColors,
+  type ThemeColors,
 } from '../../theme/tokens';
 
 type AggregatedIngredient = { name: string; quantity: number; unit: string };
 
 export default function GroceryListScreen() {
-  const colors = useMaterialColors();
-  const nutrition = useMaterialTertiary('nutrition');
+  const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
@@ -84,7 +82,7 @@ export default function GroceryListScreen() {
   if (loading || !session || checking) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator color={nutrition.tertiary} />
+        <ActivityIndicator color={colors.domainNutrition} />
       </View>
     );
   }
@@ -98,7 +96,7 @@ export default function GroceryListScreen() {
               testID="empty-state-icon"
               name="shopping-cart"
               size={64}
-              color={colors.onSurfaceVariant}
+              color={colors.textSecondary}
               accessible={false}
             />
           }
@@ -133,27 +131,27 @@ export default function GroceryListScreen() {
   );
 }
 
-function createStyles(colors: MaterialColorScheme) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background },
+    screen: { flex: 1, backgroundColor: colors.bgBase },
     centered: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.background,
+      backgroundColor: colors.bgBase,
       padding: spacing.lg,
     },
     container: { padding: spacing.lg, ...centeredContent },
-    title: { ...materialTypography.displayMedium, color: colors.onSurface, marginBottom: spacing.lg },
+    title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
     row: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       paddingVertical: spacing.sm + 1,
       borderBottomWidth: 1,
-      borderBottomColor: colors.outlineVariant,
+      borderBottomColor: colors.border,
     },
     rowLast: { borderBottomWidth: 0 },
-    name: { ...materialTypography.bodyLarge, flex: 1, color: colors.onSurface },
-    quantity: { ...materialTypography.labelSmall, color: colors.onSurfaceVariant },
+    name: { ...typography.body, flex: 1, color: colors.textPrimary },
+    quantity: { ...typography.captionStrong, color: colors.textSecondary },
   });
 }

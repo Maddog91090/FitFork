@@ -16,11 +16,10 @@ import {
   centeredContent,
   fontFamily,
   lightColors,
-  materialTypography,
+  typography,
   spacing,
-  useMaterialColors,
-  useMaterialTertiary,
-  type MaterialColorScheme,
+  useThemeColors,
+  type ThemeColors,
 } from '../theme/tokens';
 
 /** French decimals, without depending on Intl being built into the JS engine. */
@@ -44,8 +43,7 @@ function formatTrend(percentPerWeek: number): string {
 }
 
 export default function WeightLogScreen() {
-  const colors = useMaterialColors();
-  const neutral = useMaterialTertiary('neutral');
+  const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
@@ -106,7 +104,7 @@ export default function WeightLogScreen() {
   if (loading || !session || checking) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator color={neutral.tertiary} />
+        <ActivityIndicator color={colors.domainNeutralDeep} />
       </View>
     );
   }
@@ -161,7 +159,7 @@ export default function WeightLogScreen() {
               testID="empty-state-icon"
               name="monitor-weight"
               size={64}
-              color={colors.onSurfaceVariant}
+              color={colors.textSecondary}
               accessible={false}
             />
           }
@@ -182,22 +180,22 @@ export default function WeightLogScreen() {
   );
 }
 
-function createStyles(colors: MaterialColorScheme) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+    screen: { flex: 1, backgroundColor: colors.bgBase },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
     container: { padding: spacing.lg, ...centeredContent },
-    title: { ...materialTypography.displayMedium, color: colors.onSurface, marginBottom: spacing.lg },
+    title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
     statCard: { marginTop: spacing.xl },
-    statLabel: { ...materialTypography.overline, color: colors.onSurfaceVariant },
-    statValue: { ...materialTypography.headlineLarge, color: colors.onSurface, marginTop: spacing.xs },
-    statDelta: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginTop: spacing.xs },
+    statLabel: { ...typography.overline, color: colors.textSecondary },
+    statValue: { ...typography.metric, color: colors.textPrimary, marginTop: spacing.xs },
+    statDelta: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.xs },
     chart: { marginTop: spacing.lg },
     chartAxis: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.xs },
-    axisLabel: { ...materialTypography.labelMedium, color: lightColors.textTertiary },
+    axisLabel: { ...typography.caption, color: lightColors.textTertiary },
     historyTitle: {
-      ...materialTypography.overline,
-      color: colors.onSurfaceVariant,
+      ...typography.overline,
+      color: colors.textSecondary,
       marginTop: spacing.xl,
       marginBottom: spacing.sm,
     },
@@ -206,12 +204,12 @@ function createStyles(colors: MaterialColorScheme) {
       justifyContent: 'space-between',
       paddingVertical: spacing.sm + 1,
       borderBottomWidth: 1,
-      borderBottomColor: colors.outlineVariant,
+      borderBottomColor: colors.border,
     },
     rowLast: { borderBottomWidth: 0 },
-    date: { ...materialTypography.labelMedium, color: colors.onSurface },
+    date: { ...typography.caption, color: colors.textPrimary },
     // The number is the point of this screen — serif, and darker than its date.
-    weight: { ...materialTypography.bodyMedium, color: colors.onSurface, fontFamily: fontFamily.displayBold },
-    error: { ...materialTypography.bodyLarge, color: colors.error, marginBottom: spacing.md },
+    weight: { ...typography.bodyStrong, color: colors.textPrimary, fontFamily: fontFamily.displayBold },
+    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
   });
 }

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
@@ -18,17 +18,15 @@ import { ChoiceGroup } from '../../components/ChoiceGroup';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
+import { PressableScale } from '../../components/ui/PressableScale';
 import {
   centeredContent,
-  materialTypography,
+  typography,
   radius,
   spacing,
   state,
-  useMaterialColors,
-  useMaterialTertiary,
-  withRippleAlpha,
-  type MaterialColorScheme,
-  type MaterialTertiary,
+  useThemeColors,
+  type ThemeColors,
 } from '../../theme/tokens';
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -41,9 +39,8 @@ const MEAL_TYPE_LABELS: Record<MealType, string> = {
 const DAY_TAB_OPTIONS = DAY_LABELS.map((label, index) => ({ value: String(index), label }));
 
 export default function PlanScreen() {
-  const colors = useMaterialColors();
-  const nutrition = useMaterialTertiary('nutrition');
-  const styles = useMemo(() => createStyles(colors, nutrition), [colors, nutrition]);
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [plan, setPlan] = useState<SavedPlan | null>(null);
@@ -116,7 +113,7 @@ export default function PlanScreen() {
   if (loading || !session || checking) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator color={nutrition.tertiary} />
+        <ActivityIndicator color={colors.domainNutrition} />
       </View>
     );
   }
@@ -138,7 +135,7 @@ export default function PlanScreen() {
               testID="empty-state-icon"
               name="event"
               size={64}
-              color={colors.onSurfaceVariant}
+              color={colors.textSecondary}
               accessible={false}
             />
           }
@@ -173,10 +170,9 @@ export default function PlanScreen() {
           return (
             <Card key={entry.id} style={styles.entryCard}>
               <View style={styles.entryRow}>
-                <Pressable
-                  style={({ pressed }) => [styles.entryInfo, pressed && styles.entryInfoPressed]}
+                <PressableScale
+                  style={styles.entryInfo}
                   accessibilityRole="button"
-                  android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant) }}
                   onPress={() =>
                     router.push({
                       pathname: '/recipe/[id]',
@@ -195,21 +191,20 @@ export default function PlanScreen() {
                       {recipe ? recipe.name : entry.recipeId} ({Math.round(entry.portionMultiplier * 100)}%)
                     </Text>
                   </View>
-                </Pressable>
-                <Pressable
+                </PressableScale>
+                <PressableScale
                   onPress={() => handleSwap(entry.id, entry.mealType, entry.recipeId)}
                   disabled={swappingId === entry.id}
                   accessibilityRole="button"
                   hitSlop={state.hitSlop}
-                  android_ripple={{ color: withRippleAlpha(nutrition.tertiary) }}
-                  style={({ pressed }) => [styles.swapTouchable, pressed && styles.swapPressed]}
+                  style={styles.swapTouchable}
                 >
                   {swappingId === entry.id ? (
-                    <ActivityIndicator size="small" color={nutrition.tertiary} />
+                    <ActivityIndicator size="small" color={colors.domainNutrition} />
                   ) : (
                     <Text style={styles.swapHint}>Échanger</Text>
                   )}
-                </Pressable>
+                </PressableScale>
               </View>
             </Card>
           );
@@ -219,33 +214,32 @@ export default function PlanScreen() {
   );
 }
 
-function createStyles(colors: MaterialColorScheme, nutrition: MaterialTertiary) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background },
+    screen: { flex: 1, backgroundColor: colors.bgBase },
     centered: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.background,
+      backgroundColor: colors.bgBase,
       padding: spacing.lg,
     },
     container: { padding: spacing.lg, ...centeredContent },
-    emptyDayText: { ...materialTypography.bodyLarge, color: colors.onSurfaceVariant, marginTop: spacing.md },
+    emptyDayText: { ...typography.body, color: colors.textSecondary, marginTop: spacing.md },
     entryCard: { marginBottom: spacing.sm },
     entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     entryInfo: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: spacing.md },
-    entryInfoPressed: { opacity: 0.85 },
     thumbFrame: {
       width: 56,
       height: 56,
       borderRadius: radius.sm,
-      backgroundColor: colors.surfaceVariant,
+      backgroundColor: colors.bgSunken,
       overflow: 'hidden',
     },
     thumb: { width: '100%', height: '100%' },
     entryText: { flex: 1 },
-    mealTypeLabel: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant },
-    recipeName: { ...materialTypography.bodyMedium, color: colors.onSurface },
+    mealTypeLabel: { ...typography.caption, color: colors.textSecondary },
+    recipeName: { ...typography.bodyStrong, color: colors.textPrimary },
     swapTouchable: {
       minHeight: state.minTouchSize,
       minWidth: state.minTouchSize,
@@ -254,7 +248,6 @@ function createStyles(colors: MaterialColorScheme, nutrition: MaterialTertiary) 
       marginLeft: spacing.md,
       paddingHorizontal: spacing.sm,
     },
-    swapPressed: { opacity: 0.85 },
-    swapHint: { ...materialTypography.labelSmall, color: nutrition.tertiaryContainer },
+    swapHint: { ...typography.captionStrong, color: colors.domainNutritionDeep },
   });
 }

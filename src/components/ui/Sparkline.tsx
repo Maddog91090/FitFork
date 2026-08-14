@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useMaterialColors, type MaterialColorScheme } from '../../theme/tokens';
+import { useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 const STROKE = 2;
 const MARKER = 8;
@@ -20,11 +20,11 @@ type SparklineProps = {
  * dependency — at ten points that is cheaper than pulling in SVG.
  *
  * The line is secondary ink and the current point is primary: emphasis without
- * spending the brand red, which belongs to the screen's one primary action.
+ * spending a domain color, which belongs to the screen's one primary action.
  * The history list underneath is the accessible table view of the same data.
  */
 export function Sparkline({ values, width, height = 64, accessibilityLabel }: SparklineProps) {
-  const colors = useMaterialColors();
+  const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   if (values.length < 2 || width <= 0) {
@@ -75,7 +75,7 @@ export function Sparkline({ values, width, height = 64, accessibilityLabel }: Sp
   );
 }
 
-function createStyles(colors: MaterialColorScheme) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     container: {
       position: 'relative',
@@ -83,7 +83,7 @@ function createStyles(colors: MaterialColorScheme) {
     segment: {
       position: 'absolute',
       height: STROKE,
-      backgroundColor: colors.onSurfaceVariant,
+      backgroundColor: colors.textSecondary,
       transformOrigin: 'left center',
     },
     marker: {
@@ -91,10 +91,10 @@ function createStyles(colors: MaterialColorScheme) {
       width: MARKER,
       height: MARKER,
       borderRadius: MARKER / 2,
-      backgroundColor: colors.onSurface,
+      backgroundColor: colors.textPrimary,
       // Surface ring so the point stays legible where the line runs under it.
       borderWidth: 2,
-      borderColor: colors.surface,
+      borderColor: colors.bgSurface,
     },
   });
 }

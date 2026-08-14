@@ -8,17 +8,15 @@ import { supabase } from '../../lib/supabase';
 import { translateAuthError } from '../../lib/authErrors';
 import {
   centeredContent,
-  materialTypography,
   spacing,
-  useMaterialColors,
-  useMaterialTertiary,
-  type MaterialColorScheme,
+  typography,
+  useThemeColors,
+  type ThemeColors,
 } from '../../theme/tokens';
 
 export default function AuthCallbackScreen() {
-  const colors = useMaterialColors();
-  const accent = useMaterialTertiary('progress');
-  const styles = useMemo(() => createStyles(colors, accent.tertiaryContainer), [colors, accent]);
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const url = useLinkingURL();
   const [error, setError] = useState<string | null>(null);
@@ -64,19 +62,19 @@ export default function AuthCallbackScreen() {
 
   return (
     <View style={styles.screen}>
-      <ActivityIndicator color={accent.tertiary} />
+      <ActivityIndicator color={colors.domainNeutralDeep} />
       <Text style={styles.message}>Confirmation en cours…</Text>
     </View>
   );
 }
 
-function createStyles(colors: MaterialColorScheme, accentDeep: string) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    screen: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing.xl, backgroundColor: colors.background },
+    screen: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing.xl, backgroundColor: colors.bgBase },
     content: { ...centeredContent, alignItems: 'center' },
-    message: { ...materialTypography.bodyLarge, color: colors.onSurfaceVariant, marginTop: spacing.md },
-    error: { ...materialTypography.bodyLarge, color: colors.error, textAlign: 'center', marginBottom: spacing.lg },
+    message: { ...typography.body, color: colors.textSecondary, marginTop: spacing.md },
+    error: { ...typography.body, color: colors.error, textAlign: 'center', marginBottom: spacing.lg },
     link: { marginTop: spacing.sm },
-    linkText: { ...materialTypography.labelSmall, color: accentDeep },
+    linkText: { ...typography.captionStrong, color: colors.domainNeutralDeep },
   });
 }

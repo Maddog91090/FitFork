@@ -1,17 +1,17 @@
 import { Tabs } from 'expo-router';
 import { TabIcon } from '../../components/icons/TabIcon';
-import { materialTypography, useMaterialColors } from '../../theme/tokens';
+import { typography, useThemeColors } from '../../theme/tokens';
 
 export default function TabsLayout() {
-  const colors = useMaterialColors();
+  const colors = useThemeColors();
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.outlineVariant },
-        tabBarLabelStyle: { ...materialTypography.labelMedium, fontSize: 11 },
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.onSurfaceVariant,
+        tabBarStyle: { backgroundColor: colors.bgSurface, borderTopColor: colors.border },
+        tabBarLabelStyle: { ...typography.caption, fontSize: 11 },
+        tabBarActiveTintColor: colors.domainNeutral,
+        tabBarInactiveTintColor: colors.textSecondary,
       }}
     >
       <Tabs.Screen

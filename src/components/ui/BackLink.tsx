@@ -1,35 +1,28 @@
 import { useMemo } from 'react';
-import { Pressable, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import {
-  materialTypography,
-  state,
-  useMaterialColors,
-  withRippleAlpha,
-  type MaterialColorScheme,
-} from '../../theme/tokens';
+import { PressableScale } from './PressableScale';
+import { state, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 /** A "go back" link for a pushed screen that has no other way back — same visual pattern as workout-session.tsx's "Quitter". */
 export function BackLink() {
-  const colors = useMaterialColors();
+  const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   return (
-    <Pressable
+    <PressableScale
       onPress={() => router.back()}
       accessibilityRole="button"
       hitSlop={state.hitSlop}
-      android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant) }}
-      style={({ pressed }) => [styles.touchable, pressed && styles.pressed]}
+      style={styles.touchable}
     >
       <Text style={styles.label}>‹ Retour</Text>
-    </Pressable>
+    </PressableScale>
   );
 }
 
-function createStyles(colors: MaterialColorScheme) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     touchable: { minHeight: state.minTouchSize, justifyContent: 'center', alignSelf: 'flex-start' },
-    pressed: { opacity: 0.85 },
-    label: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant },
+    label: { ...typography.caption, color: colors.textSecondary },
   });
 }

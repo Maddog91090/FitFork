@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, {
   FadeInDown,
@@ -18,16 +18,15 @@ import type { ExperienceLevel, Equipment } from '../lib/profile';
 import { ChoiceGroup } from '../components/ChoiceGroup';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
+import { PressableScale } from '../components/ui/PressableScale';
 import {
   centeredContent,
-  materialTypography,
   motion,
   spacing,
   state,
-  useMaterialColors,
-  useMaterialTertiary,
-  withRippleAlpha,
-  type MaterialColorScheme,
+  typography,
+  useThemeColors,
+  type ThemeColors,
 } from '../theme/tokens';
 import type { Sex, ActivityLevel, Goal } from '../lib/nutrition';
 
@@ -106,9 +105,8 @@ export function validateStep(step: number, fields: OnboardingFields): string | n
 }
 
 export default function OnboardingScreen() {
-  const colors = useMaterialColors();
-  const accent = useMaterialTertiary('progress');
-  const styles = useMemo(() => createStyles(colors, accent), [colors, accent]);
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
   const { session, loading } = useAuth();
@@ -224,16 +222,16 @@ export default function OnboardingScreen() {
                 title="Activer les notifications"
                 onPress={handleEnableNotifications}
                 loading={requestingNotifications}
+                domain="neutral"
               />
-              <Pressable
+              <PressableScale
                 onPress={handleSkipNotifications}
                 accessibilityRole="button"
                 hitSlop={state.hitSlop}
-                android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant) }}
-                style={({ pressed }) => [styles.backLink, pressed && styles.backLinkPressed]}
+                style={styles.backLink}
               >
                 <Text style={styles.backLinkText}>Plus tard</Text>
-              </Pressable>
+              </PressableScale>
             </View>
           </View>
         </View>
@@ -276,7 +274,7 @@ export default function OnboardingScreen() {
         {step === 0 && (
           <>
             <Text style={styles.label}>Sexe</Text>
-            <ChoiceGroup options={SEX_OPTIONS} value={sex} onChange={setSex} />
+            <ChoiceGroup options={SEX_OPTIONS} value={sex} onChange={setSex} domain="neutral" />
             <TextField label="Âge" value={age} onChangeText={setAge} keyboardType="numeric" testID="age-input" />
             <TextField
               label="Taille (cm)"
@@ -303,9 +301,9 @@ export default function OnboardingScreen() {
               jours/semaine. Active : 6 à 7 jours/semaine. Très active : sport quotidien intense ou métier
               physique.
             </Text>
-            <ChoiceGroup options={ACTIVITY_OPTIONS} value={activityLevel} onChange={setActivityLevel} />
+            <ChoiceGroup options={ACTIVITY_OPTIONS} value={activityLevel} onChange={setActivityLevel} domain="neutral" />
             <Text style={styles.label}>Objectif</Text>
-            <ChoiceGroup options={GOAL_OPTIONS} value={goal} onChange={setGoal} />
+            <ChoiceGroup options={GOAL_OPTIONS} value={goal} onChange={setGoal} domain="neutral" />
           </>
         )}
 
@@ -319,9 +317,9 @@ export default function OnboardingScreen() {
               testID="days-input"
             />
             <Text style={styles.label}>Niveau</Text>
-            <ChoiceGroup options={EXPERIENCE_OPTIONS} value={experienceLevel} onChange={setExperienceLevel} />
+            <ChoiceGroup options={EXPERIENCE_OPTIONS} value={experienceLevel} onChange={setExperienceLevel} domain="neutral" />
             <Text style={styles.label}>Matériel disponible</Text>
-            <ChoiceGroup options={EQUIPMENT_OPTIONS} value={equipment} onChange={setEquipment} />
+            <ChoiceGroup options={EQUIPMENT_OPTIONS} value={equipment} onChange={setEquipment} domain="neutral" />
           </>
         )}
 
@@ -362,20 +360,19 @@ export default function OnboardingScreen() {
 
       <View style={styles.footer}>
         {step > 0 && (
-          <Pressable
+          <PressableScale
             onPress={handleBack}
             accessibilityRole="button"
             hitSlop={state.hitSlop}
-            android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant) }}
-            style={({ pressed }) => [styles.backLink, pressed && styles.backLinkPressed]}
+            style={styles.backLink}
           >
             <Text style={styles.backLinkText}>← Retour</Text>
-          </Pressable>
+          </PressableScale>
         )}
         {step < TOTAL_STEPS - 1 ? (
-          <Button title="Continuer" onPress={handleContinue} />
+          <Button title="Continuer" onPress={handleContinue} domain="neutral" />
         ) : (
-          <Button title="Valider" onPress={handleSubmit} loading={submitting} />
+          <Button title="Valider" onPress={handleSubmit} loading={submitting} domain="neutral" />
         )}
       </View>
       </View>
@@ -386,7 +383,7 @@ export default function OnboardingScreen() {
 type Styles = ReturnType<typeof createStyles>;
 
 /**
- * A progress segment whose red fill grows left-to-right when its step is
+ * A progress segment whose fill grows left-to-right when its step is
  * reached, rather than snapping on. The track underneath stays visible, so an
  * in-progress fill reads as "getting there".
  */
@@ -421,9 +418,9 @@ function RecapRow({ label, value, styles }: { label: string; value: string; styl
   );
 }
 
-function createStyles(colors: MaterialColorScheme, accent: { tertiary: string }) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background },
+    screen: { flex: 1, backgroundColor: colors.bgBase },
     // Full bleed: the illustration is generated on the background color, so it
     // blends into the screen with no seam — which is also why `contain` is
     // safe here, any letterbox is the same color as the screen. maxHeight
@@ -435,7 +432,7 @@ function createStyles(colors: MaterialColorScheme, accent: { tertiary: string })
     content: { flex: 1, ...centeredContent },
     header: { padding: spacing.lg, paddingBottom: spacing.sm },
     progressRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
-    segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.outlineVariant, overflow: 'hidden' },
+    segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.border, overflow: 'hidden' },
     segmentFill: {
       position: 'absolute',
       top: 0,
@@ -443,21 +440,21 @@ function createStyles(colors: MaterialColorScheme, accent: { tertiary: string })
       right: 0,
       bottom: 0,
       borderRadius: 2,
-      backgroundColor: accent.tertiary,
+      backgroundColor: colors.domainNeutral,
       transformOrigin: 'left',
     },
-    stepCounter: { ...materialTypography.overline, color: colors.onSurfaceVariant, marginBottom: spacing.xs },
-    title: { ...materialTypography.titleLarge, color: colors.onSurface },
+    stepCounter: { ...typography.overline, color: colors.textSecondary, marginBottom: spacing.xs },
+    title: { ...typography.title, color: colors.textPrimary },
     body: { flex: 1 },
     bodyContent: { padding: spacing.lg, paddingTop: spacing.sm },
     label: {
-      ...materialTypography.overline,
-      color: colors.onSurfaceVariant,
+      ...typography.overline,
+      color: colors.textSecondary,
       marginBottom: spacing.sm,
       marginTop: spacing.sm,
     },
-    hint: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginBottom: spacing.sm },
-    error: { ...materialTypography.bodyLarge, color: colors.error, marginTop: spacing.md },
+    hint: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.sm },
+    error: { ...typography.body, color: colors.error, marginTop: spacing.md },
     footer: { padding: spacing.lg },
     notificationPrompt: { flex: 1, justifyContent: 'center', padding: spacing.lg },
     notificationActions: { gap: spacing.md, alignItems: 'center' },
@@ -467,11 +464,10 @@ function createStyles(colors: MaterialColorScheme, accent: { tertiary: string })
       minHeight: state.minTouchSize,
       justifyContent: 'center',
     },
-    backLinkPressed: { opacity: 0.85 },
-    backLinkText: { ...materialTypography.titleSmall, color: colors.onSurfaceVariant },
+    backLinkText: { ...typography.subheading, color: colors.textSecondary },
     recapGroup: {
-      ...materialTypography.overline,
-      color: colors.onSurfaceVariant,
+      ...typography.overline,
+      color: colors.textSecondary,
       marginTop: spacing.md,
       marginBottom: spacing.xs,
     },
@@ -480,9 +476,9 @@ function createStyles(colors: MaterialColorScheme, accent: { tertiary: string })
       justifyContent: 'space-between',
       paddingVertical: spacing.sm,
       borderBottomWidth: 1,
-      borderBottomColor: colors.outlineVariant,
+      borderBottomColor: colors.border,
     },
-    recapLabel: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant },
-    recapValue: { ...materialTypography.labelSmall, color: colors.onSurface },
+    recapLabel: { ...typography.caption, color: colors.textSecondary },
+    recapValue: { ...typography.captionStrong, color: colors.textPrimary },
   });
 }

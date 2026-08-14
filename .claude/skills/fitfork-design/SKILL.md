@@ -321,29 +321,41 @@ The app tutoies the user and speaks like a coach who respects their time:
 
 ## Where things stand
 
-**Phase 1 of the claymorphic/domain-color/mascot system has shipped; no
-screen has been individually migrated yet — but that's not the same as "no
-screen has visually changed."** Tokens (`src/theme/tokens.ts`: domain colors,
-single-family typography, generous radii, two-layer claymorphic shadows +
-`clayOverlay`, bouncier motion springs), the shared components (`Button`,
-`Card`, `PressableScale`), and the base `Mascot` component (2 of its planned
-4 poses) are all done and tested. Because colors, typography, radius, shadow
-and motion are all token-level changes, and `Card`/`Button`/`PressableScale`
-are already shared components consumed by most existing screens (`Card` by
-8+ screens under `src/app`, `Button` by even more), **opening the actual app
-today already shows the claymorphic look wherever those components are
-used** — puffy radius, the warm two-tier shadow, the `clayOverlay` sheen on
-every `Card`, the bouncier squish on every `Button` and `PressableScale`, and
-Fredoka everywhere text uses `typography.*`. What genuinely has **not**
-happened yet, screen by screen: no screen passes an explicit `domain` prop to
-`Button`, so every primary button today renders in the `'progress'` default
-regardless of whether the screen is nutrition- or sport-flavored; the
-`Mascot` isn't placed on any screen; the emoji-based icons haven't been
-replaced by the claymorphic icon set; and no copy has had the two-registry
-pass. That is the real remaining gap — not a plain color/shape/type mismatch,
-which is largely already live. A screen-by-screen migration is the deliberate
-follow-up work, and this file will stop being ahead of reality once it lands.
-Don't read the gap as a bug or as this file being wrong.
+**The claymorphic/domain-color/mascot system is the shipped, current state of
+every screen — not just the shared components.** Tokens
+(`src/theme/tokens.ts`: domain colors, single-family typography, generous
+radii, two-layer claymorphic shadows + `clayOverlay`, bouncier motion
+springs), the shared components (`Button`, `Card`, `PressableScale`,
+`ChoiceGroup`, `TagFilterGroup`, `EmptyState`, `TextField`, `BackLink`,
+`ErrorNotice`, `Sparkline`, `TabIcon`, `ExercisePhotoPair`), and every screen
+under `src/app` all read `useThemeColors()`/`typography`/`shadow` — there is
+no second token system anywhere in the codebase. Every `Button`/`ChoiceGroup`/
+`TagFilterGroup`/`EmptyState` call site passes an explicit `domain` prop
+matched to its screen (auth/onboarding screens use `"neutral"` since they
+aren't domain-specific). `Mascot` is placed on the workout-session finish
+screen (`celebrating` pose) — the other three poses/placements described
+above (a moving/transition pose, an encouraging-after-a-setback placement,
+and mascot appearances for meal-logged/streak moments) are still open
+follow-up work, not yet wired in. The two 🔥 streak-counter emoji
+(`home.tsx`, `progression.tsx`) also haven't been replaced by a claymorphic
+icon, and no screen has had a dedicated copy pass beyond what already reads
+correctly — both remain open follow-up work too.
+
+**History worth knowing so this doesn't happen again:** between this file
+being written and this update, a separate work session fully rebuilt the app
+onto a parallel "Material 3" token system (`useMaterialColors`,
+`materialTypography`, `materialElevation`, Material-role color names) across
+every shared component and screen, without updating this file or `AGENTS.md`
+— so for a stretch, the actual app was flat/neutral-shadowed Material 3 while
+this skill kept describing (and mandating) claymorphic. That drift was only
+caught when a design request surfaced the mismatch between what this file
+said and what the app actually looked like. The product decision was to
+revert to claymorphic as the real direction; the Material 3 layer, its
+dark-mode color scheme, and the tests that only made sense for it were
+deleted outright rather than kept as a parallel system. If a future session
+ever wants to explore Material 3 (or any other system) again, that has to be
+a deliberate, documented decision that updates this file in the same change —
+never a silent screen-by-screen drift that leaves the doc behind.
 
 **The previous system this replaced ("Soft Neutral") and its history** —
 single warm-red accent, Fraunces serif + Plus Jakarta Sans, tokens (light-only

@@ -10,7 +10,7 @@ import { Fredoka_500Medium } from '@expo-google-fonts/fredoka/500Medium';
 import { Fredoka_600SemiBold } from '@expo-google-fonts/fredoka/600SemiBold';
 import { Fredoka_700Bold } from '@expo-google-fonts/fredoka/700Bold';
 import { AuthProvider } from '../lib/auth-context';
-import { useMaterialColors } from '../theme/tokens';
+import { useThemeColors } from '../theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -24,7 +24,7 @@ Notifications.setNotificationHandler({
 });
 
 export default function RootLayout() {
-  const colors = useMaterialColors();
+  const colors = useThemeColors();
   const [fontsLoaded, fontError] = useFonts({
     Fredoka_400Regular, Fredoka_500Medium, Fredoka_600SemiBold, Fredoka_700Bold,
   });
@@ -42,11 +42,11 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <StatusBar style="auto" />
+        <StatusBar style="dark" />
         <Stack
           screenOptions={{
             headerShown: false,
-            contentStyle: { backgroundColor: colors.background },
+            contentStyle: { backgroundColor: colors.bgBase },
           }}
         />
       </AuthProvider>

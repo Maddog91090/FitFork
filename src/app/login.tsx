@@ -9,20 +9,17 @@ import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
 import {
   centeredContent,
-  lightMaterialColors,
-  materialElevation,
-  materialTypography,
   radius,
+  shadow,
   spacing,
-  useMaterialColors,
-  useMaterialTertiary,
-  type MaterialColorScheme,
+  typography,
+  useThemeColors,
+  type ThemeColors,
 } from '../theme/tokens';
 
 export default function LoginScreen() {
-  const colors = useMaterialColors();
-  const accent = useMaterialTertiary('progress');
-  const styles = useMemo(() => createStyles(colors, accent.tertiaryContainer), [colors, accent]);
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { session, signIn } = useAuth();
   const [email, setEmail] = useState('');
@@ -59,7 +56,7 @@ export default function LoginScreen() {
 
         {error && <Text style={styles.error}>{error}</Text>}
 
-        <Button title="Se connecter" onPress={handleSubmit} loading={submitting} />
+        <Button title="Se connecter" onPress={handleSubmit} loading={submitting} domain="neutral" />
 
         <Link href="/signup" style={styles.switchLink}>
           <Text style={styles.switchText}>
@@ -77,21 +74,21 @@ export default function LoginScreen() {
   );
 }
 
-function createStyles(colors: MaterialColorScheme, accentDeep: string) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    screen: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: colors.background },
+    screen: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: colors.bgBase },
     content: { ...centeredContent },
     logoWrap: {
-      width: 64, height: 64, borderRadius: radius.lg, backgroundColor: lightMaterialColors.surface,
+      width: 64, height: 64, borderRadius: radius.lg, backgroundColor: colors.bgSurface,
       alignItems: 'center', justifyContent: 'center', alignSelf: 'center',
-      marginBottom: spacing.sm, padding: spacing.sm, ...materialElevation,
+      marginBottom: spacing.sm, padding: spacing.sm, ...shadow.card,
     },
     logo: { width: '100%', height: '100%' },
-    brand: { ...materialTypography.displayMedium, textAlign: 'center', color: colors.onSurface, marginBottom: spacing.xl },
+    brand: { ...typography.display, textAlign: 'center', color: colors.textPrimary, marginBottom: spacing.xl },
     forgotLink: { marginTop: spacing.sm, textAlign: 'center' },
-    error: { ...materialTypography.bodyLarge, color: colors.error, marginTop: spacing.md, marginBottom: spacing.md, textAlign: 'center' },
+    error: { ...typography.body, color: colors.error, marginTop: spacing.md, marginBottom: spacing.md, textAlign: 'center' },
     switchLink: { marginTop: spacing.lg, textAlign: 'center' },
-    switchText: { ...materialTypography.labelMedium, textAlign: 'center', color: colors.onSurfaceVariant },
-    switchTextAccent: { ...materialTypography.labelSmall, color: accentDeep },
+    switchText: { ...typography.caption, textAlign: 'center', color: colors.textSecondary },
+    switchTextAccent: { ...typography.captionStrong, color: colors.domainNeutralDeep },
   });
 }

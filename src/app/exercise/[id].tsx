@@ -5,20 +5,11 @@ import { useLocalSearchParams } from 'expo-router';
 import { getExercise } from '../../lib/exercises';
 import { BackLink } from '../../components/ui/BackLink';
 import { ExercisePhotoPair } from '../../components/ui/ExercisePhotoPair';
-import {
-  centeredContent,
-  materialTypography,
-  spacing,
-  useMaterialColors,
-  useMaterialTertiary,
-  type MaterialColorScheme,
-  type MaterialTertiary,
-} from '../../theme/tokens';
+import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 export default function ExerciseDetailScreen() {
-  const colors = useMaterialColors();
-  const sport = useMaterialTertiary('sport');
-  const styles = useMemo(() => createStyles(colors, sport), [colors, sport]);
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const exercise = id ? getExercise(id) : undefined;
@@ -56,22 +47,22 @@ export default function ExerciseDetailScreen() {
   );
 }
 
-function createStyles(colors: MaterialColorScheme, sport: MaterialTertiary) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background },
+    screen: { flex: 1, backgroundColor: colors.bgBase },
     centered: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.background,
+      backgroundColor: colors.bgBase,
       padding: spacing.lg,
     },
     container: { padding: spacing.lg, ...centeredContent },
-    title: { ...materialTypography.displayMedium, color: colors.onSurface, marginBottom: spacing.lg },
+    title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
     photoRowSpacing: { marginBottom: spacing.lg },
     sectionTitle: {
-      ...materialTypography.overline,
-      color: colors.onSurfaceVariant,
+      ...typography.overline,
+      color: colors.textSecondary,
       marginBottom: spacing.sm,
     },
     stepRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm, alignItems: 'flex-start' },
@@ -79,13 +70,13 @@ function createStyles(colors: MaterialColorScheme, sport: MaterialTertiary) {
       width: 20,
       height: 20,
       borderRadius: 10,
-      backgroundColor: sport.tertiary,
+      backgroundColor: colors.domainSport,
       alignItems: 'center',
       justifyContent: 'center',
       marginTop: 1,
     },
-    stepBadgeText: { ...materialTypography.overline, color: sport.onTertiary, letterSpacing: 0 },
-    stepText: { ...materialTypography.bodyLarge, flex: 1, color: colors.onSurface },
-    error: { ...materialTypography.bodyLarge, color: colors.error },
+    stepBadgeText: { ...typography.overline, color: colors.textOnAccent, letterSpacing: 0 },
+    stepText: { ...typography.body, flex: 1, color: colors.textPrimary },
+    error: { ...typography.body, color: colors.error },
   });
 }

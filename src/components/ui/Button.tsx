@@ -1,27 +1,44 @@
 import { useMemo } from 'react';
 import { Pressable, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, interpolateColor } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
-  materialTypography,
+  clayOverlay,
+  motion,
   radius,
+  shadow,
   spacing,
   state,
-  useMaterialColors,
-  useMaterialTertiary,
-  withRippleAlpha,
-  type MaterialColorScheme,
-  type MaterialDomain,
-  type MaterialTertiary,
+  typography,
+  useThemeColors,
+  type ThemeColors,
 } from '../../theme/tokens';
+import { useReducedMotion } from '../../lib/useReducedMotion';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 type ButtonVariant = 'primary' | 'secondary';
-export type ButtonDomain = MaterialDomain;
+export type ButtonDomain = 'nutrition' | 'sport' | 'progress' | 'neutral';
+
+const DOMAIN_FILL: Record<ButtonDomain, keyof ThemeColors> = {
+  nutrition: 'domainNutrition',
+  sport: 'domainSport',
+  progress: 'domainProgress',
+  neutral: 'domainNeutral',
+};
+
+const DOMAIN_DEEP: Record<ButtonDomain, keyof ThemeColors> = {
+  nutrition: 'domainNutritionDeep',
+  sport: 'domainSportDeep',
+  progress: 'domainProgressDeep',
+  neutral: 'domainNeutralDeep',
+};
 
 type ButtonProps = {
   title: string;
   onPress: () => void;
-  /** `'primary'` = Filled (fills with the domain's `tertiary`). `'secondary'` = Outlined (transparent, `outline` border). */
   variant?: ButtonVariant;
-  /** Which domain's tertiary color fills the button. Ignored for variant="secondary" except for its border/label tint. */
+  /** Which domain's clay color fills the button. Ignored for variant="secondary". */
   domain?: ButtonDomain;
   disabled?: boolean;
   loading?: boolean;
@@ -31,63 +48,106 @@ export function Button({
   title,
   onPress,
   variant = 'primary',
-  domain,
+  domain = 'progress',
   disabled = false,
   loading = false,
 }: ButtonProps) {
-  const colors = useMaterialColors();
-  const tertiary = useMaterialTertiary(domain);
-  const styles = useMemo(() => createStyles(colors, tertiary, variant), [colors, tertiary, variant]);
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const isDisabled = disabled || loading;
+  const pressed = useSharedValue(0);
+  const reducedMotion = useReducedMotion();
+
+  const fillColor = colors[DOMAIN_FILL[domain]];
+  const deepColor = colors[DOMAIN_DEEP[domain]];
+  const restColor = isDisabled ? colors.bgSurface : variant === 'primary' ? fillColor : colors.bgSurface;
+  const downColor = isDisabled ? colors.bgSurface : variant === 'primary' ? deepColor : colors.bgSunken;
+  const shadowTint = variant === 'primary' ? deepColor : colors.textPrimary;
+
+  // `pressed.value` itself is the animated driver (springs from 0 to 1 on
+  // press, back on release) rather than a plain instantaneous flag. Both
+  // `transform` and `backgroundColor` below are pure functions of that same
+  // continuously-animating value, read on the same frame — so the squish and
+  // the color darken are genuinely synchronized, not just computed from the
+  // same discrete 0/1 source.
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: 1 - pressed.value * (1 - state.pressedScale) }],
+    backgroundColor: interpolateColor(pressed.value, [0, 1], [restColor, downColor]),
+  }));
 
   return (
-    <Pressable
+    <AnimatedPressable
       testID="button-pressable"
       onPress={onPress}
       disabled={isDisabled}
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled, busy: loading }}
-      android_ripple={{
-        color: variant === 'primary' ? withRippleAlpha(tertiary.onTertiary) : withRippleAlpha(tertiary.tertiary),
+      onPressIn={() => {
+        if (!isDisabled) pressed.value = reducedMotion ? 1 : withSpring(1, motion.spring.snappy);
       }}
-      style={({ pressed }) => [styles.base, isDisabled && styles.disabledBase, pressed && styles.pressed]}
+      onPressOut={() => {
+        pressed.value = reducedMotion ? 0 : withSpring(0, motion.spring.snappy);
+      }}
+      style={[styles.base, { shadowColor: shadowTint }, isDisabled && styles.disabledShadow, animatedStyle]}
     >
-      {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? tertiary.onTertiary : colors.onSurface} />
-      ) : (
-        <Text style={[styles.label, isDisabled && styles.labelDisabled]}>{title}</Text>
+      {variant === 'primary' && !isDisabled && (
+        <LinearGradient
+          testID="button-clay-overlay"
+          pointerEvents="none"
+          colors={clayOverlay.colors}
+          locations={clayOverlay.locations}
+          start={clayOverlay.start}
+          end={clayOverlay.end}
+          style={styles.overlay}
+        />
       )}
-    </Pressable>
+      {loading ? (
+        <ActivityIndicator color={variant === 'primary' ? colors.textOnAccent : colors.textPrimary} />
+      ) : (
+        <Text
+          style={[
+            styles.label,
+            variant === 'primary' ? styles.labelPrimary : styles.labelSecondary,
+            isDisabled && styles.labelDisabled,
+          ]}
+        >
+          {title}
+        </Text>
+      )}
+    </AnimatedPressable>
   );
 }
 
-function createStyles(colors: MaterialColorScheme, tertiary: MaterialTertiary, variant: ButtonVariant) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     base: {
       borderRadius: radius.lg,
-      overflow: 'hidden',
       paddingVertical: spacing.md + 2,
       paddingHorizontal: spacing.lg,
       minHeight: state.minTouchSize,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: variant === 'primary' ? tertiary.tertiary : 'transparent',
-      borderWidth: variant === 'secondary' ? 1 : 0,
-      borderColor: variant === 'secondary' ? colors.outline : 'transparent',
+      ...shadow.raised,
     },
-    disabledBase: {
-      backgroundColor: variant === 'primary' ? colors.surfaceVariant : 'transparent',
-      borderColor: variant === 'secondary' ? colors.outlineVariant : 'transparent',
+    disabledShadow: {
+      shadowOpacity: 0.04,
+      elevation: 0,
     },
-    pressed: {
-      opacity: 0.85,
+    overlay: {
+      ...StyleSheet.absoluteFill,
+      borderRadius: radius.lg,
     },
     label: {
-      ...materialTypography.labelLarge,
-      color: variant === 'primary' ? tertiary.onTertiary : colors.onSurface,
+      ...typography.label,
+    },
+    labelPrimary: {
+      color: colors.textOnAccent,
+    },
+    labelSecondary: {
+      color: colors.textPrimary,
     },
     labelDisabled: {
-      color: colors.onSurfaceVariant,
+      color: colors.textSecondary,
     },
   });
 }

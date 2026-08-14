@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
-import { lightTertiaryByDomain } from '../theme/tokens';
+import { lightColors } from '../theme/tokens';
 import { ChoiceGroup } from '../components/ChoiceGroup';
 
 const OPTIONS = [
@@ -20,7 +20,7 @@ describe('ChoiceGroup', () => {
   it('defaults the selected pill to the progress domain color', async () => {
     const { getByTestId } = await render(<ChoiceGroup options={OPTIONS} value="a" onChange={() => {}} />);
     const style = StyleSheet.flatten(getByTestId('choice-pill-a').props.style);
-    expect(style.backgroundColor).toBe(lightTertiaryByDomain.progress.tertiary);
+    expect(style.backgroundColor).toBe(lightColors.domainProgress);
   });
 
   it('uses the given domain color for the selected pill', async () => {
@@ -28,6 +28,6 @@ describe('ChoiceGroup', () => {
       <ChoiceGroup options={OPTIONS} value="a" onChange={() => {}} domain="sport" />
     );
     const style = StyleSheet.flatten(getByTestId('choice-pill-a').props.style);
-    expect(style.backgroundColor).toBe(lightTertiaryByDomain.sport.tertiary);
+    expect(style.backgroundColor).toBe(lightColors.domainSport);
   });
 });

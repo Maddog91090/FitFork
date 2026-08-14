@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
@@ -13,15 +13,14 @@ import { TagFilterGroup } from '../../components/TagFilterGroup';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
+import { PressableScale } from '../../components/ui/PressableScale';
 import {
   centeredContent,
-  materialTypography,
+  typography,
   radius,
   spacing,
-  useMaterialColors,
-  useMaterialTertiary,
-  withRippleAlpha,
-  type MaterialColorScheme,
+  useThemeColors,
+  type ThemeColors,
 } from '../../theme/tokens';
 
 const MEAL_TYPE_OPTIONS: { value: MealType | 'all'; label: string }[] = [
@@ -54,8 +53,7 @@ function parsePrepTimeFilter(value: string): PrepTimeFilter {
 }
 
 export default function RecipesScreen() {
-  const colors = useMaterialColors();
-  const nutrition = useMaterialTertiary('nutrition');
+  const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
@@ -102,7 +100,7 @@ export default function RecipesScreen() {
   if (loading || !session || checking) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator color={nutrition.tertiary} />
+        <ActivityIndicator color={colors.domainNutrition} />
       </View>
     );
   }
@@ -122,7 +120,7 @@ export default function RecipesScreen() {
               testID="empty-state-icon"
               name="restaurant-menu"
               size={64}
-              color={colors.onSurfaceVariant}
+              color={colors.textSecondary}
               accessible={false}
             />
           }
@@ -131,12 +129,11 @@ export default function RecipesScreen() {
         />
       ) : (
         filteredRecipes.map((recipe) => (
-          <Pressable
+          <PressableScale
             key={recipe.id}
             accessibilityRole="button"
             onPress={() => router.push({ pathname: '/recipe/[id]', params: { id: recipe.id } })}
-            android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant), foreground: true }}
-            style={({ pressed }) => [styles.recipeTouchable, pressed && styles.recipePressed]}
+            style={styles.recipeTouchable}
           >
             <Card>
               <View style={styles.recipeRow}>
@@ -151,31 +148,30 @@ export default function RecipesScreen() {
                 </View>
               </View>
             </Card>
-          </Pressable>
+          </PressableScale>
         ))
       )}
     </ScrollView>
   );
 }
 
-function createStyles(colors: MaterialColorScheme) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+    screen: { flex: 1, backgroundColor: colors.bgBase },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
     container: { padding: spacing.lg, ...centeredContent },
     recipeTouchable: { borderRadius: radius.lg, overflow: 'hidden', marginBottom: spacing.sm },
-    recipePressed: { opacity: 0.85 },
     recipeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
     thumbFrame: {
       width: 56,
       height: 56,
       borderRadius: radius.sm,
-      backgroundColor: colors.surfaceVariant,
+      backgroundColor: colors.bgSunken,
       overflow: 'hidden',
     },
     thumb: { width: '100%', height: '100%' },
     recipeText: { flex: 1 },
-    recipeName: { ...materialTypography.bodyMedium, color: colors.onSurface },
-    recipeMeta: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant },
+    recipeName: { ...typography.bodyStrong, color: colors.textPrimary },
+    recipeMeta: { ...typography.caption, color: colors.textSecondary },
   });
 }

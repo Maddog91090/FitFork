@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAudioPlayer } from 'expo-audio';
 import { useKeepAwake } from 'expo-keep-awake';
-import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../lib/auth-context';
 import type { ExperienceLevel } from '../lib/profile';
 import { getLevelProgram } from '../lib/homeWorkoutProgram';
@@ -13,18 +12,10 @@ import { buildSessionSteps, type SessionStep } from '../lib/sessionSteps';
 import { useStepTimer } from '../lib/useStepTimer';
 import { logSessionCompletion } from '../lib/workoutCompletionsData';
 import { Button } from '../components/ui/Button';
+import { PressableScale } from '../components/ui/PressableScale';
 import { ExercisePhotoPair } from '../components/ui/ExercisePhotoPair';
-import {
-  centeredContent,
-  materialTypography,
-  spacing,
-  state,
-  useMaterialColors,
-  useMaterialTertiary,
-  withRippleAlpha,
-  type MaterialColorScheme,
-  type MaterialTertiary,
-} from '../theme/tokens';
+import { Mascot } from '../components/ui/Mascot';
+import { centeredContent, spacing, state, typography, useThemeColors, type ThemeColors } from '../theme/tokens';
 
 const VALID_LEVELS: ExperienceLevel[] = ['beginner', 'intermediate', 'advanced'];
 
@@ -50,9 +41,8 @@ function stepHeadline(step: Exclude<SessionStep, { kind: 'manual' }>): string {
 
 export default function WorkoutSessionScreen() {
   useKeepAwake();
-  const colors = useMaterialColors();
-  const sport = useMaterialTertiary('sport');
-  const styles = useMemo(() => createStyles(colors, sport), [colors, sport]);
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const params = useLocalSearchParams<{ level: string; sessionIndex: string }>();
@@ -117,13 +107,7 @@ export default function WorkoutSessionScreen() {
     return (
       <View style={styles.screen}>
         <View style={[styles.finishedContainer, { paddingTop: insets.top }]}>
-          <MaterialIcons
-            testID="celebration-icon"
-            name="celebration"
-            size={96}
-            color={sport.tertiary}
-            accessible={false}
-          />
+          <Mascot pose="celebrating" />
           <Text style={styles.finishedTitle}>Séance terminée</Text>
           {error && <Text style={styles.error}>{error}</Text>}
           <Button title="Marquer la séance comme terminée" onPress={handleFinish} loading={finishing} domain="sport" />
@@ -151,15 +135,14 @@ export default function WorkoutSessionScreen() {
   return (
     <View style={styles.screen}>
       <View style={[styles.exitRow, { paddingTop: spacing.lg + insets.top }]}>
-        <Pressable
+        <PressableScale
           onPress={() => router.replace('/(tabs)/workout')}
           accessibilityRole="button"
           hitSlop={state.hitSlop}
-          android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant) }}
-          style={({ pressed }) => [styles.exitTouchable, pressed && styles.exitPressed]}
+          style={styles.exitTouchable}
         >
           <Text style={styles.exitLabel}>Quitter</Text>
-        </Pressable>
+        </PressableScale>
       </View>
       {currentStep.kind === 'manual' ? (
         <View style={styles.stepContainer}>
@@ -188,21 +171,20 @@ export default function WorkoutSessionScreen() {
   );
 }
 
-function createStyles(colors: MaterialColorScheme, sport: MaterialTertiary) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background },
+    screen: { flex: 1, backgroundColor: colors.bgBase },
     centered: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.background,
+      backgroundColor: colors.bgBase,
       padding: spacing.lg,
     },
-    error: { ...materialTypography.bodyLarge, color: colors.error },
+    error: { ...typography.body, color: colors.error },
     exitRow: { paddingTop: spacing.lg, paddingHorizontal: spacing.lg, alignItems: 'flex-start' },
     exitTouchable: { minHeight: state.minTouchSize, justifyContent: 'center' },
-    exitPressed: { opacity: 0.85 },
-    exitLabel: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant },
+    exitLabel: { ...typography.caption, color: colors.textSecondary },
     stepContainer: {
       flex: 1,
       justifyContent: 'center',
@@ -210,16 +192,16 @@ function createStyles(colors: MaterialColorScheme, sport: MaterialTertiary) {
       padding: spacing.xl,
       ...centeredContent,
     },
-    stepKindLabel: { ...materialTypography.overline, color: colors.onSurfaceVariant, marginBottom: spacing.sm },
+    stepKindLabel: { ...typography.overline, color: colors.textSecondary, marginBottom: spacing.sm },
     exerciseName: {
-      ...materialTypography.displayMedium,
-      color: colors.onSurface,
+      ...typography.display,
+      color: colors.textPrimary,
       textAlign: 'center',
       marginBottom: spacing.lg,
     },
     photoRowSpacing: { alignSelf: 'stretch', marginBottom: spacing.lg },
-    detail: { ...materialTypography.titleLarge, color: colors.onSurfaceVariant, textAlign: 'center', marginBottom: spacing.xl },
-    countdown: { ...materialTypography.displayLarge, color: sport.tertiary, marginBottom: spacing.xl },
+    detail: { ...typography.title, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xl },
+    countdown: { ...typography.hero, color: colors.domainSportDeep, marginBottom: spacing.xl },
     controlsRow: { flexDirection: 'row', gap: spacing.md },
     finishedContainer: {
       flex: 1,
@@ -229,6 +211,6 @@ function createStyles(colors: MaterialColorScheme, sport: MaterialTertiary) {
       gap: spacing.lg,
       ...centeredContent,
     },
-    finishedTitle: { ...materialTypography.displayMedium, color: colors.onSurface, textAlign: 'center' },
+    finishedTitle: { ...typography.display, color: colors.textPrimary, textAlign: 'center' },
   });
 }

@@ -8,14 +8,14 @@ import { TextField } from '../../components/ui/TextField';
 import { Button } from '../../components/ui/Button';
 import {
   centeredContent,
-  materialTypography,
   spacing,
-  useMaterialColors,
-  type MaterialColorScheme,
+  typography,
+  useThemeColors,
+  type ThemeColors,
 } from '../../theme/tokens';
 
 export default function ResetPasswordScreen() {
-  const colors = useMaterialColors();
+  const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { updatePassword } = useAuth();
@@ -50,17 +50,17 @@ export default function ResetPasswordScreen() {
 
         {error && <Text style={styles.error}>{error}</Text>}
 
-        <Button title="Enregistrer" onPress={handleSubmit} loading={submitting} />
+        <Button title="Enregistrer" onPress={handleSubmit} loading={submitting} domain="neutral" />
       </View>
     </View>
   );
 }
 
-function createStyles(colors: MaterialColorScheme) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    screen: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: colors.background },
+    screen: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: colors.bgBase },
     content: { ...centeredContent },
-    brand: { ...materialTypography.displayMedium, textAlign: 'center', color: colors.onSurface, marginBottom: spacing.xl },
-    error: { ...materialTypography.bodyLarge, color: colors.error, marginBottom: spacing.md, textAlign: 'center' },
+    brand: { ...typography.display, textAlign: 'center', color: colors.textPrimary, marginBottom: spacing.xl },
+    error: { ...typography.body, color: colors.error, marginBottom: spacing.md, textAlign: 'center' },
   });
 }

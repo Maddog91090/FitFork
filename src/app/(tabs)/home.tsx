@@ -12,18 +12,17 @@ import { computeStats, type GamificationStats } from '../../lib/workoutGamificat
 import { todayDayIndex, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
+import { PressableScale } from '../../components/ui/PressableScale';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
 import { MacroIcon } from '../../components/icons/MacroIcon';
 import {
   centeredContent,
   lightColors,
-  materialTypography,
+  typography,
   radius,
   spacing,
-  useMaterialColors,
-  useMaterialTertiary,
-  withRippleAlpha,
-  type MaterialColorScheme,
+  useThemeColors,
+  type ThemeColors,
 } from '../../theme/tokens';
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -35,8 +34,7 @@ const MEAL_TYPE_LABELS: Record<MealType, string> = {
 const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'snack', 'dinner'];
 
 export default function HomeScreen() {
-  const colors = useMaterialColors();
-  const nutrition = useMaterialTertiary('nutrition');
+  const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { session, loading, signOut } = useAuth();
@@ -142,7 +140,7 @@ export default function HomeScreen() {
   if (loading || !session || checkingProfile) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator color={nutrition.tertiary} />
+        <ActivityIndicator color={colors.domainNutritionDeep} />
       </View>
     );
   }
@@ -190,11 +188,10 @@ export default function HomeScreen() {
       )}
 
       {gamification && (
-        <Pressable
+        <PressableScale
           onPress={() => router.push('/progression')}
           accessibilityRole="button"
-          android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant), foreground: true }}
-          style={({ pressed }) => [styles.gamificationTouchable, pressed && styles.gamificationPressed]}
+          style={styles.gamificationTouchable}
         >
           <Card>
             <Text style={styles.sectionLabel}>Progression</Text>
@@ -213,7 +210,7 @@ export default function HomeScreen() {
               </View>
             </View>
           </Card>
-        </Pressable>
+        </PressableScale>
       )}
 
       <Text style={styles.sectionLabel}>Actions rapides</Text>
@@ -266,8 +263,8 @@ export default function HomeScreen() {
           value={notificationsEnabled}
           onValueChange={handleToggleNotifications}
           disabled={notificationsBusy}
-          trackColor={{ true: nutrition.tertiary, false: colors.outline }}
-          thumbColor={colors.surface}
+          trackColor={{ true: colors.domainSportDeep, false: colors.borderStrong }}
+          thumbColor={colors.bgSurface}
           accessibilityLabel="Notifications de rappel d'entraînement"
         />
       </View>
@@ -279,31 +276,30 @@ export default function HomeScreen() {
   );
 }
 
-function createStyles(colors: MaterialColorScheme) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+    screen: { flex: 1, backgroundColor: colors.bgBase },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
     container: { padding: spacing.lg, ...centeredContent },
-    greeting: { ...materialTypography.displayLarge, color: colors.onSurface },
-    name: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginBottom: spacing.lg },
+    greeting: { ...typography.hero, color: colors.textPrimary },
+    name: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
     macroCard: { marginBottom: spacing.lg },
     gamificationTouchable: { borderRadius: radius.lg, overflow: 'hidden', marginBottom: spacing.lg },
-    gamificationPressed: { opacity: 0.85 },
     gamificationRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
     gamificationItem: { alignItems: 'center', flex: 1 },
-    gamificationValue: { ...materialTypography.titleLarge, color: colors.onSurface },
+    gamificationValue: { ...typography.title, color: colors.textPrimary },
     sectionLabel: {
-      ...materialTypography.overline,
-      color: colors.onSurfaceVariant,
+      ...typography.overline,
+      color: colors.textSecondary,
       marginBottom: spacing.sm,
     },
     macroRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
     macroItem: { alignItems: 'center', flex: 1 },
-    macroValue: { ...materialTypography.titleLarge, color: colors.onSurface },
+    macroValue: { ...typography.title, color: colors.textPrimary },
     macroProtein: { color: lightColors.macroProtein },
     macroFat: { color: lightColors.macroFat },
     macroCarbs: { color: lightColors.macroCarbs },
-    macroLabel: { ...materialTypography.overline, color: colors.onSurfaceVariant, marginTop: spacing.xs },
+    macroLabel: { ...typography.overline, color: colors.textSecondary, marginTop: spacing.xs },
     macroValueRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
     actionsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
     actionButton: { flex: 1 },
@@ -315,19 +311,19 @@ function createStyles(colors: MaterialColorScheme) {
       justifyContent: 'space-between',
       paddingVertical: spacing.sm + 1,
       borderBottomWidth: 1,
-      borderBottomColor: colors.outlineVariant,
+      borderBottomColor: colors.border,
     },
     mealRowLast: { borderBottomWidth: 0 },
-    mealTypeLabel: { ...materialTypography.labelMedium, width: 80, color: colors.onSurfaceVariant },
-    mealRecipeName: { ...materialTypography.bodyMedium, flex: 1, color: colors.onSurface, textAlign: 'right' },
-    mealsEmptyText: { ...materialTypography.bodyLarge, color: colors.onSurfaceVariant },
+    mealTypeLabel: { ...typography.caption, width: 80, color: colors.textSecondary },
+    mealRecipeName: { ...typography.bodyStrong, flex: 1, color: colors.textPrimary, textAlign: 'right' },
+    mealsEmptyText: { ...typography.body, color: colors.textSecondary },
     notificationsRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       marginTop: spacing.xl,
     },
-    notificationsLabel: { ...materialTypography.bodyMedium, color: colors.onSurface },
+    notificationsLabel: { ...typography.bodyStrong, color: colors.textPrimary },
     signOut: { marginTop: spacing.xl },
   });
 }

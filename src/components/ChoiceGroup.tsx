@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { useMaterialTertiary, withRippleAlpha } from '../theme/tokens';
+import { View, Text } from 'react-native';
+import { PressableScale } from './ui/PressableScale';
+import { useThemeColors } from '../theme/tokens';
 import { createPillStyles } from './choicePillStyles';
 import type { ButtonDomain } from './ui/Button';
 
@@ -10,31 +11,29 @@ type ChoiceGroupProps<T extends string> = {
   options: ChoiceOption<T>[];
   value: T | null;
   onChange: (value: T) => void;
-  /** Domain color for the selected pill. Defaults to `'progress'` via `useMaterialTertiary`. */
+  /** Domain color for the selected pill. Defaults to `'progress'`. */
   domain?: ButtonDomain;
 };
 
 export function ChoiceGroup<T extends string>({ options, value, onChange, domain }: ChoiceGroupProps<T>) {
-  const tertiary = useMaterialTertiary(domain);
-  const styles = useMemo(() => createPillStyles(tertiary), [tertiary]);
+  const colors = useThemeColors();
+  const styles = useMemo(() => createPillStyles(colors, domain), [colors, domain]);
   return (
     <View style={styles.row}>
-      {options.map((option) => {
-        const selected = value === option.value;
-        return (
-          <Pressable
-            key={option.value}
-            onPress={() => onChange(option.value)}
-            accessibilityRole="radio"
-            accessibilityState={{ selected }}
-            testID={`choice-pill-${option.value}`}
-            android_ripple={{ color: selected ? withRippleAlpha(tertiary.onTertiary) : withRippleAlpha(tertiary.tertiary) }}
-            style={({ pressed }) => [styles.pill, selected && styles.pillSelected, pressed && styles.pressed]}
-          >
-            <Text style={selected ? styles.labelSelected : styles.label}>{option.label}</Text>
-          </Pressable>
-        );
-      })}
+      {options.map((option) => (
+        <PressableScale
+          key={option.value}
+          onPress={() => onChange(option.value)}
+          accessibilityRole="radio"
+          accessibilityState={{ selected: value === option.value }}
+          testID={`choice-pill-${option.value}`}
+          style={[styles.pill, value === option.value && styles.pillSelected]}
+        >
+          <Text style={value === option.value ? styles.labelSelected : styles.label}>
+            {option.label}
+          </Text>
+        </PressableScale>
+      ))}
     </View>
   );
 }

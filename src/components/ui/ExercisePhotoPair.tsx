@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { View, Text, StyleSheet, type ImageSourcePropType, type StyleProp, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
-import { radius, spacing, materialTypography, useMaterialColors, type MaterialColorScheme } from '../../theme/tokens';
+import { radius, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
 
 type ExercisePhotoPairProps = {
   imageStart: ImageSourcePropType;
@@ -12,7 +12,7 @@ type ExercisePhotoPairProps = {
 };
 
 export function ExercisePhotoPair({ imageStart, imageEnd, showLabels = true, style }: ExercisePhotoPairProps) {
-  const colors = useMaterialColors();
+  const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
@@ -47,7 +47,7 @@ export function ExercisePhotoPair({ imageStart, imageEnd, showLabels = true, sty
   );
 }
 
-function createStyles(colors: MaterialColorScheme) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
     photoRow: { flexDirection: 'row', gap: spacing.sm },
     photoColumn: { flex: 1 },
@@ -55,13 +55,13 @@ function createStyles(colors: MaterialColorScheme) {
       width: '100%',
       aspectRatio: 4 / 3,
       borderRadius: radius.md,
-      backgroundColor: colors.surfaceVariant,
+      backgroundColor: colors.bgSunken,
       overflow: 'hidden',
     },
     photo: { width: '100%', height: '100%' },
     photoLabel: {
-      ...materialTypography.labelMedium,
-      color: colors.onSurfaceVariant,
+      ...typography.caption,
+      color: colors.textSecondary,
       textAlign: 'center',
       marginTop: spacing.xs,
     },

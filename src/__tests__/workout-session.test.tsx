@@ -154,14 +154,14 @@ describe('WorkoutSessionScreen', () => {
     expect(router.replace).toHaveBeenCalledWith('/(tabs)/workout');
   });
 
-  it('shows a celebration icon on the finished screen', async () => {
+  it('shows the celebrating mascot on the finished screen', async () => {
     mockParams('beginner', '2');
     const { findByText, getByTestId } = await render(<WorkoutSessionScreen />);
 
     await fireEvent.press(await findByText('Terminé'));
 
     expect(await findByText('Séance terminée')).toBeTruthy();
-    expect(getByTestId('celebration-icon').props.name).toBe('celebration');
+    expect(getByTestId('mascot-image')).toBeTruthy();
   });
 
   it('beeps only once the countdown enters its last 5 seconds, then auto-advances at zero', async () => {

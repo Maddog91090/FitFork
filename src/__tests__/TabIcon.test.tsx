@@ -1,35 +1,22 @@
-// This suite intentionally exercises the REAL @expo/vector-icons MaterialIcons
-// component — specifically that it folds the `color` prop into `.props.style`
-// rather than keeping it as a top-level prop. __mocks__/@expo/vector-icons.js
-// (a bare pass-through mock used by other screen tests) is auto-applied to
-// every test file, so opt this one back out to restore real behavior.
-jest.unmock('@expo/vector-icons');
-
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { StyleSheet } from 'react-native';
 import { TabIcon, type TabIconName } from '../components/icons/TabIcon';
-import { lightMaterialColors } from '../theme/tokens';
 
 const NAMES: TabIconName[] = ['home', 'plan', 'recipes', 'workout', 'grocery', 'weight'];
 
 describe('TabIcon', () => {
-  it.each(NAMES)('renders an icon for %s', async (name) => {
+  it.each(NAMES)('renders an image for %s', async (name) => {
     const { getByTestId } = await render(<TabIcon name={name} focused={false} />);
     expect(getByTestId('tab-icon-image')).toBeTruthy();
   });
 
-  it('tints with the primary color when focused', async () => {
+  it('is fully opaque when focused', async () => {
     const { getByTestId } = await render(<TabIcon name="home" focused />);
-    const element = getByTestId('tab-icon-image');
-    const flattenedStyle = StyleSheet.flatten(element.props.style);
-    expect(flattenedStyle.color).toBe(lightMaterialColors.primary);
+    expect(getByTestId('tab-icon-image').props.style.opacity).toBe(1);
   });
 
-  it('tints with onSurfaceVariant when not focused', async () => {
+  it('is dimmed when not focused', async () => {
     const { getByTestId } = await render(<TabIcon name="home" focused={false} />);
-    const element = getByTestId('tab-icon-image');
-    const flattenedStyle = StyleSheet.flatten(element.props.style);
-    expect(flattenedStyle.color).toBe(lightMaterialColors.onSurfaceVariant);
+    expect(getByTestId('tab-icon-image').props.style.opacity).toBeLessThan(1);
   });
 });

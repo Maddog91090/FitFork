@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -12,17 +12,15 @@ import { computeAdjustedTargets } from '../lib/progressTracking';
 import { generateWeeklyPlan, DAY_LABELS, type MealSlot, type MealType } from '../lib/mealPlan';
 import { Button } from '../components/ui/Button';
 import { BackLink } from '../components/ui/BackLink';
+import { PressableScale } from '../components/ui/PressableScale';
 import {
   centeredContent,
-  materialTypography,
+  typography,
   radius,
   spacing,
   state,
-  useMaterialColors,
-  useMaterialTertiary,
-  withRippleAlpha,
-  type MaterialColorScheme,
-  type MaterialTertiary,
+  useThemeColors,
+  type ThemeColors,
 } from '../theme/tokens';
 
 const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
@@ -38,9 +36,8 @@ function defaultSelection(): boolean[][] {
 }
 
 export default function GeneratePlanScreen() {
-  const colors = useMaterialColors();
-  const nutrition = useMaterialTertiary('nutrition');
-  const styles = useMemo(() => createStyles(colors, nutrition), [colors, nutrition]);
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [selected, setSelected] = useState<boolean[][]>(defaultSelection());
@@ -138,24 +135,17 @@ export default function GeneratePlanScreen() {
             {MEAL_TYPES.map((mealType, mealIndex) => {
               const isSelected = selected[dayIndex][mealIndex];
               return (
-                <Pressable
+                <PressableScale
                   key={mealType}
                   onPress={() => toggle(dayIndex, mealIndex)}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: isSelected }}
-                  android_ripple={{
-                    color: isSelected ? withRippleAlpha(nutrition.onTertiary) : withRippleAlpha(nutrition.tertiary),
-                  }}
-                  style={({ pressed }) => [
-                    styles.cell,
-                    isSelected && styles.cellSelected,
-                    pressed && styles.cellPressed,
-                  ]}
+                  style={[styles.cell, isSelected && styles.cellSelected]}
                 >
                   <Text style={isSelected ? styles.cellLabelSelected : styles.cellLabel}>
                     {MEAL_TYPE_LABELS[mealType]}
                   </Text>
-                </Pressable>
+                </PressableScale>
               );
             })}
           </View>
@@ -178,22 +168,22 @@ export default function GeneratePlanScreen() {
   );
 }
 
-function createStyles(colors: MaterialColorScheme, nutrition: MaterialTertiary) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background },
+    screen: { flex: 1, backgroundColor: colors.bgBase },
     container: { padding: spacing.lg, ...centeredContent },
-    title: { ...materialTypography.titleLarge, color: colors.onSurface, marginBottom: spacing.lg },
+    title: { ...typography.title, color: colors.textPrimary, marginBottom: spacing.lg },
     dayRow: { marginBottom: spacing.md },
     dayLabel: {
-      ...materialTypography.overline,
-      color: colors.onSurfaceVariant,
+      ...typography.overline,
+      color: colors.textSecondary,
       marginBottom: spacing.sm,
     },
     mealRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
     cell: {
       backgroundColor: 'transparent',
       borderWidth: 1,
-      borderColor: nutrition.tertiary,
+      borderColor: colors.domainNutrition,
       borderRadius: radius.sm,
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md,
@@ -201,11 +191,10 @@ function createStyles(colors: MaterialColorScheme, nutrition: MaterialTertiary) 
       justifyContent: 'center',
       overflow: 'hidden',
     },
-    cellSelected: { backgroundColor: nutrition.tertiary, borderColor: nutrition.tertiary },
-    cellPressed: { opacity: 0.85 },
-    cellLabel: { ...materialTypography.labelMedium, color: nutrition.tertiary },
-    cellLabelSelected: { ...materialTypography.labelSmall, color: nutrition.onTertiary },
+    cellSelected: { backgroundColor: colors.domainNutrition, borderColor: colors.domainNutrition },
+    cellLabel: { ...typography.caption, color: colors.domainNutritionDeep },
+    cellLabelSelected: { ...typography.captionStrong, color: colors.textOnAccent },
     errorContainer: { alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
-    error: { ...materialTypography.bodyLarge, color: colors.error, textAlign: 'center' },
+    error: { ...typography.body, color: colors.error, textAlign: 'center' },
   });
 }
