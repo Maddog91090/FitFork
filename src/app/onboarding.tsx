@@ -11,6 +11,7 @@ import Animated, {
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../lib/auth-context';
+import { useReducedMotion } from '../lib/useReducedMotion';
 import { upsertProfile, upsertTrainingProfile } from '../lib/profile';
 import { enableNotifications } from '../lib/pushNotifications';
 import type { ExperienceLevel, Equipment } from '../lib/profile';
@@ -109,6 +110,7 @@ export default function OnboardingScreen() {
   const accent = useMaterialTertiary('progress');
   const styles = useMemo(() => createStyles(colors, accent), [colors, accent]);
   const insets = useSafeAreaInsets();
+  const reducedMotion = useReducedMotion();
   const { session, loading } = useAuth();
   const [step, setStep] = useState(0);
   const [sex, setSex] = useState<Sex | null>(null);
@@ -260,10 +262,16 @@ export default function OnboardingScreen() {
       </View>
 
       <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
-        {/* Keyed by step so each transition remounts and replays the entrance. */}
+        {/* Keyed by step so each transition remounts and replays the entrance.
+            No entering animation at all when Reduce Motion is on — the step
+            change is still instant and correct, just not animated into view. */}
         <Animated.View
           key={step}
-          entering={FadeInDown.duration(motion.duration.base).easing(Easing.bezier(...motion.curve.entrance))}
+          entering={
+            reducedMotion
+              ? undefined
+              : FadeInDown.duration(motion.duration.base).easing(Easing.bezier(...motion.curve.entrance))
+          }
         >
         {step === 0 && (
           <>
@@ -384,13 +392,16 @@ type Styles = ReturnType<typeof createStyles>;
  */
 function ProgressSegment({ done, styles }: { done: boolean; styles: Styles }) {
   const fill = useSharedValue(done ? 1 : 0);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
+    // Reduce Motion still reaches the correct fill state — just instantly,
+    // via a 0ms timing animation instead of skipping the shared-value update.
     fill.value = withTiming(done ? 1 : 0, {
-      duration: motion.duration.base,
+      duration: reducedMotion ? 0 : motion.duration.base,
       easing: Easing.bezier(...motion.curve.standard),
     });
-  }, [done, fill]);
+  }, [done, fill, reducedMotion]);
 
   const fillStyle = useAnimatedStyle(() => ({ transform: [{ scaleX: fill.value }] }));
 
