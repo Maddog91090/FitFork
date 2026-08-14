@@ -22,8 +22,10 @@ import {
   materialTypography,
   radius,
   spacing,
+  state,
   useMaterialColors,
   useMaterialTertiary,
+  withRippleAlpha,
   type MaterialColorScheme,
   type MaterialTertiary,
 } from '../../theme/tokens';
@@ -171,8 +173,9 @@ export default function PlanScreen() {
             <Card key={entry.id} style={styles.entryCard}>
               <View style={styles.entryRow}>
                 <Pressable
-                  style={styles.entryInfo}
+                  style={({ pressed }) => [styles.entryInfo, pressed && styles.entryInfoPressed]}
                   accessibilityRole="button"
+                  android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant) }}
                   onPress={() =>
                     router.push({
                       pathname: '/recipe/[id]',
@@ -194,6 +197,9 @@ export default function PlanScreen() {
                   onPress={() => handleSwap(entry.id, entry.mealType, entry.recipeId)}
                   disabled={swappingId === entry.id}
                   accessibilityRole="button"
+                  hitSlop={state.hitSlop}
+                  android_ripple={{ color: withRippleAlpha(nutrition.tertiary) }}
+                  style={({ pressed }) => [styles.swapTouchable, pressed && styles.swapPressed]}
                 >
                   {swappingId === entry.id ? (
                     <ActivityIndicator size="small" color={nutrition.tertiary} />
@@ -225,6 +231,7 @@ function createStyles(colors: MaterialColorScheme, nutrition: MaterialTertiary) 
     entryCard: { marginBottom: spacing.sm },
     entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     entryInfo: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: spacing.md },
+    entryInfoPressed: { opacity: 0.85 },
     thumbFrame: {
       width: 56,
       height: 56,
@@ -236,6 +243,15 @@ function createStyles(colors: MaterialColorScheme, nutrition: MaterialTertiary) 
     entryText: { flex: 1 },
     mealTypeLabel: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant },
     recipeName: { ...materialTypography.bodyMedium, color: colors.onSurface },
-    swapHint: { ...materialTypography.labelSmall, color: nutrition.tertiaryContainer, marginLeft: spacing.md },
+    swapTouchable: {
+      minHeight: state.minTouchSize,
+      minWidth: state.minTouchSize,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginLeft: spacing.md,
+      paddingHorizontal: spacing.sm,
+    },
+    swapPressed: { opacity: 0.85 },
+    swapHint: { ...materialTypography.labelSmall, color: nutrition.tertiaryContainer },
   });
 }

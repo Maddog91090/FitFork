@@ -19,6 +19,7 @@ import {
   spacing,
   useMaterialColors,
   useMaterialTertiary,
+  withRippleAlpha,
   type MaterialColorScheme,
 } from '../../theme/tokens';
 
@@ -133,8 +134,10 @@ export default function RecipesScreen() {
             key={recipe.id}
             accessibilityRole="button"
             onPress={() => router.push({ pathname: '/recipe/[id]', params: { id: recipe.id } })}
+            android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant), foreground: true }}
+            style={({ pressed }) => [styles.recipeTouchable, pressed && styles.recipePressed]}
           >
-            <Card style={styles.recipeCard}>
+            <Card>
               <View style={styles.recipeRow}>
                 <View style={styles.thumbFrame}>
                   {recipe.imageUrl && <Image source={{ uri: recipe.imageUrl }} style={styles.thumb} />}
@@ -157,7 +160,8 @@ function createStyles(colors: MaterialColorScheme) {
     screen: { flex: 1, backgroundColor: colors.background },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
     container: { padding: spacing.lg, ...centeredContent },
-    recipeCard: { marginBottom: spacing.sm },
+    recipeTouchable: { borderRadius: radius.lg, overflow: 'hidden', marginBottom: spacing.sm },
+    recipePressed: { opacity: 0.85 },
     recipeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
     thumbFrame: {
       width: 56,
