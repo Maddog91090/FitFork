@@ -20,13 +20,28 @@ jest.mock('../lib/homeWorkoutProgram', () => {
   return { ...actual, getLevelProgram: jest.fn() };
 });
 
+// uri sources, not numeric require()-style ids: expo-image's asset pipeline
+// resolves numeric mocks to an identical placeholder object, which would
+// make the two exercises' images indistinguishable in the assertions below.
 jest.mock('../lib/exercises', () => ({
   getExercise: jest.fn((id: string) => {
     if (id === 'a') {
-      return { id: 'a', name: 'Exercice A', instructions: [], imageStart: 101, imageEnd: 102 };
+      return {
+        id: 'a',
+        name: 'Exercice A',
+        instructions: [],
+        imageStart: { uri: 'https://example.com/a-start.jpg' },
+        imageEnd: { uri: 'https://example.com/a-end.jpg' },
+      };
     }
     if (id === 'x') {
-      return { id: 'x', name: 'Exercice X', instructions: [], imageStart: 201, imageEnd: 202 };
+      return {
+        id: 'x',
+        name: 'Exercice X',
+        instructions: [],
+        imageStart: { uri: 'https://example.com/x-start.jpg' },
+        imageEnd: { uri: 'https://example.com/x-end.jpg' },
+      };
     }
     return undefined;
   }),
@@ -183,8 +198,9 @@ describe('WorkoutSessionScreen', () => {
 
     await findByText('Exercice A');
 
-    expect(getByTestId('exercise-photo-start').props.source).toBe(101);
-    expect(getByTestId('exercise-photo-end').props.source).toBe(102);
+    // expo-image normalizes a single source into a one-element source list.
+    expect(getByTestId('exercise-photo-start').props.source).toEqual([{ uri: 'https://example.com/a-start.jpg' }]);
+    expect(getByTestId('exercise-photo-end').props.source).toEqual([{ uri: 'https://example.com/a-end.jpg' }]);
   });
 
   it('shows the exercise photos during a manual step', async () => {
@@ -193,8 +209,8 @@ describe('WorkoutSessionScreen', () => {
 
     await findByText('Exercice X');
 
-    expect(getByTestId('exercise-photo-start').props.source).toBe(201);
-    expect(getByTestId('exercise-photo-end').props.source).toBe(202);
+    expect(getByTestId('exercise-photo-start').props.source).toEqual([{ uri: 'https://example.com/x-start.jpg' }]);
+    expect(getByTestId('exercise-photo-end').props.source).toEqual([{ uri: 'https://example.com/x-end.jpg' }]);
   });
 
   it('shows no exercise photos during a rest step', async () => {

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { View, Text, Image, StyleSheet, type ImageSourcePropType, type StyleProp, type ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, type ImageSourcePropType, type StyleProp, type ViewStyle } from 'react-native';
+import { Image } from 'expo-image';
 import { radius, spacing, materialTypography, useMaterialColors, type MaterialColorScheme } from '../../theme/tokens';
 
 type ExercisePhotoPairProps = {
@@ -18,13 +19,27 @@ export function ExercisePhotoPair({ imageStart, imageEnd, showLabels = true, sty
     <View style={[styles.photoRow, style]}>
       <View style={styles.photoColumn}>
         <View style={styles.photoFrame}>
-          <Image testID="exercise-photo-start" source={imageStart} style={styles.photo} />
+          <Image
+            testID="exercise-photo-start"
+            source={imageStart}
+            style={styles.photo}
+            contentFit="cover"
+            accessibilityLabel="Position de départ"
+            accessibilityIgnoresInvertColors
+          />
         </View>
         {showLabels && <Text style={styles.photoLabel}>Position de départ</Text>}
       </View>
       <View style={styles.photoColumn}>
         <View style={styles.photoFrame}>
-          <Image testID="exercise-photo-end" source={imageEnd} style={styles.photo} />
+          <Image
+            testID="exercise-photo-end"
+            source={imageEnd}
+            style={styles.photo}
+            contentFit="cover"
+            accessibilityLabel="Position finale"
+            accessibilityIgnoresInvertColors
+          />
         </View>
         {showLabels && <Text style={styles.photoLabel}>Position finale</Text>}
       </View>
