@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, Image, ActivityIndicator, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -140,7 +141,9 @@ export default function RecipesScreen() {
             <Card>
               <View style={styles.recipeRow}>
                 <View style={styles.thumbFrame}>
-                  {recipe.imageUrl && <Image source={{ uri: recipe.imageUrl }} style={styles.thumb} />}
+                  {recipe.imageUrl && (
+                    <Image source={{ uri: recipe.imageUrl }} style={styles.thumb} contentFit="cover" />
+                  )}
                 </View>
                 <View style={styles.recipeText}>
                   <Text style={styles.recipeName}>{recipe.name}</Text>

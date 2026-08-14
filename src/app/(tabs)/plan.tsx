@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, Image, Pressable, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -184,7 +185,9 @@ export default function PlanScreen() {
                   }
                 >
                   <View style={styles.thumbFrame}>
-                    {recipe?.imageUrl && <Image source={{ uri: recipe.imageUrl }} style={styles.thumb} />}
+                    {recipe?.imageUrl && (
+                      <Image source={{ uri: recipe.imageUrl }} style={styles.thumb} contentFit="cover" />
+                    )}
                   </View>
                   <View style={styles.entryText}>
                     <Text style={styles.mealTypeLabel}>{MEAL_TYPE_LABELS[entry.mealType]}</Text>
