@@ -9,6 +9,7 @@ import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
 import {
   centeredContent,
+  lightMaterialColors,
   materialElevation,
   materialTypography,
   radius,
@@ -93,7 +94,7 @@ function createStyles(colors: MaterialColorScheme, accentDeep: string) {
     screen: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: colors.background },
     content: { ...centeredContent },
     logoWrap: {
-      width: 64, height: 64, borderRadius: radius.lg, backgroundColor: colors.surface,
+      width: 64, height: 64, borderRadius: radius.lg, backgroundColor: lightMaterialColors.surface,
       alignItems: 'center', justifyContent: 'center', alignSelf: 'center',
       marginBottom: spacing.sm, padding: spacing.sm, ...materialElevation,
     },
