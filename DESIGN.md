@@ -247,7 +247,7 @@ Material inverts intensity between light and dark: in light mode a domain color 
 
 ## Layout
 
-Unchanged from before: screens pad horizontally by `spacing.lg` (16px), separate sections by `spacing.xl` (24px), content caps at 560px and centers (`centeredContent`). `orientation` is unlocked in `app.json` as of this phase (defensive only — no adaptive tablet/landscape layout work has happened yet; that is Phase 6).
+Unchanged from before: screens pad horizontally by `spacing.lg` (16px), separate sections by `spacing.xl` (24px), content caps at 560px and centers (`centeredContent`). `app.json` sets no explicit `orientation` key (Expo's system-following default applies) — no adaptive tablet/landscape layout work has happened yet, so locking or unlocking orientation without that work behind it is deferred rather than half-done.
 
 ## Elevation
 
