@@ -176,7 +176,7 @@ FitFork is a Material 3 fitness and nutrition app. Its identity comes from four 
 
 The interaction philosophy is native-first: press feedback is the platform's own ripple (`android_ripple`), not a custom spring or scale animation. Shape and elevation follow Material's conventions directly — generous but not exaggerated corner radii, a single neutral elevation tier for raised surfaces, no colored shadows, no decorative overlays.
 
-The color system is built for both light and dark schemes — the six Material-ized components genuinely switch via `useColorScheme()`, and both schemes carry the same four domain accents, each independently tuned per scheme via Material's tonal-inversion method so neither scheme reads as an afterthought. `userInterfaceStyle` is `"light"` in `app.json` for now, so the dark scheme is not yet reachable on-device end-to-end — see "Known limitations."
+The color system is built for both light and dark schemes — every screen and component genuinely switches via `useColorScheme()`, and both schemes carry the same four domain accents, each independently tuned per scheme via Material's tonal-inversion method so neither scheme reads as an afterthought. `userInterfaceStyle` is `"automatic"` in `app.json` — the dark scheme is reachable end-to-end on-device.
 
 **Key Characteristics:**
 - Four domain colors (nutrition, sport, progress, neutral), expressed through Material's `tertiary`/`onTertiary`/`tertiaryContainer` role triplet — the one role that changes per screen
@@ -300,13 +300,8 @@ Present only as the app's icon, splash screen, and Android adaptive icon — not
 - **Do** verify any new color role's contrast against `src/__tests__/materialColors.test.ts`'s pattern — extend that file rather than eyeballing a new pair.
 
 ### Don't:
-- **Don't** reach for the legacy claymorphic tokens (`lightColors`, `useThemeColors`, `typography`, `shadow`, `clayOverlay`) in new or touched code — they exist only for the screens not yet migrated to Material (Phase 5).
+- **Don't** reach for the legacy claymorphic tokens (`lightColors`, `useThemeColors`, `typography`, `shadow`, `clayOverlay`) in new code — the Material migration is complete; no screen imports them anymore, and they exist in `tokens.ts` only as dead exports pending removal. `PressableScale` is gone entirely (the component file was deleted once its last consumer migrated).
 - **Don't** mix two domains' `tertiary` as accents on one screen without a specific reason.
 - **Don't** use `fontWeight` anywhere, or pair `fontFamily` with `fontWeight`.
 - **Don't** add a custom spring/scale press animation to a new component — the native ripple is the interaction feedback, full stop.
 - **Don't** add elevation/shadow to anything but `Card` without a specific reason — flat is the default.
-
-## Known limitations
-
-- **`PressableScale` is still alive and still correct to use.** It has not been removed — it remains the right component for any screen not yet migrated to Material (see "Don't reach for the legacy claymorphic tokens" above; the same applies to `PressableScale` itself, which several unmigrated screens still import directly).
-- **The app is not scheme-aware end-to-end yet.** Dark-mode tokens (`darkMaterialColors`, `darkTertiaryByDomain`) exist and are WCAG-tested, and the six Material-ized components (`Button`, `Card`, `ChoiceGroup`, `TagFilterGroup`, `EmptyState`, `TabIcon`) genuinely switch scheme via `useColorScheme()`. But `userInterfaceStyle` is `"light"` in `app.json` for now — deliberately, until a later phase migrates the remaining screens off the old claymorphic tokens — so the dark branch is not reachable on-device yet, and turning on `"automatic"` before that migration would leave those unmigrated screens' scheme-blind claymorphic colors mismatched against the six components that do switch.
