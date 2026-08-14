@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Image } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Image, Pressable } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getTrainingProfile, upsertTrainingProfile } from '../../lib/profile';
@@ -14,11 +15,21 @@ import {
   type WorkoutCompletionRow,
 } from '../../lib/workoutCompletionsData';
 import { Card } from '../../components/ui/Card';
-import { PressableScale } from '../../components/ui/PressableScale';
 import { Button } from '../../components/ui/Button';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
-import { Mascot } from '../../components/ui/Mascot';
-import { centeredContent, radius, spacing, state, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+import {
+  centeredContent,
+  lightColors,
+  materialTypography,
+  radius,
+  spacing,
+  state,
+  useMaterialColors,
+  useMaterialTertiary,
+  withRippleAlpha,
+  type MaterialColorScheme,
+  type MaterialTertiary,
+} from '../../theme/tokens';
 
 const LEVEL_OPTIONS = homeWorkoutProgram.levels.map((entry) => ({ value: entry.level, label: entry.label }));
 
@@ -32,8 +43,10 @@ function todayDateString(): string {
 }
 
 export default function WorkoutScreen() {
-  const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colors = useMaterialColors();
+  const sport = useMaterialTertiary('sport');
+  const styles = useMemo(() => createStyles(colors, sport), [colors, sport]);
+  const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [trainingProfile, setTrainingProfile] = useState<TrainingProfile | null>(null);
   const [checking, setChecking] = useState(true);
@@ -156,15 +169,15 @@ export default function WorkoutScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator color={colors.domainSport} />
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
+        <ActivityIndicator color={sport.tertiary} />
       </View>
     );
   }
 
   if (!trainingProfile) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <ErrorNotice message={error ?? 'Impossible de charger ton profil sportif.'} onRetry={load} />
       </View>
     );
@@ -173,16 +186,11 @@ export default function WorkoutScreen() {
   const levelProgram = getLevelProgram(trainingProfile.experienceLevel);
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+    <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
       {error && <Text style={styles.error}>{error}</Text>}
 
-      <View style={styles.headerRow}>
-        <View style={styles.headerText}>
-          <Text style={styles.title}>{homeWorkoutProgram.title}</Text>
-          <Text style={styles.subtitle}>{homeWorkoutProgram.subtitle}</Text>
-        </View>
-        <Mascot pose="idle" size={64} />
-      </View>
+      <Text style={styles.title}>{homeWorkoutProgram.title}</Text>
+      <Text style={styles.subtitle}>{homeWorkoutProgram.subtitle}</Text>
       <Text style={styles.blockText}>{homeWorkoutProgram.guidance}</Text>
 
       <ChoiceGroup
@@ -191,7 +199,7 @@ export default function WorkoutScreen() {
         onChange={handleLevelChange}
         domain="sport"
       />
-      {savingLevel && <ActivityIndicator size="small" color={colors.domainSport} />}
+      {savingLevel && <ActivityIndicator size="small" color={sport.tertiary} />}
 
       <View style={styles.block}>
         <Text style={styles.blockTitle}>
@@ -223,23 +231,24 @@ export default function WorkoutScreen() {
             <View style={styles.startRow}>
               <Button title="Commencer" onPress={() => handleStartSession(index)} domain="sport" />
             </View>
-            <SessionDetail session={sessionItem} styles={styles} />
+            <SessionDetail session={sessionItem} styles={styles} sport={sport} />
             <View style={styles.completionRow}>
               {todayCompletion ? (
                 <>
                   <View style={styles.completionDoneBadge}>
                     <Text style={styles.completionDoneText}>Fait aujourd'hui ✓</Text>
                   </View>
-                  <PressableScale
+                  <Pressable
                     onPress={handleToggleCompletion}
                     disabled={loggingCompletion}
                     hitSlop={state.hitSlop}
                     accessibilityRole="button"
                     accessibilityState={{ disabled: loggingCompletion }}
-                    style={styles.completionUndoTouchable}
+                    android_ripple={{ color: withRippleAlpha(sport.tertiaryContainer) }}
+                    style={({ pressed }) => [styles.completionUndoTouchable, pressed && styles.completionUndoPressed]}
                   >
                     <Text style={styles.completionUndoLink}>Annuler</Text>
-                  </PressableScale>
+                  </Pressable>
                 </>
               ) : (
                 <Button
@@ -275,7 +284,7 @@ export default function WorkoutScreen() {
 
 type Styles = ReturnType<typeof createStyles>;
 
-function SessionDetail({ session, styles }: { session: Session; styles: Styles }) {
+function SessionDetail({ session, styles, sport }: { session: Session; styles: Styles; sport: MaterialTertiary }) {
   if (session.type === 'circuit') {
     return (
       <View style={styles.sessionDetail}>
@@ -285,15 +294,16 @@ function SessionDetail({ session, styles }: { session: Session; styles: Styles }
           {session.recoveryLabel}.
         </Text>
         {session.exercises.map((exercise) => (
-          <PressableScale
+          <Pressable
             key={exercise.name}
             onPress={() => router.push(`/exercise/${exercise.exerciseId}`)}
             accessibilityRole="link"
             hitSlop={4}
-            style={styles.exerciseCard}
+            android_ripple={{ color: withRippleAlpha(sport.tertiary) }}
+            style={({ pressed }) => [styles.exerciseCard, pressed && styles.exerciseCardPressed]}
           >
             <Text style={styles.exerciseLine}>{exercise.name}</Text>
-          </PressableScale>
+          </Pressable>
         ))}
       </View>
     );
@@ -304,41 +314,40 @@ function SessionDetail({ session, styles }: { session: Session; styles: Styles }
       <Text style={styles.exerciseListLabel}>Aperçu des exercices</Text>
       <Text style={styles.sessionMeta}>En séries, {session.restLabel}.</Text>
       {session.exercises.map((exercise) => (
-        <PressableScale
+        <Pressable
           key={exercise.name}
           onPress={() => router.push(`/exercise/${exercise.exerciseId}`)}
           accessibilityRole="link"
           hitSlop={4}
-          style={styles.exerciseCard}
+          android_ripple={{ color: withRippleAlpha(sport.tertiary) }}
+          style={({ pressed }) => [styles.exerciseCard, pressed && styles.exerciseCardPressed]}
         >
           <Text style={styles.exerciseLine}>{exercise.name}</Text>
           <Text style={styles.exerciseDetail}>{exercise.detail}</Text>
-        </PressableScale>
+        </Pressable>
       ))}
     </View>
   );
 }
 
-function createStyles(colors: ThemeColors) {
+function createStyles(colors: MaterialColorScheme, sport: MaterialTertiary) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.bgBase },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+    screen: { flex: 1, backgroundColor: colors.background },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
     container: { padding: spacing.lg, ...centeredContent },
-    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-    headerText: { flex: 1, marginRight: spacing.md },
-    title: { ...typography.display, color: colors.textPrimary },
-    subtitle: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.lg },
+    title: { ...materialTypography.displayMedium, color: colors.onSurface },
+    subtitle: { ...materialTypography.bodyLarge, color: colors.onSurfaceVariant, marginBottom: spacing.lg },
     block: { marginVertical: spacing.lg },
-    blockTitle: { ...typography.heading, color: colors.textPrimary, marginBottom: spacing.xs },
-    blockText: { ...typography.body, color: colors.textSecondary },
-    levelSummary: { ...typography.body, marginTop: spacing.sm, color: colors.textSecondary },
-    levelDuration: { ...typography.caption, marginBottom: spacing.lg, color: colors.textSecondary },
+    blockTitle: { ...materialTypography.titleMedium, color: colors.onSurface, marginBottom: spacing.xs },
+    blockText: { ...materialTypography.bodyLarge, color: colors.onSurfaceVariant },
+    levelSummary: { ...materialTypography.bodyLarge, marginTop: spacing.sm, color: colors.onSurfaceVariant },
+    levelDuration: { ...materialTypography.labelMedium, marginBottom: spacing.lg, color: colors.onSurfaceVariant },
     sessionCard: { marginBottom: spacing.sm },
     sessionPhotoFrame: {
       width: '100%',
       aspectRatio: 4 / 3,
       borderRadius: radius.md,
-      backgroundColor: colors.bgSunken,
+      backgroundColor: colors.surfaceVariant,
       marginBottom: spacing.sm,
       overflow: 'hidden',
     },
@@ -346,23 +355,25 @@ function createStyles(colors: ThemeColors) {
       width: '100%',
       height: '100%',
     },
-    sessionTitle: { ...typography.subheading, color: colors.textPrimary },
+    sessionTitle: { ...materialTypography.titleSmall, color: colors.onSurface },
     startRow: { marginTop: spacing.sm, marginBottom: spacing.md },
-    exerciseListLabel: { ...typography.overline, color: colors.textTertiary, marginBottom: spacing.xs },
+    exerciseListLabel: { ...materialTypography.overline, color: colors.onSurfaceVariant, marginBottom: spacing.xs },
     sessionDetail: { marginTop: spacing.sm },
-    sessionMeta: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.sm },
+    sessionMeta: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginBottom: spacing.sm },
     exerciseCard: {
       borderWidth: 1,
-      borderColor: colors.border,
+      borderColor: colors.outlineVariant,
       borderRadius: radius.sm,
-      backgroundColor: colors.bgBase,
+      backgroundColor: colors.background,
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md,
       marginBottom: spacing.sm,
+      overflow: 'hidden',
     },
-    exerciseLine: { ...typography.bodyStrong, color: colors.textPrimary },
-    exerciseDetail: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
-    coachNote: { ...typography.body, marginBottom: spacing.xs, color: colors.textSecondary },
+    exerciseCardPressed: { opacity: 0.85 },
+    exerciseLine: { ...materialTypography.bodyMedium, color: colors.onSurface },
+    exerciseDetail: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginTop: 2 },
+    coachNote: { ...materialTypography.bodyLarge, marginBottom: spacing.xs, color: colors.onSurfaceVariant },
     completionRow: {
       marginTop: spacing.md,
       flexDirection: 'row',
@@ -370,18 +381,19 @@ function createStyles(colors: ThemeColors) {
       justifyContent: 'space-between',
     },
     completionDoneBadge: {
-      backgroundColor: colors.successSoft,
+      backgroundColor: lightColors.successSoft,
       borderRadius: radius.pill,
       paddingVertical: spacing.xs,
       paddingHorizontal: spacing.md,
     },
-    completionDoneText: { ...typography.captionStrong, color: colors.success },
+    completionDoneText: { ...materialTypography.labelSmall, color: lightColors.success },
     completionUndoTouchable: {
       minHeight: state.minTouchSize,
       paddingHorizontal: spacing.sm,
       justifyContent: 'center',
     },
-    completionUndoLink: { ...typography.caption, color: colors.domainSportDeep },
-    error: { ...typography.body, color: colors.error, marginBottom: spacing.md },
+    completionUndoPressed: { opacity: 0.85 },
+    completionUndoLink: { ...materialTypography.labelMedium, color: sport.tertiaryContainer },
+    error: { ...materialTypography.bodyLarge, color: colors.error, marginBottom: spacing.md },
   });
 }

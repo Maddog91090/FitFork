@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, StyleSheet, Pressable, Switch } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../../lib/profile';
@@ -11,11 +12,19 @@ import { computeStats, type GamificationStats } from '../../lib/workoutGamificat
 import { todayDayIndex, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { PressableScale } from '../../components/ui/PressableScale';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
-import { Mascot } from '../../components/ui/Mascot';
 import { MacroIcon } from '../../components/icons/MacroIcon';
-import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+import {
+  centeredContent,
+  lightColors,
+  materialTypography,
+  radius,
+  spacing,
+  useMaterialColors,
+  useMaterialTertiary,
+  withRippleAlpha,
+  type MaterialColorScheme,
+} from '../../theme/tokens';
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
   breakfast: 'Petit-déj',
@@ -26,8 +35,10 @@ const MEAL_TYPE_LABELS: Record<MealType, string> = {
 const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'snack', 'dinner'];
 
 export default function HomeScreen() {
-  const colors = useThemeColors();
+  const colors = useMaterialColors();
+  const nutrition = useMaterialTertiary('nutrition');
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { session, loading, signOut } = useAuth();
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [macros, setMacros] = useState<MacroTargets | null>(null);
@@ -130,23 +141,18 @@ export default function HomeScreen() {
 
   if (loading || !session || checkingProfile) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator color={colors.domainNutrition} />
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
+        <ActivityIndicator color={nutrition.tertiary} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <View style={styles.headerRow}>
-        <View style={styles.headerText}>
-          <Text style={styles.greeting}>Bonjour</Text>
-          <Text style={styles.name} numberOfLines={1}>
-            {session.user.email}
-          </Text>
-        </View>
-        <Mascot pose="idle" size={64} />
-      </View>
+    <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
+      <Text style={styles.greeting}>Bonjour</Text>
+      <Text style={styles.name} numberOfLines={1}>
+        {session.user.email}
+      </Text>
 
       {loadError && <ErrorNotice message={loadError} onRetry={load} />}
 
@@ -184,8 +190,13 @@ export default function HomeScreen() {
       )}
 
       {gamification && (
-        <PressableScale onPress={() => router.push('/progression')} accessibilityRole="button">
-          <Card style={styles.gamificationCard}>
+        <Pressable
+          onPress={() => router.push('/progression')}
+          accessibilityRole="button"
+          android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant), foreground: true }}
+          style={({ pressed }) => [styles.gamificationTouchable, pressed && styles.gamificationPressed]}
+        >
+          <Card>
             <Text style={styles.sectionLabel}>Progression</Text>
             <View style={styles.gamificationRow}>
               <View style={styles.gamificationItem}>
@@ -202,7 +213,7 @@ export default function HomeScreen() {
               </View>
             </View>
           </Card>
-        </PressableScale>
+        </Pressable>
       )}
 
       <Text style={styles.sectionLabel}>Actions rapides</Text>
@@ -213,6 +224,9 @@ export default function HomeScreen() {
         <View style={styles.actionButton}>
           <Button title="Générer" onPress={() => router.push('/generate-plan')} domain="nutrition" />
         </View>
+      </View>
+      <View style={styles.actionsRowSecondary}>
+        <Button title="Suivre mon poids" variant="secondary" onPress={() => router.push('/weight-log')} domain="neutral" />
       </View>
 
       <Text style={styles.sectionLabel}>Repas du jour</Text>
@@ -252,8 +266,9 @@ export default function HomeScreen() {
           value={notificationsEnabled}
           onValueChange={handleToggleNotifications}
           disabled={notificationsBusy}
-          trackColor={{ true: colors.domainNutrition, false: colors.borderStrong }}
-          thumbColor={colors.bgSurface}
+          trackColor={{ true: nutrition.tertiary, false: colors.outline }}
+          thumbColor={colors.surface}
+          accessibilityLabel="Notifications de rappel d'entraînement"
         />
       </View>
 
@@ -264,39 +279,35 @@ export default function HomeScreen() {
   );
 }
 
-function createStyles(colors: ThemeColors) {
+function createStyles(colors: MaterialColorScheme) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.bgBase },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+    screen: { flex: 1, backgroundColor: colors.background },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
     container: { padding: spacing.lg, ...centeredContent },
-    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-    headerText: { flex: 1, marginRight: spacing.md },
-    greeting: { ...typography.hero, color: colors.textPrimary },
-    name: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
+    greeting: { ...materialTypography.displayLarge, color: colors.onSurface },
+    name: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginBottom: spacing.lg },
     macroCard: { marginBottom: spacing.lg },
-    gamificationCard: { marginBottom: spacing.lg },
+    gamificationTouchable: { borderRadius: radius.lg, overflow: 'hidden', marginBottom: spacing.lg },
+    gamificationPressed: { opacity: 0.85 },
     gamificationRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
     gamificationItem: { alignItems: 'center', flex: 1 },
-    gamificationValue: { ...typography.title, color: colors.textPrimary },
+    gamificationValue: { ...materialTypography.titleLarge, color: colors.onSurface },
     sectionLabel: {
-      ...typography.overline,
-      color: colors.textSecondary,
+      ...materialTypography.overline,
+      color: colors.onSurfaceVariant,
       marginBottom: spacing.sm,
     },
     macroRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
     macroItem: { alignItems: 'center', flex: 1 },
-    // Calories stay neutral; each macro carries its own hue so the numbers are
-    // scannable at a glance and match the colors used elsewhere for the same macro.
-    // typography.title rather than typography.metric: four values share this row,
-    // and metric's 28px would wrap a 4-digit calorie target on narrow phones.
-    macroValue: { ...typography.title, color: colors.textPrimary },
-    macroProtein: { color: colors.macroProtein },
-    macroFat: { color: colors.macroFat },
-    macroCarbs: { color: colors.macroCarbs },
-    macroLabel: { ...typography.overline, color: colors.textSecondary, marginTop: spacing.xs },
+    macroValue: { ...materialTypography.titleLarge, color: colors.onSurface },
+    macroProtein: { color: lightColors.macroProtein },
+    macroFat: { color: lightColors.macroFat },
+    macroCarbs: { color: lightColors.macroCarbs },
+    macroLabel: { ...materialTypography.overline, color: colors.onSurfaceVariant, marginTop: spacing.xs },
     macroValueRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-    actionsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
+    actionsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
     actionButton: { flex: 1 },
+    actionsRowSecondary: { marginBottom: spacing.lg },
     mealsCard: { marginBottom: spacing.lg },
     mealRow: {
       flexDirection: 'row',
@@ -304,19 +315,19 @@ function createStyles(colors: ThemeColors) {
       justifyContent: 'space-between',
       paddingVertical: spacing.sm + 1,
       borderBottomWidth: 1,
-      borderBottomColor: colors.divider,
+      borderBottomColor: colors.outlineVariant,
     },
     mealRowLast: { borderBottomWidth: 0 },
-    mealTypeLabel: { ...typography.caption, width: 80, color: colors.textSecondary },
-    mealRecipeName: { ...typography.bodyStrong, flex: 1, color: colors.textPrimary, textAlign: 'right' },
-    mealsEmptyText: { ...typography.body, color: colors.textSecondary },
+    mealTypeLabel: { ...materialTypography.labelMedium, width: 80, color: colors.onSurfaceVariant },
+    mealRecipeName: { ...materialTypography.bodyMedium, flex: 1, color: colors.onSurface, textAlign: 'right' },
+    mealsEmptyText: { ...materialTypography.bodyLarge, color: colors.onSurfaceVariant },
     notificationsRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       marginTop: spacing.xl,
     },
-    notificationsLabel: { ...typography.bodyStrong, color: colors.textPrimary },
+    notificationsLabel: { ...materialTypography.bodyMedium, color: colors.onSurface },
     signOut: { marginTop: spacing.xl },
   });
 }

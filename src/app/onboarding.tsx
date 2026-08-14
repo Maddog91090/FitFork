@@ -9,14 +9,26 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../lib/auth-context';
+import { useReducedMotion } from '../lib/useReducedMotion';
 import { upsertProfile, upsertTrainingProfile } from '../lib/profile';
 import { enableNotifications } from '../lib/pushNotifications';
 import type { ExperienceLevel, Equipment } from '../lib/profile';
 import { ChoiceGroup } from '../components/ChoiceGroup';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
-import { centeredContent, motion, spacing, typography, useThemeColors, type ThemeColors } from '../theme/tokens';
+import {
+  centeredContent,
+  materialTypography,
+  motion,
+  spacing,
+  state,
+  useMaterialColors,
+  useMaterialTertiary,
+  withRippleAlpha,
+  type MaterialColorScheme,
+} from '../theme/tokens';
 import type { Sex, ActivityLevel, Goal } from '../lib/nutrition';
 
 const SEX_OPTIONS: { value: Sex; label: string }[] = [
@@ -94,8 +106,11 @@ export function validateStep(step: number, fields: OnboardingFields): string | n
 }
 
 export default function OnboardingScreen() {
-  const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colors = useMaterialColors();
+  const accent = useMaterialTertiary('progress');
+  const styles = useMemo(() => createStyles(colors, accent), [colors, accent]);
+  const insets = useSafeAreaInsets();
+  const reducedMotion = useReducedMotion();
   const { session, loading } = useAuth();
   const [step, setStep] = useState(0);
   const [sex, setSex] = useState<Sex | null>(null);
@@ -201,7 +216,7 @@ export default function OnboardingScreen() {
   if (showNotificationPrompt) {
     return (
       <View style={styles.screen}>
-        <View style={styles.content}>
+        <View style={[styles.content, { paddingTop: insets.top }]}>
           <View style={styles.notificationPrompt}>
             <Text style={styles.title}>Activer les notifications ?</Text>
             <View style={styles.notificationActions}>
@@ -210,7 +225,13 @@ export default function OnboardingScreen() {
                 onPress={handleEnableNotifications}
                 loading={requestingNotifications}
               />
-              <Pressable onPress={handleSkipNotifications} style={styles.backLink}>
+              <Pressable
+                onPress={handleSkipNotifications}
+                accessibilityRole="button"
+                hitSlop={state.hitSlop}
+                android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant) }}
+                style={({ pressed }) => [styles.backLink, pressed && styles.backLinkPressed]}
+              >
                 <Text style={styles.backLinkText}>Plus tard</Text>
               </Pressable>
             </View>
@@ -241,10 +262,16 @@ export default function OnboardingScreen() {
       </View>
 
       <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
-        {/* Keyed by step so each transition remounts and replays the entrance. */}
+        {/* Keyed by step so each transition remounts and replays the entrance.
+            No entering animation at all when Reduce Motion is on — the step
+            change is still instant and correct, just not animated into view. */}
         <Animated.View
           key={step}
-          entering={FadeInDown.duration(motion.duration.base).easing(Easing.bezier(...motion.curve.entrance))}
+          entering={
+            reducedMotion
+              ? undefined
+              : FadeInDown.duration(motion.duration.base).easing(Easing.bezier(...motion.curve.entrance))
+          }
         >
         {step === 0 && (
           <>
@@ -335,7 +362,13 @@ export default function OnboardingScreen() {
 
       <View style={styles.footer}>
         {step > 0 && (
-          <Pressable onPress={handleBack} style={styles.backLink}>
+          <Pressable
+            onPress={handleBack}
+            accessibilityRole="button"
+            hitSlop={state.hitSlop}
+            android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant) }}
+            style={({ pressed }) => [styles.backLink, pressed && styles.backLinkPressed]}
+          >
             <Text style={styles.backLinkText}>← Retour</Text>
           </Pressable>
         )}
@@ -359,13 +392,16 @@ type Styles = ReturnType<typeof createStyles>;
  */
 function ProgressSegment({ done, styles }: { done: boolean; styles: Styles }) {
   const fill = useSharedValue(done ? 1 : 0);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
+    // Reduce Motion still reaches the correct fill state — just instantly,
+    // via a 0ms timing animation instead of skipping the shared-value update.
     fill.value = withTiming(done ? 1 : 0, {
-      duration: motion.duration.base,
+      duration: reducedMotion ? 0 : motion.duration.base,
       easing: Easing.bezier(...motion.curve.standard),
     });
-  }, [done, fill]);
+  }, [done, fill, reducedMotion]);
 
   const fillStyle = useAnimatedStyle(() => ({ transform: [{ scaleX: fill.value }] }));
 
@@ -385,20 +421,21 @@ function RecapRow({ label, value, styles }: { label: string; value: string; styl
   );
 }
 
-function createStyles(colors: ThemeColors) {
+function createStyles(colors: MaterialColorScheme, accent: { tertiary: string }) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.bgBase },
-    // Full bleed: the illustration is generated on bgBase, so it blends into the
-    // screen with no seam — which is also why `contain` is safe here, any letterbox
-    // is the same color as the screen. maxHeight keeps the form above the fold on
-    // a small phone. Same banner on all four steps.
+    screen: { flex: 1, backgroundColor: colors.background },
+    // Full bleed: the illustration is generated on the background color, so it
+    // blends into the screen with no seam — which is also why `contain` is
+    // safe here, any letterbox is the same color as the screen. maxHeight
+    // keeps the form above the fold on a small phone. Same banner on all four
+    // steps.
     hero: { width: '100%', aspectRatio: 2.4, maxHeight: 150 },
     // Everything below the full-bleed hero is capped and centered; the hero
     // itself stays outside this wrapper so it keeps spanning edge to edge.
     content: { flex: 1, ...centeredContent },
     header: { padding: spacing.lg, paddingBottom: spacing.sm },
     progressRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
-    segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.divider, overflow: 'hidden' },
+    segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.outlineVariant, overflow: 'hidden' },
     segmentFill: {
       position: 'absolute',
       top: 0,
@@ -406,29 +443,35 @@ function createStyles(colors: ThemeColors) {
       right: 0,
       bottom: 0,
       borderRadius: 2,
-      backgroundColor: colors.accentRed,
+      backgroundColor: accent.tertiary,
       transformOrigin: 'left',
     },
-    stepCounter: { ...typography.overline, color: colors.textSecondary, marginBottom: spacing.xs },
-    title: { ...typography.title, color: colors.textPrimary },
+    stepCounter: { ...materialTypography.overline, color: colors.onSurfaceVariant, marginBottom: spacing.xs },
+    title: { ...materialTypography.titleLarge, color: colors.onSurface },
     body: { flex: 1 },
     bodyContent: { padding: spacing.lg, paddingTop: spacing.sm },
     label: {
-      ...typography.overline,
-      color: colors.textSecondary,
+      ...materialTypography.overline,
+      color: colors.onSurfaceVariant,
       marginBottom: spacing.sm,
       marginTop: spacing.sm,
     },
-    hint: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.sm },
-    error: { ...typography.body, color: colors.error, marginTop: spacing.md },
+    hint: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginBottom: spacing.sm },
+    error: { ...materialTypography.bodyLarge, color: colors.error, marginTop: spacing.md },
     footer: { padding: spacing.lg },
     notificationPrompt: { flex: 1, justifyContent: 'center', padding: spacing.lg },
     notificationActions: { gap: spacing.md, alignItems: 'center' },
-    backLink: { alignSelf: 'flex-start', marginBottom: spacing.md },
-    backLinkText: { ...typography.subheading, color: colors.textSecondary },
+    backLink: {
+      alignSelf: 'flex-start',
+      marginBottom: spacing.md,
+      minHeight: state.minTouchSize,
+      justifyContent: 'center',
+    },
+    backLinkPressed: { opacity: 0.85 },
+    backLinkText: { ...materialTypography.titleSmall, color: colors.onSurfaceVariant },
     recapGroup: {
-      ...typography.overline,
-      color: colors.textSecondary,
+      ...materialTypography.overline,
+      color: colors.onSurfaceVariant,
       marginTop: spacing.md,
       marginBottom: spacing.xs,
     },
@@ -437,9 +480,9 @@ function createStyles(colors: ThemeColors) {
       justifyContent: 'space-between',
       paddingVertical: spacing.sm,
       borderBottomWidth: 1,
-      borderBottomColor: colors.divider,
+      borderBottomColor: colors.outlineVariant,
     },
-    recapLabel: { ...typography.caption, color: colors.textSecondary },
-    recapValue: { ...typography.captionStrong, color: colors.textPrimary },
+    recapLabel: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant },
+    recapValue: { ...materialTypography.labelSmall, color: colors.onSurface },
   });
 }

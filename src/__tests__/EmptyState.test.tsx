@@ -2,7 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { Text, StyleSheet } from 'react-native';
 import { EmptyState } from '../components/ui/EmptyState';
-import { lightColors } from '../theme/tokens';
+import { lightTertiaryByDomain } from '../theme/tokens';
 
 describe('EmptyState', () => {
   it('renders title, message and fires the action', async () => {
@@ -33,6 +33,6 @@ describe('EmptyState', () => {
       />
     );
     const style = StyleSheet.flatten(getByTestId('button-pressable').props.style);
-    expect(style.backgroundColor).toBe(lightColors.domainNutrition);
+    expect(style.backgroundColor).toBe(lightTertiaryByDomain.nutrition.tertiary);
   });
 });

@@ -1,16 +1,29 @@
 import { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { translateAuthError } from '../lib/authErrors';
 import { TextField } from '../components/ui/TextField';
 import { Button } from '../components/ui/Button';
-import { centeredContent, spacing, radius, shadow, typography, useThemeColors, type ThemeColors } from '../theme/tokens';
+import {
+  centeredContent,
+  lightMaterialColors,
+  materialElevation,
+  materialTypography,
+  radius,
+  spacing,
+  useMaterialColors,
+  useMaterialTertiary,
+  type MaterialColorScheme,
+} from '../theme/tokens';
 
 export default function LoginScreen() {
-  const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colors = useMaterialColors();
+  const accent = useMaterialTertiary('progress');
+  const styles = useMemo(() => createStyles(colors, accent.tertiaryContainer), [colors, accent]);
+  const insets = useSafeAreaInsets();
   const { session, signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,24 +47,14 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { paddingTop: insets.top }]}>
       <View style={styles.content}>
         <View style={styles.logoWrap}>
-          <Image
-            source={require('../../assets/images/logo-mark.png')}
-            style={styles.logo}
-            contentFit="contain"
-          />
+          <Image source={require('../../assets/images/logo-mark.png')} style={styles.logo} contentFit="contain" />
         </View>
         <Text style={styles.brand}>FitPro</Text>
 
-        <TextField
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
+        <TextField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
         <TextField label="Mot de passe" value={password} onChangeText={setPassword} secureTextEntry />
 
         {error && <Text style={styles.error}>{error}</Text>}
@@ -74,33 +77,21 @@ export default function LoginScreen() {
   );
 }
 
-function createStyles(colors: ThemeColors) {
+function createStyles(colors: MaterialColorScheme, accentDeep: string) {
   return StyleSheet.create({
-    screen: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: colors.bgBase },
+    screen: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: colors.background },
     content: { ...centeredContent },
     logoWrap: {
-      width: 64,
-      height: 64,
-      borderRadius: radius.lg,
-      backgroundColor: colors.bgSurface,
-      alignItems: 'center',
-      justifyContent: 'center',
-      alignSelf: 'center',
-      marginBottom: spacing.sm,
-      padding: spacing.sm,
-      ...shadow.card,
+      width: 64, height: 64, borderRadius: radius.lg, backgroundColor: lightMaterialColors.surface,
+      alignItems: 'center', justifyContent: 'center', alignSelf: 'center',
+      marginBottom: spacing.sm, padding: spacing.sm, ...materialElevation,
     },
     logo: { width: '100%', height: '100%' },
-    brand: {
-      ...typography.display,
-      textAlign: 'center',
-      color: colors.textPrimary,
-      marginBottom: spacing.xl,
-    },
+    brand: { ...materialTypography.displayMedium, textAlign: 'center', color: colors.onSurface, marginBottom: spacing.xl },
     forgotLink: { marginTop: spacing.sm, textAlign: 'center' },
-    error: { ...typography.body, color: colors.error, marginTop: spacing.md, marginBottom: spacing.md, textAlign: 'center' },
+    error: { ...materialTypography.bodyLarge, color: colors.error, marginTop: spacing.md, marginBottom: spacing.md, textAlign: 'center' },
     switchLink: { marginTop: spacing.lg, textAlign: 'center' },
-    switchText: { ...typography.caption, textAlign: 'center', color: colors.textSecondary },
-    switchTextAccent: { ...typography.captionStrong, color: colors.accentRedDeep },
+    switchText: { ...materialTypography.labelMedium, textAlign: 'center', color: colors.onSurfaceVariant },
+    switchTextAccent: { ...materialTypography.labelSmall, color: accentDeep },
   });
 }

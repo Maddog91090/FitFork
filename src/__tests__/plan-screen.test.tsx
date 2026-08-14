@@ -30,8 +30,8 @@ describe('PlanScreen', () => {
     (fetchRecipes as jest.Mock).mockResolvedValue([]);
   });
 
-  it('shows the idle mascot in the empty-plan state', async () => {
+  it('shows the empty-plan icon', async () => {
     const { getByTestId } = await render(<PlanScreen />);
-    await waitFor(() => expect(getByTestId('mascot-image')).toBeTruthy());
+    await waitFor(() => expect(getByTestId('empty-state-icon').props.name).toBe('event'));
   });
 });

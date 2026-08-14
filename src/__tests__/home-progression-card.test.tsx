@@ -80,7 +80,7 @@ describe('HomeScreen Progression card', () => {
     expect(mockPush).toHaveBeenCalledWith('/progression');
   });
 
-  it('keeps macros and today’s meals when the completions fetch fails', async () => {
+  it('keeps macros and todays meals when the completions fetch fails', async () => {
     (fetchMyCompletions as jest.Mock).mockRejectedValue(new Error('network'));
 
     const { findByText, queryByText } = await render(<HomeScreen />);
@@ -92,5 +92,14 @@ describe('HomeScreen Progression card', () => {
     expect(queryByText('network')).toBeNull();
     // Dégradation propre : la carte Progression n'est simplement pas rendue.
     expect(queryByText('Progression')).toBeNull();
+  });
+
+  it('navigates to /weight-log when "Suivre mon poids" is pressed', async () => {
+    (fetchMyCompletions as jest.Mock).mockResolvedValue([]);
+
+    const { findByText } = await render(<HomeScreen />);
+
+    await fireEvent.press(await findByText('Suivre mon poids'));
+    expect(mockPush).toHaveBeenCalledWith('/weight-log');
   });
 });

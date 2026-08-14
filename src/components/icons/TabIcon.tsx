@@ -1,15 +1,15 @@
-import { Image, type ImageProps } from 'expo-image';
-import { state } from '../../theme/tokens';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useMaterialColors } from '../../theme/tokens';
 
 export type TabIconName = 'home' | 'plan' | 'recipes' | 'workout' | 'grocery' | 'weight';
 
-const TAB_ICON_SOURCES: Record<TabIconName, ImageProps['source']> = {
-  home: require('../../../assets/images/icons/tab-home.png'),
-  plan: require('../../../assets/images/icons/tab-plan.png'),
-  recipes: require('../../../assets/images/icons/tab-recipes.png'),
-  workout: require('../../../assets/images/icons/tab-workout.png'),
-  grocery: require('../../../assets/images/icons/tab-grocery.png'),
-  weight: require('../../../assets/images/icons/tab-weight.png'),
+const TAB_ICON_NAMES: Record<TabIconName, React.ComponentProps<typeof MaterialIcons>['name']> = {
+  home: 'home',
+  plan: 'event',
+  recipes: 'restaurant-menu',
+  workout: 'fitness-center',
+  grocery: 'shopping-cart',
+  weight: 'monitor-weight',
 };
 
 type TabIconProps = {
@@ -19,17 +19,19 @@ type TabIconProps = {
 };
 
 /**
- * A claymorphic tab bar icon. These are static images, not tintable vector
- * icons, so the active/inactive distinction is opacity rather than the
- * `tabBarActiveTintColor`/`tabBarInactiveTintColor` mechanism Ionicons used.
+ * A Material tab bar icon. Tints itself from `focused` directly (rather than
+ * relying on the parent `Tabs`'s `tabBarActiveTintColor`/`tabBarInactiveTintColor`
+ * cascading down) so this component alone determines its own color — no
+ * change to `src/app/(tabs)/_layout.tsx` is needed for this to render correctly.
  */
 export function TabIcon({ name, focused, size = 24 }: TabIconProps) {
+  const colors = useMaterialColors();
   return (
-    <Image
+    <MaterialIcons
       testID="tab-icon-image"
-      source={TAB_ICON_SOURCES[name]}
-      style={{ width: size, height: size, opacity: focused ? 1 : state.disabledOpacity }}
-      contentFit="contain"
+      name={TAB_ICON_NAMES[name]}
+      size={size}
+      color={focused ? colors.primary : colors.onSurfaceVariant}
     />
   );
 }

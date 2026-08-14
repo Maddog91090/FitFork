@@ -1,16 +1,12 @@
 import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Button } from './Button';
-import { spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+import { materialTypography, spacing, useMaterialColors, type MaterialColorScheme } from '../../theme/tokens';
 
-type ErrorNoticeProps = {
-  message: string;
-  onRetry: () => void;
-};
+type ErrorNoticeProps = { message: string; onRetry: () => void; };
 
-/** An error message with a "what to do next" action, for a screen whose load failed. */
 export function ErrorNotice({ message, onRetry }: ErrorNoticeProps) {
-  const colors = useThemeColors();
+  const colors = useMaterialColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.container}>
@@ -20,15 +16,9 @@ export function ErrorNotice({ message, onRetry }: ErrorNoticeProps) {
   );
 }
 
-function createStyles(colors: ThemeColors) {
+function createStyles(colors: MaterialColorScheme) {
   return StyleSheet.create({
-    container: {
-      marginBottom: spacing.md,
-    },
-    message: {
-      ...typography.body,
-      color: colors.error,
-      marginBottom: spacing.sm,
-    },
+    container: { marginBottom: spacing.md },
+    message: { ...materialTypography.bodyLarge, color: colors.error, marginBottom: spacing.sm },
   });
 }

@@ -81,14 +81,14 @@ describe('RecipesScreen', () => {
     expect(await findByText('Aucune recette ne correspond')).toBeTruthy();
   });
 
-  it('shows the idle mascot when no recipe matches the filters', async () => {
+  it('shows the empty-results icon when no recipe matches the filters', async () => {
     const { findByText, getByText, getByTestId } = await render(<RecipesScreen />);
     await findByText('Poulet grillé');
 
     await fireEvent.press(getByText('Poulet'));
     await fireEvent.press(getByText('Végétarien'));
 
-    await waitFor(() => expect(getByTestId('mascot-image')).toBeTruthy());
+    await waitFor(() => expect(getByTestId('empty-state-icon').props.name).toBe('restaurant-menu'));
   });
 
   it('filters by prep time', async () => {

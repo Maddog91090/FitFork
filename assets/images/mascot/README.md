@@ -1,7 +1,7 @@
 # Mascot — base pose set
 
-Two files, both transparent PNG, ≥1024×1024. The mascot is a stylized
-cartoon broccoli character (arms, legs, coral-orange sneakers, big
+Three files, all transparent PNG, exactly 1024×1024. The mascot is a
+stylized cartoon broccoli character (arms, legs, coral-orange sneakers, big
 Pixar-style eyes).
 
 ## Concept history
@@ -17,10 +17,12 @@ a new direction not in the original spec: a stylized cartoon broccoli
 character with arms and legs, explicitly **not** photorealistic and
 **not** textured like hand-molded clay — smooth, polished, 3D-cartoon
 shading with big expressive Pixar-style eyes. That direction was approved
-and both poses below were generated from it.
+and all three poses below were generated from it (`idle` and `celebrating`
+first; `encouraging` followed in a later pass, reusing the same validated
+prompt with only the pose-specific clause swapped).
 
-**Validated prompt** (shared foundation both poses were generated from,
-with only the pose-specific clause changed):
+**Validated prompt** (shared foundation all three poses were generated
+from, with only the pose-specific clause changed):
 
 > A cute stylized cartoon broccoli character mascot with simple cartoon
 > arms and legs, [pose-specific clause], for a fitness and nutrition app,
@@ -45,10 +47,23 @@ that shipped.
 | --- | --- | --- |
 | `mascot-idle.png` | Idle / at-rest, shown continuously | Not yet wired into a screen — this is the foundation component; screen placements are a follow-up plan. |
 | `mascot-celebrating.png` | Celebration (milestone, streak, completion) | Not yet wired into a screen — same as above. |
+| `mascot-encouraging.png` | Encouraging (after a setback — never mocking, never sad-looking) | Used on `generate-plan.tsx`'s generation-failure state (Phase 3). |
+
+**Accepted deviations on `mascot-encouraging.png`.** The user reviewed
+`mascot-idle.png` and `mascot-encouraging.png` side by side and confirmed
+two small differences that are unique to `mascot-encouraging.png`: a small
+nose bump between the eyes (absent on the other two poses) and a white
+shoe-sole strip (vs. solid coral soles on the other two). Both were
+explicitly accepted as-is — barely perceptible at the pose's actual
+~75px render size, and the pose itself still reads as warm/reassuring
+rather than sad or mocking, which is the one hard requirement. This asset
+was **not** regenerated to fix them. `mascot-idle.png` and
+`mascot-celebrating.png` remain the stricter reference for "no nose" and
+"solid coral soles" when generating future poses — don't treat
+`mascot-encouraging.png` as that reference for those two details.
 
 Being transparent, each pose works on `bgBase`, `bgSurface`, or `bgSunken`
 with no seam.
 
-Two more poses are planned but not part of this base set — see "Follow-up
-work" in the plan above: a moving/transition pose and an
-encouraging-after-a-setback pose (never mocking, never sad-looking).
+One more pose is planned but not part of this set — see "Follow-up work"
+in the Phase 2 plan: a moving/transition pose.

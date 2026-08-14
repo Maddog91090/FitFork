@@ -1,6 +1,7 @@
 // src/app/progression.tsx
 import { useCallback, useMemo, useState } from 'react';
 import { View, Text, Image, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
 import { fetchMyCompletions } from '../lib/workoutCompletionsData';
@@ -9,20 +10,24 @@ import { BADGES, unlockedBadgeIds } from '../lib/workoutBadges';
 import { Card } from '../components/ui/Card';
 import { ErrorNotice } from '../components/ui/ErrorNotice';
 import { BackLink } from '../components/ui/BackLink';
-import { Mascot } from '../components/ui/Mascot';
 import {
   centeredContent,
+  lightColors,
+  materialTypography,
   radius,
   spacing,
   state,
-  typography,
-  useThemeColors,
-  type ThemeColors,
+  useMaterialColors,
+  useMaterialTertiary,
+  type MaterialColorScheme,
+  type MaterialTertiary,
 } from '../theme/tokens';
 
 export default function ProgressionScreen() {
-  const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colors = useMaterialColors();
+  const progress = useMaterialTertiary('progress');
+  const styles = useMemo(() => createStyles(colors, progress), [colors, progress]);
+  const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [checking, setChecking] = useState(true);
   const [stats, setStats] = useState<GamificationStats | null>(null);
@@ -55,15 +60,15 @@ export default function ProgressionScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator color={colors.domainProgress} />
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
+        <ActivityIndicator color={progress.tertiary} />
       </View>
     );
   }
 
   if (!stats) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <BackLink />
         <ErrorNotice message={error ?? 'Impossible de charger ta progression.'} onRetry={load} />
       </View>
@@ -73,14 +78,11 @@ export default function ProgressionScreen() {
   const unlockedIds = new Set(unlockedBadgeIds(stats));
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+    <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
       <BackLink />
       {error && <ErrorNotice message={error} onRetry={load} />}
 
-      <View style={styles.titleRow}>
-        <Text style={styles.title}>Progression</Text>
-        <Mascot pose={stats.streak > 0 && stats.streak % 7 === 0 ? 'celebrating' : 'idle'} size={64} />
-      </View>
+      <Text style={styles.title}>Progression</Text>
 
       <Card style={styles.headerCard}>
         <View style={styles.headerRow}>
@@ -133,51 +135,46 @@ export default function ProgressionScreen() {
   );
 }
 
-function createStyles(colors: ThemeColors) {
+function createStyles(colors: MaterialColorScheme, progress: MaterialTertiary) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.bgBase },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
+    screen: { flex: 1, backgroundColor: colors.background },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
     container: { padding: spacing.lg, ...centeredContent },
-    title: { ...typography.display, color: colors.textPrimary },
-    titleRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: spacing.lg,
-    },
+    title: { ...materialTypography.displayMedium, color: colors.onSurface, marginBottom: spacing.lg },
     sectionLabel: {
-      ...typography.overline,
-      color: colors.textSecondary,
+      ...materialTypography.overline,
+      color: colors.onSurfaceVariant,
       marginBottom: spacing.sm,
       marginTop: spacing.lg,
     },
     headerCard: {},
     headerRow: { flexDirection: 'row', justifyContent: 'space-between' },
     headerItem: { alignItems: 'center', flex: 1 },
-    headerValue: { ...typography.title, color: colors.textPrimary },
-    headerLabel: { ...typography.overline, color: colors.textSecondary, marginTop: spacing.xs },
+    headerValue: { ...materialTypography.titleLarge, color: colors.onSurface },
+    headerLabel: { ...materialTypography.overline, color: colors.onSurfaceVariant, marginTop: spacing.xs },
     weekCard: {},
     dayDotsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
     dayDot: {
       width: 24,
       height: 24,
       borderRadius: radius.full,
-      backgroundColor: colors.bgSunken,
+      backgroundColor: colors.surfaceVariant,
       borderWidth: 1,
-      borderColor: colors.border,
+      borderColor: colors.outlineVariant,
     },
-    dayDotDone: { backgroundColor: colors.domainProgress, borderColor: colors.domainProgress },
-    weekText: { ...typography.body, color: colors.textSecondary },
+    dayDotDone: { backgroundColor: progress.tertiary, borderColor: progress.tertiary },
+    weekText: { ...materialTypography.bodyLarge, color: colors.onSurfaceVariant },
     badgeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
     badgeItem: { width: '30%', alignItems: 'center' },
     badgeImage: { width: 64, height: 64, marginBottom: spacing.xs },
     badgeImageLocked: { opacity: state.disabledOpacity },
-    badgeLabel: { ...typography.captionStrong, color: colors.textPrimary, textAlign: 'center' },
-    badgeDescription: { ...typography.caption, color: colors.textSecondary, textAlign: 'center' },
+    badgeLabel: { ...materialTypography.labelSmall, color: colors.onSurface, textAlign: 'center' },
+    badgeDescription: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, textAlign: 'center' },
     // Marks a badge nobody can earn yet (a feature it depends on doesn't
     // exist) as visually distinct from a badge that's merely locked —
-    // textTertiary is used here for exactly its documented purpose,
-    // decorative/non-actionable text.
-    badgeDescriptionMuted: { color: colors.textTertiary },
+    // lightColors.textTertiary is used here for exactly its documented
+    // purpose, decorative/non-actionable text (no Material role exists
+    // for this — see the Phase 5b plan's color-mapping table).
+    badgeDescriptionMuted: { color: lightColors.textTertiary },
   });
 }

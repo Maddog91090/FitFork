@@ -1,17 +1,17 @@
 import { Tabs } from 'expo-router';
 import { TabIcon } from '../../components/icons/TabIcon';
-import { typography, useThemeColors } from '../../theme/tokens';
+import { materialTypography, useMaterialColors } from '../../theme/tokens';
 
 export default function TabsLayout() {
-  const colors = useThemeColors();
+  const colors = useMaterialColors();
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: { backgroundColor: colors.bgSurface, borderTopColor: colors.border },
-        tabBarLabelStyle: { ...typography.caption, fontSize: 11 },
-        tabBarActiveTintColor: colors.textPrimary,
-        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.outlineVariant },
+        tabBarLabelStyle: { ...materialTypography.labelMedium, fontSize: 11 },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.onSurfaceVariant,
       }}
     >
       <Tabs.Screen
@@ -47,13 +47,6 @@ export default function TabsLayout() {
         options={{
           title: 'Courses',
           tabBarIcon: ({ focused }) => <TabIcon name="grocery" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="weight-log"
-        options={{
-          title: 'Poids',
-          tabBarIcon: ({ focused }) => <TabIcon name="weight" focused={focused} />,
         }}
       />
     </Tabs>

@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet, Image } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 import {
   fetchRecipes,
@@ -12,11 +14,23 @@ import { scaleIngredientQuantity, scaleMacroValue, clampPortionMultiplier } from
 import { Card } from '../../components/ui/Card';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
 import { BackLink } from '../../components/ui/BackLink';
-import { centeredContent, radius, shadow, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+import {
+  centeredContent,
+  materialElevation,
+  materialTypography,
+  radius,
+  spacing,
+  useMaterialColors,
+  useMaterialTertiary,
+  type MaterialColorScheme,
+  type MaterialTertiary,
+} from '../../theme/tokens';
 
 export default function RecipeDetailScreen() {
-  const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const colors = useMaterialColors();
+  const nutrition = useMaterialTertiary('nutrition');
+  const styles = useMemo(() => createStyles(colors, nutrition), [colors, nutrition]);
+  const insets = useSafeAreaInsets();
   const { id, portion: portionParam } = useLocalSearchParams<{ id: string; portion?: string }>();
   const parsedPortion = Number(portionParam);
   const portionMultiplier =
@@ -55,15 +69,15 @@ export default function RecipeDetailScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
+        <ActivityIndicator color={nutrition.tertiary} />
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <BackLink />
         <ErrorNotice message={error} onRetry={load} />
       </View>
@@ -72,7 +86,7 @@ export default function RecipeDetailScreen() {
 
   if (!recipe) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <BackLink />
         <Text style={styles.error}>Recette introuvable.</Text>
       </View>
@@ -80,7 +94,7 @@ export default function RecipeDetailScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+    <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
       <BackLink />
       <Text style={styles.title}>{recipe.name}</Text>
       <Text style={styles.macros}>
@@ -95,7 +109,12 @@ export default function RecipeDetailScreen() {
 
       {recipe.imageUrl && (
         <View style={styles.photoFrame}>
-          <Image source={{ uri: recipe.imageUrl }} style={styles.photo} accessibilityLabel={recipe.name} />
+          <Image
+            source={{ uri: recipe.imageUrl }}
+            style={styles.photo}
+            contentFit="cover"
+            accessibilityLabel={recipe.name}
+          />
         </View>
       )}
 
@@ -122,53 +141,53 @@ export default function RecipeDetailScreen() {
   );
 }
 
-function createStyles(colors: ThemeColors) {
+function createStyles(colors: MaterialColorScheme, nutrition: MaterialTertiary) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.bgBase },
+    screen: { flex: 1, backgroundColor: colors.background },
     centered: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.bgBase,
+      backgroundColor: colors.background,
       padding: spacing.lg,
     },
     container: { padding: spacing.lg, ...centeredContent },
-    title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.xs },
-    macros: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.lg },
-    portionBanner: { ...typography.captionStrong, color: colors.accentRedDeep, marginBottom: spacing.lg },
+    title: { ...materialTypography.displayMedium, color: colors.onSurface, marginBottom: spacing.xs },
+    macros: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginBottom: spacing.lg },
+    portionBanner: { ...materialTypography.labelSmall, color: nutrition.tertiaryContainer, marginBottom: spacing.lg },
     photoFrame: {
       width: '100%',
       aspectRatio: 4 / 3,
       borderRadius: radius.lg,
-      backgroundColor: colors.bgSunken,
+      backgroundColor: colors.surfaceVariant,
       marginBottom: spacing.lg,
       overflow: 'hidden',
-      ...shadow.card,
+      ...materialElevation,
     },
     photo: {
       width: '100%',
       height: '100%',
     },
     sectionTitle: {
-      ...typography.overline,
-      color: colors.textSecondary,
+      ...materialTypography.overline,
+      color: colors.onSurfaceVariant,
       marginTop: spacing.md,
       marginBottom: spacing.sm,
     },
     card: { marginBottom: spacing.sm },
-    ingredientLine: { ...typography.body, color: colors.textPrimary, marginBottom: spacing.xs },
+    ingredientLine: { ...materialTypography.bodyLarge, color: colors.onSurface, marginBottom: spacing.xs },
     stepRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm, alignItems: 'flex-start' },
     stepBadge: {
       width: 20,
       height: 20,
       borderRadius: 10,
-      backgroundColor: colors.accentRed,
+      backgroundColor: nutrition.tertiary,
       alignItems: 'center',
       justifyContent: 'center',
       marginTop: 1,
     },
-    stepBadgeText: { ...typography.overline, color: colors.textOnAccent, letterSpacing: 0 },
-    stepText: { ...typography.body, flex: 1, color: colors.textPrimary },
-    error: { ...typography.body, color: colors.error },
+    stepBadgeText: { ...materialTypography.overline, color: nutrition.onTertiary, letterSpacing: 0 },
+    stepText: { ...materialTypography.bodyLarge, flex: 1, color: colors.onSurface },
+    error: { ...materialTypography.bodyLarge, color: colors.error },
   });
 }

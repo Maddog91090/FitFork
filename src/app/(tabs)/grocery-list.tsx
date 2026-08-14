@@ -1,18 +1,29 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../lib/auth-context';
 import { getCurrentPlan, fetchRecipeIngredients } from '../../lib/mealPlanData';
 import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
-import { centeredContent, spacing, typography, useThemeColors, type ThemeColors } from '../../theme/tokens';
+import {
+  centeredContent,
+  materialTypography,
+  spacing,
+  useMaterialColors,
+  useMaterialTertiary,
+  type MaterialColorScheme,
+} from '../../theme/tokens';
 
 type AggregatedIngredient = { name: string; quantity: number; unit: string };
 
 export default function GroceryListScreen() {
-  const colors = useThemeColors();
+  const colors = useMaterialColors();
+  const nutrition = useMaterialTertiary('nutrition');
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { session, loading } = useAuth();
   const [items, setItems] = useState<AggregatedIngredient[]>([]);
   const [hasPlan, setHasPlan] = useState(true);
@@ -72,28 +83,37 @@ export default function GroceryListScreen() {
 
   if (loading || !session || checking) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator color={colors.accentRed} />
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
+        <ActivityIndicator color={nutrition.tertiary} />
       </View>
     );
   }
 
   if (!hasPlan) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <EmptyState
-          illustration={require('../../../assets/images/illustrations/empty-grocery.png')}
+          icon={
+            <MaterialIcons
+              testID="empty-state-icon"
+              name="shopping-cart"
+              size={64}
+              color={colors.onSurfaceVariant}
+              accessible={false}
+            />
+          }
           title="Aucun plan pour l'instant"
           message="Génère un plan de repas pour obtenir ta liste de courses."
           actionLabel="Générer un plan"
           onAction={() => router.push('/generate-plan')}
+          domain="nutrition"
         />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+    <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
       <Text style={styles.title}>Liste de courses</Text>
       {error && <ErrorNotice message={error} onRetry={load} />}
       <Card>
@@ -113,27 +133,27 @@ export default function GroceryListScreen() {
   );
 }
 
-function createStyles(colors: ThemeColors) {
+function createStyles(colors: MaterialColorScheme) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.bgBase },
+    screen: { flex: 1, backgroundColor: colors.background },
     centered: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.bgBase,
+      backgroundColor: colors.background,
       padding: spacing.lg,
     },
     container: { padding: spacing.lg, ...centeredContent },
-    title: { ...typography.display, color: colors.textPrimary, marginBottom: spacing.lg },
+    title: { ...materialTypography.displayMedium, color: colors.onSurface, marginBottom: spacing.lg },
     row: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       paddingVertical: spacing.sm + 1,
       borderBottomWidth: 1,
-      borderBottomColor: colors.divider,
+      borderBottomColor: colors.outlineVariant,
     },
     rowLast: { borderBottomWidth: 0 },
-    name: { ...typography.body, flex: 1, color: colors.textPrimary },
-    quantity: { ...typography.captionStrong, color: colors.textSecondary },
+    name: { ...materialTypography.bodyLarge, flex: 1, color: colors.onSurface },
+    quantity: { ...materialTypography.labelSmall, color: colors.onSurfaceVariant },
   });
 }
