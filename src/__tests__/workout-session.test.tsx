@@ -20,6 +20,18 @@ jest.mock('../lib/homeWorkoutProgram', () => {
   return { ...actual, getLevelProgram: jest.fn() };
 });
 
+jest.mock('../lib/exercises', () => ({
+  getExercise: jest.fn((id: string) => {
+    if (id === 'a') {
+      return { id: 'a', name: 'Exercice A', instructions: [], imageStart: 101, imageEnd: 102 };
+    }
+    if (id === 'x') {
+      return { id: 'x', name: 'Exercice X', instructions: [], imageStart: 201, imageEnd: 202 };
+    }
+    return undefined;
+  }),
+}));
+
 jest.mock('expo-router', () => ({
   router: { replace: jest.fn(), push: jest.fn() },
   useLocalSearchParams: jest.fn(),
@@ -163,5 +175,37 @@ describe('WorkoutSessionScreen', () => {
       jest.advanceTimersByTime(2000);
     });
     expect(await findByText('Repos')).toBeTruthy();
+  });
+
+  it('shows the exercise photos during a work step', async () => {
+    mockParams('beginner', '0');
+    const { findByText, getByTestId } = await render(<WorkoutSessionScreen />);
+
+    await findByText('Exercice A');
+
+    expect(getByTestId('exercise-photo-start').props.source).toBe(101);
+    expect(getByTestId('exercise-photo-end').props.source).toBe(102);
+  });
+
+  it('shows the exercise photos during a manual step', async () => {
+    mockParams('beginner', '2');
+    const { findByText, getByTestId } = await render(<WorkoutSessionScreen />);
+
+    await findByText('Exercice X');
+
+    expect(getByTestId('exercise-photo-start').props.source).toBe(201);
+    expect(getByTestId('exercise-photo-end').props.source).toBe(202);
+  });
+
+  it('shows no exercise photos during a rest step', async () => {
+    mockParams('beginner', '0');
+    const { findByText, getByText, queryByTestId } = await render(<WorkoutSessionScreen />);
+
+    await findByText('Exercice A');
+    await fireEvent.press(getByText('Passer'));
+
+    await findByText('Repos');
+    expect(queryByTestId('exercise-photo-start')).toBeNull();
+    expect(queryByTestId('exercise-photo-end')).toBeNull();
   });
 });
