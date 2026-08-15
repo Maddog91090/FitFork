@@ -32,7 +32,7 @@ function createStyles(colors: ThemeColors) {
     card: {
       backgroundColor: colors.bgSurface,
       borderRadius: radius.lg,
-      borderWidth: 1.5,
+      borderWidth: 2,
       borderColor: colors.borderStrong,
       padding: spacing.md,
       ...shadow.card,
