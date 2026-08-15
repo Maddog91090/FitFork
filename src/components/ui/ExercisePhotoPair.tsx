@@ -53,8 +53,13 @@ function createStyles(colors: ThemeColors) {
     photoColumn: { flex: 1 },
     photoFrame: {
       width: '100%',
-      aspectRatio: 4 / 3,
+      // Taller than the previous 4/3 landscape crop — reads noticeably
+      // bigger/more prominent at the same column width, and shows more of
+      // the body for a standing exercise photo.
+      aspectRatio: 3 / 4,
       borderRadius: radius.md,
+      borderWidth: 2,
+      borderColor: colors.borderStrong,
       backgroundColor: colors.bgSunken,
       overflow: 'hidden',
     },
