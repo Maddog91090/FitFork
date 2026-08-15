@@ -7,8 +7,8 @@ description: FitPro's visual identity — the claymorphic, multi-domain-color, m
 
 ## The direction, in one sentence
 
-FitPro looks like a **puffy, claymorphic fitness and nutrition app**: warm
-off-white surfaces with soft rounded volume and gentle two-layer shadows
+FitPro looks like a **puffy, claymorphic fitness and nutrition app**: a warm
+honey-cream base with clearly visible rounded volume and two-layer shadows
 instead of flat cards, one rounded display family (Fredoka) for everything
 you read, four domain colors instead of a single brand accent, and a
 permanent broccoli mascot that lives in the app and reacts to what you do.
@@ -168,21 +168,30 @@ emphasis, change the step or the color.
    rather than a hard drop shadow. There's no per-domain shadow tier here —
    `Button.tsx` overrides `shadowColor` at the call site for both variants
    (primary gets the domain's `*Deep` color, secondary gets
-   `colors.textPrimary`); everything else uses these tiers as-is. Shadows stay
-   soft and low-opacity by design — deepening one to make something stand out
-   is the wrong lever; hierarchy comes from type and space first.
+   `colors.textPrimary`); everything else uses these tiers as-is. Opacities
+   are 0.10/0.18/0.26 (subtle/card/raised) — deepened from an original
+   0.06/0.12/0.18 after live-device feedback that the app read as flat and
+   "too sober" at the lower values; depth was technically present but too
+   quiet to register at normal viewing distance. Still don't reach for a
+   *deeper tier* just to make one specific element stand out — that part of
+   the original guidance holds — but do trust that these baseline tiers are
+   meant to be clearly visible now, not merely present.
 2. **`clayOverlay`** — the "puffy inner-highlight" illusion. React Native has
    no CSS-style inset shadow, so the claymorphic volume cue is faked with a
-   low-opacity diagonal gradient sheen laid on top of a surface: lighter
-   top-left (catching light), fading through transparent, to a faint warm dark
-   bottom-right (falling into shadow). Render it as an `expo-linear-gradient`
-   `LinearGradient` sized to `StyleSheet.absoluteFill`, **with its own
-   `borderRadius` matching the surface** — a view always clips its own
-   background/gradient fill to its own border radius, so the parent surface
-   deliberately does **not** get `overflow: 'hidden'`, which would otherwise
-   also clip the parent's own drop shadow. See `Card.tsx` and `Button.tsx` for
-   the pattern in place (`clayOverlay` on primary buttons only — secondary
-   buttons don't get the sheen).
+   diagonal gradient sheen laid on top of a surface: lighter top-left
+   (catching light, `rgba(255,255,255,0.6)`), fading through transparent, to a
+   warm dark bottom-right (falling into shadow, `rgba(58,46,34,0.2)`) — both
+   stops deepened from 0.45/0.10 for the same reason as the shadow tiers
+   above: at the original opacities, filled buttons and cards read as a flat
+   solid color rather than a puffy material with a visible highlight and
+   shade. Render it as an `expo-linear-gradient` `LinearGradient` sized to
+   `StyleSheet.absoluteFill`, **with its own `borderRadius` matching the
+   surface** — a view always clips its own background/gradient fill to its
+   own border radius, so the parent surface deliberately does **not** get
+   `overflow: 'hidden'`, which would otherwise also clip the parent's own
+   drop shadow. See `Card.tsx` and `Button.tsx` for the pattern in place
+   (`clayOverlay` on primary buttons only — secondary buttons don't get the
+   sheen).
 
 ## Motion
 

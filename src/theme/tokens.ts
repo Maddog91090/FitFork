@@ -7,17 +7,21 @@
  */
 
 export const lightColors = {
-  // Surfaces — light warm cream base (lighter than Soft Neutral's paper, to
-  // let the saturated domain colors read as vivid rather than muddy), pure
-  // white raised, soft peach sunken.
-  bgBase: '#FFFBF5',
+  // Surfaces — warm honey-cream base (deliberately darker/more saturated
+  // than the original near-white FFFBF5, which read as too plain/washed-out
+  // against the domain colors), pure white raised (so cards keep standing
+  // out against the now-warmer base instead of blending into it), deeper
+  // honey sunken so a recessed/pressed surface actually reads as pressed in
+  // rather than just a paler cousin of the base.
+  bgBase: '#F7E4C0',
   bgSurface: '#FFFFFF',
-  bgSunken: '#FFF3E0',
+  bgSunken: '#EFD6A0',
 
   // Text — warm ink instead of Soft Neutral's cool gray-black, to match the
   // warmer surfaces. textSecondary is AA-compliant on bgBase/bgSurface/
-  // bgSunken (6.0–6.6:1). textTertiary fails AA on purpose: decorative or
-  // redundant text only.
+  // bgSunken (4.66–7.5:1 — bgSunken is the tightest at 4.66:1, still clears
+  // 4.5:1). textTertiary fails AA on purpose: decorative or redundant text
+  // only.
   textPrimary: '#2E2418',
   textSecondary: '#6B5A46',
   textTertiary: '#B8A78E',
@@ -36,14 +40,17 @@ export const lightColors = {
   domainNeutral: '#7A5C34',
   domainNeutralDeep: '#6B4F26',
 
-  // Lines. divider = inside a surface, border = around one. Warmed to match
-  // the new surfaces.
+  // Lines. divider = inside a surface, border = around one — both are
+  // evaluated against `bgSurface` (still pure white), which the warmer-base
+  // pass below didn't touch, so their subtlety is unchanged.
   divider: '#FBEAD3',
   border: '#F0D9B8',
   // Darker than `border` on purpose: this is the one line color that must
   // clear the 3:1 WCAG 1.4.11 threshold for non-text UI components (e.g. a
-  // Switch's "off" track) rather than just reading as decorative.
-  borderStrong: '#A67F4C',
+  // Switch's "off" track) against bgBase/bgSunken too, not just bgSurface —
+  // deepened alongside the warmer-base pass below (was #A67F4C, no longer
+  // enough contrast against the new, less-white bgBase/bgSunken).
+  borderStrong: '#8A6A3D',
 
   // Status — unchanged. Not part of this design system's scope.
   error: '#DC2626',
@@ -222,25 +229,33 @@ export const centeredContent = {
  * the call site for BOTH variants (primary gets the domain's deep color,
  * secondary gets `colors.textPrimary` — see `Button.tsx`); everything else
  * uses these as-is.
+ *
+ * Deepened from the original 0.06/0.12/0.18 opacities on live-device
+ * feedback that the whole app read as too flat/sober — depth was there but
+ * too quiet to actually register at normal viewing distance. This
+ * supersedes the general "hierarchy comes from type and space, not deeper
+ * shadows" guidance in fitfork-design/SKILL.md for the baseline tiers
+ * themselves; that guidance still holds for reaching for a *deeper tier* to
+ * make one specific element stand out.
  */
 export const shadow = {
   subtle: {
     shadowColor: '#3A2E22',
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.1,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 2 },
     elevation: 1,
   },
   card: {
     shadowColor: '#3A2E22',
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.18,
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 8 },
     elevation: 4,
   },
   raised: {
     shadowColor: '#3A2E22',
-    shadowOpacity: 0.18,
+    shadowOpacity: 0.26,
     shadowRadius: 26,
     shadowOffset: { width: 0, height: 12 },
     elevation: 8,
@@ -257,9 +272,14 @@ export const shadow = {
  * matching the surface** — a view always clips its own background/gradient
  * fill to its own border radius, so no `overflow: 'hidden'` is needed on the
  * parent (which would otherwise also clip the parent's drop shadow).
+ *
+ * Both stops deepened from 0.45/0.10 on the same live-device feedback as
+ * `shadow` above — at the original opacities, filled buttons and cards read
+ * as a flat solid color rather than a puffy material with visible highlight
+ * and shade.
  */
 export const clayOverlay = {
-  colors: ['rgba(255,255,255,0.45)', 'rgba(255,255,255,0)', 'rgba(58,46,34,0.10)'],
+  colors: ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0)', 'rgba(58,46,34,0.2)'],
   locations: [0, 0.55, 1],
   start: { x: 0, y: 0 },
   end: { x: 1, y: 1 },
