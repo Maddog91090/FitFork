@@ -14,7 +14,7 @@ import { todayDayIndex, type MealType } from '../../lib/mealPlan';
 import { ClayCard } from '../../components/ui/ClayCard';
 import { ClayButton } from '../../components/ui/ClayButton';
 import { PressableScale } from '../../components/ui/PressableScale';
-import { Mascot } from '../../components/ui/Mascot';
+import { TransformingMascot, type MascotForm } from '../../components/ui/TransformingMascot';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
 import { MacroIcon } from '../../components/icons/MacroIcon';
 import {
@@ -48,6 +48,7 @@ export default function HomeScreen() {
   const [gamification, setGamification] = useState<GamificationStats | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [notificationsBusy, setNotificationsBusy] = useState(false);
+  const [mascotForm, setMascotForm] = useState<MascotForm>('nutrition');
 
   const load = useCallback(async () => {
     if (!loading && !session) {
@@ -158,7 +159,14 @@ export default function HomeScreen() {
             {firstName}
           </Text>
         </View>
-        <Mascot pose={gamification && gamification.streak > 0 ? 'celebrating' : 'idle'} size={76} />
+        <PressableScale
+          onPress={() => setMascotForm((current) => (current === 'nutrition' ? 'sport' : 'nutrition'))}
+          accessibilityRole="button"
+          accessibilityLabel="Mascotte"
+          accessibilityHint={mascotForm === 'nutrition' ? 'Appuie pour la voir en mode sport' : 'Appuie pour la voir en mode nutrition'}
+        >
+          <TransformingMascot form={mascotForm} size={76} />
+        </PressableScale>
       </View>
 
       {loadError && <ErrorNotice message={loadError} onRetry={load} />}
