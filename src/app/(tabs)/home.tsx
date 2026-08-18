@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet, Pressable, Switch } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from '../../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
@@ -10,20 +11,20 @@ import { fetchMyCompletions } from '../../lib/workoutCompletionsData';
 import { getNotificationStatus, enableNotifications, disableNotifications } from '../../lib/pushNotifications';
 import { computeStats, type GamificationStats } from '../../lib/workoutGamification';
 import { todayDayIndex, type MealType } from '../../lib/mealPlan';
-import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
+import { ClayCard } from '../../components/ui/ClayCard';
+import { ClayButton } from '../../components/ui/ClayButton';
+import { PressableScale } from '../../components/ui/PressableScale';
+import { Mascot } from '../../components/ui/Mascot';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
 import { MacroIcon } from '../../components/icons/MacroIcon';
 import {
   centeredContent,
-  lightColors,
-  materialTypography,
+  motion,
   radius,
   spacing,
-  useMaterialColors,
-  useMaterialTertiary,
-  withRippleAlpha,
-  type MaterialColorScheme,
+  typography,
+  useThemeColors,
+  type ThemeColors,
 } from '../../theme/tokens';
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -35,8 +36,7 @@ const MEAL_TYPE_LABELS: Record<MealType, string> = {
 const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'snack', 'dinner'];
 
 export default function HomeScreen() {
-  const colors = useMaterialColors();
-  const nutrition = useMaterialTertiary('nutrition');
+  const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { session, loading, signOut } = useAuth();
@@ -142,100 +142,110 @@ export default function HomeScreen() {
   if (loading || !session || checkingProfile) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator color={nutrition.tertiary} />
+        <ActivityIndicator color={colors.domainNutrition} />
       </View>
     );
   }
 
+  const firstName = session.user.email?.split('@')[0] ?? '';
+
   return (
     <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
-      <Text style={styles.greeting}>Bonjour</Text>
-      <Text style={styles.name} numberOfLines={1}>
-        {session.user.email}
-      </Text>
+      <View style={styles.header}>
+        <View style={styles.headerText}>
+          <Text style={styles.greeting}>Bonjour</Text>
+          <Text style={styles.name} numberOfLines={1}>
+            {firstName}
+          </Text>
+        </View>
+        <Mascot pose={gamification && gamification.streak > 0 ? 'celebrating' : 'idle'} size={76} />
+      </View>
 
       {loadError && <ErrorNotice message={loadError} onRetry={load} />}
 
       {macros && (
-        <Card style={styles.macroCard}>
-          <Text style={styles.sectionLabel}>Objectifs du jour</Text>
-          <View style={styles.macroRow}>
-            <View style={styles.macroItem}>
-              <Text style={styles.macroValue}>{macros.calories}</Text>
-              <Text style={styles.macroLabel}>kcal</Text>
-            </View>
-            <View style={styles.macroItem}>
-              <View style={styles.macroValueRow}>
-                <MacroIcon name="protein" size={16} />
-                <Text style={[styles.macroValue, styles.macroProtein]}>{macros.proteinG}g</Text>
+        <Animated.View entering={FadeInDown.duration(motion.duration.base)}>
+          <ClayCard style={styles.macroCard}>
+            <Text style={styles.sectionLabel}>Objectifs du jour</Text>
+            <View style={styles.macroRow}>
+              <View style={styles.macroItem}>
+                <Text style={styles.macroValue}>{macros.calories}</Text>
+                <Text style={styles.macroLabel}>kcal</Text>
               </View>
-              <Text style={styles.macroLabel}>Prot</Text>
-            </View>
-            <View style={styles.macroItem}>
-              <View style={styles.macroValueRow}>
-                <MacroIcon name="fat" size={16} />
-                <Text style={[styles.macroValue, styles.macroFat]}>{macros.fatG}g</Text>
+              <View style={styles.macroItem}>
+                <View style={styles.macroValueRow}>
+                  <MacroIcon name="protein" size={16} />
+                  <Text style={[styles.macroValue, styles.macroProtein]}>{macros.proteinG}g</Text>
+                </View>
+                <Text style={styles.macroLabel}>Prot</Text>
               </View>
-              <Text style={styles.macroLabel}>Lip</Text>
-            </View>
-            <View style={styles.macroItem}>
-              <View style={styles.macroValueRow}>
-                <MacroIcon name="carbs" size={16} />
-                <Text style={[styles.macroValue, styles.macroCarbs]}>{macros.carbsG}g</Text>
+              <View style={styles.macroItem}>
+                <View style={styles.macroValueRow}>
+                  <MacroIcon name="fat" size={16} />
+                  <Text style={[styles.macroValue, styles.macroFat]}>{macros.fatG}g</Text>
+                </View>
+                <Text style={styles.macroLabel}>Lip</Text>
               </View>
-              <Text style={styles.macroLabel}>Gluc</Text>
+              <View style={styles.macroItem}>
+                <View style={styles.macroValueRow}>
+                  <MacroIcon name="carbs" size={16} />
+                  <Text style={[styles.macroValue, styles.macroCarbs]}>{macros.carbsG}g</Text>
+                </View>
+                <Text style={styles.macroLabel}>Gluc</Text>
+              </View>
             </View>
-          </View>
-        </Card>
+          </ClayCard>
+        </Animated.View>
       )}
 
       {gamification && (
-        <Pressable
-          onPress={() => router.push('/progression')}
-          accessibilityRole="button"
-          android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant), foreground: true }}
-          style={({ pressed }) => [styles.gamificationTouchable, pressed && styles.gamificationPressed]}
-        >
-          <Card>
-            <Text style={styles.sectionLabel}>Progression</Text>
-            <View style={styles.gamificationRow}>
-              <View style={styles.gamificationItem}>
-                <Text style={styles.gamificationValue}>🔥 {gamification.streak}</Text>
-                <Text style={styles.macroLabel}>Série</Text>
+        <Animated.View entering={FadeInDown.duration(motion.duration.base).delay(40)}>
+          <PressableScale
+            onPress={() => router.push('/progression')}
+            accessibilityRole="button"
+            style={styles.gamificationTouchable}
+          >
+            <ClayCard>
+              <Text style={styles.sectionLabel}>Progression</Text>
+              <View style={styles.gamificationRow}>
+                <View style={styles.gamificationItem}>
+                  <Text style={styles.gamificationValue}>🔥 {gamification.streak}</Text>
+                  <Text style={styles.macroLabel}>Série</Text>
+                </View>
+                <View style={styles.gamificationItem}>
+                  <Text style={styles.gamificationValue}>Niv. {gamification.level}</Text>
+                  <Text style={styles.macroLabel}>Niveau</Text>
+                </View>
+                <View style={styles.gamificationItem}>
+                  <Text style={styles.gamificationValue}>{gamification.thisWeekDays}/3</Text>
+                  <Text style={styles.macroLabel}>Cette semaine</Text>
+                </View>
               </View>
-              <View style={styles.gamificationItem}>
-                <Text style={styles.gamificationValue}>Niv. {gamification.level}</Text>
-                <Text style={styles.macroLabel}>Niveau</Text>
-              </View>
-              <View style={styles.gamificationItem}>
-                <Text style={styles.gamificationValue}>{gamification.thisWeekDays}/3</Text>
-                <Text style={styles.macroLabel}>Cette semaine</Text>
-              </View>
-            </View>
-          </Card>
-        </Pressable>
+            </ClayCard>
+          </PressableScale>
+        </Animated.View>
       )}
 
       <Text style={styles.sectionLabel}>Actions rapides</Text>
       <View style={styles.actionsRow}>
         <View style={styles.actionButton}>
-          <Button title="Voir mon plan" variant="secondary" onPress={() => router.push('/plan')} />
+          <ClayButton title="Voir mon plan" variant="secondary" onPress={() => router.push('/plan')} />
         </View>
         <View style={styles.actionButton}>
-          <Button title="Générer" onPress={() => router.push('/generate-plan')} domain="nutrition" />
+          <ClayButton title="Générer" onPress={() => router.push('/generate-plan')} domain="nutrition" />
         </View>
       </View>
       <View style={styles.actionsRowSecondary}>
-        <Button title="Suivre mon poids" variant="secondary" onPress={() => router.push('/weight-log')} domain="neutral" />
+        <ClayButton title="Suivre mon poids" variant="secondary" onPress={() => router.push('/weight-log')} domain="neutral" />
       </View>
 
       <Text style={styles.sectionLabel}>Repas du jour</Text>
       {todayMeals.length > 0 ? (
-        <Card style={styles.mealsCard}>
+        <ClayCard style={styles.mealsCard}>
           {todayMeals.map((entry, index) => {
             const recipe = recipesById.get(entry.recipeId);
             return (
-              <Pressable
+              <PressableScale
                 key={entry.id}
                 onPress={() =>
                   router.push({
@@ -246,18 +256,20 @@ export default function HomeScreen() {
                 accessibilityRole="button"
                 style={[styles.mealRow, index === todayMeals.length - 1 && styles.mealRowLast]}
               >
-                <Text style={styles.mealTypeLabel}>{MEAL_TYPE_LABELS[entry.mealType]}</Text>
-                <Text style={styles.mealRecipeName}>{recipe ? recipe.name : entry.recipeId}</Text>
-              </Pressable>
+                <View style={styles.mealRowInner}>
+                  <Text style={styles.mealTypeLabel}>{MEAL_TYPE_LABELS[entry.mealType]}</Text>
+                  <Text style={styles.mealRecipeName}>{recipe ? recipe.name : entry.recipeId}</Text>
+                </View>
+              </PressableScale>
             );
           })}
-        </Card>
+        </ClayCard>
       ) : (
-        <Card style={styles.mealsCard}>
+        <ClayCard style={styles.mealsCard}>
           <Text style={styles.mealsEmptyText}>
             Pas de plan pour aujourd'hui. Génère ton plan de la semaine pour voir tes repas ici.
           </Text>
-        </Card>
+        </ClayCard>
       )}
 
       <View style={styles.notificationsRow}>
@@ -266,68 +278,76 @@ export default function HomeScreen() {
           value={notificationsEnabled}
           onValueChange={handleToggleNotifications}
           disabled={notificationsBusy}
-          trackColor={{ true: nutrition.tertiary, false: colors.outline }}
-          thumbColor={colors.surface}
+          trackColor={{ true: colors.domainNutrition, false: colors.border }}
+          thumbColor={colors.bgSurface}
           accessibilityLabel="Notifications de rappel d'entraînement"
         />
       </View>
 
       <View style={styles.signOut}>
-        <Button title="Se déconnecter" variant="secondary" onPress={signOut} />
+        <ClayButton title="Se déconnecter" variant="secondary" onPress={signOut} />
       </View>
     </ScrollView>
   );
 }
 
-function createStyles(colors: MaterialColorScheme) {
+function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+    screen: { flex: 1, backgroundColor: colors.bgBase },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgBase },
     container: { padding: spacing.lg, ...centeredContent },
-    greeting: { ...materialTypography.displayLarge, color: colors.onSurface },
-    name: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginBottom: spacing.lg },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: spacing.lg,
+    },
+    headerText: { flexShrink: 1, paddingRight: spacing.sm },
+    greeting: { ...typography.hero, color: colors.textPrimary },
+    name: { ...typography.body, color: colors.textSecondary, textTransform: 'capitalize' },
     macroCard: { marginBottom: spacing.lg },
-    gamificationTouchable: { borderRadius: radius.lg, overflow: 'hidden', marginBottom: spacing.lg },
-    gamificationPressed: { opacity: 0.85 },
+    gamificationTouchable: { borderRadius: radius.lg, marginBottom: spacing.lg },
     gamificationRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
     gamificationItem: { alignItems: 'center', flex: 1 },
-    gamificationValue: { ...materialTypography.titleLarge, color: colors.onSurface },
+    gamificationValue: { ...typography.title, color: colors.textPrimary },
     sectionLabel: {
-      ...materialTypography.overline,
-      color: colors.onSurfaceVariant,
+      ...typography.overline,
+      color: colors.textSecondary,
       marginBottom: spacing.sm,
     },
     macroRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
     macroItem: { alignItems: 'center', flex: 1 },
-    macroValue: { ...materialTypography.titleLarge, color: colors.onSurface },
-    macroProtein: { color: lightColors.macroProtein },
-    macroFat: { color: lightColors.macroFat },
-    macroCarbs: { color: lightColors.macroCarbs },
-    macroLabel: { ...materialTypography.overline, color: colors.onSurfaceVariant, marginTop: spacing.xs },
+    macroValue: { ...typography.title, color: colors.textPrimary },
+    macroProtein: { color: colors.macroProtein },
+    macroFat: { color: colors.macroFat },
+    macroCarbs: { color: colors.macroCarbs },
+    macroLabel: { ...typography.overline, color: colors.textSecondary, marginTop: spacing.xs },
     macroValueRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
     actionsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
     actionButton: { flex: 1 },
     actionsRowSecondary: { marginBottom: spacing.lg },
     mealsCard: { marginBottom: spacing.lg },
     mealRow: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.divider,
+    },
+    mealRowInner: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingVertical: spacing.sm + 1,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.outlineVariant,
     },
     mealRowLast: { borderBottomWidth: 0 },
-    mealTypeLabel: { ...materialTypography.labelMedium, width: 80, color: colors.onSurfaceVariant },
-    mealRecipeName: { ...materialTypography.bodyMedium, flex: 1, color: colors.onSurface, textAlign: 'right' },
-    mealsEmptyText: { ...materialTypography.bodyLarge, color: colors.onSurfaceVariant },
+    mealTypeLabel: { ...typography.caption, width: 80, color: colors.textSecondary },
+    mealRecipeName: { ...typography.bodyStrong, flex: 1, color: colors.textPrimary, textAlign: 'right' },
+    mealsEmptyText: { ...typography.body, color: colors.textSecondary },
     notificationsRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       marginTop: spacing.xl,
     },
-    notificationsLabel: { ...materialTypography.bodyMedium, color: colors.onSurface },
+    notificationsLabel: { ...typography.bodyStrong, color: colors.textPrimary },
     signOut: { marginTop: spacing.xl },
   });
 }

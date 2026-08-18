@@ -301,6 +301,10 @@ export const motion = {
   },
   spring: {
     gentle: { damping: 18, stiffness: 180, mass: 1 },
+    /** The claymorphic press feel — chips, cells, and buttons. Visibly
+     *  springy on both press and release; this is the deliberate default
+     *  feel in this direction, not an animation bug to tone down. */
+    snappy: { damping: 8, stiffness: 260, mass: 1 },
     /** Reward moments only: the mascot's celebration pose bouncing in.
      *  Pronounced overshoot — do not use for routine taps, it would read as
      *  exhausting rather than delightful. */
