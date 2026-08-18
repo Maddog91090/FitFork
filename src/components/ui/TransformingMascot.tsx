@@ -72,8 +72,12 @@ export function TransformingMascot({ form, size = 96 }: TransformingMascotProps)
     swirlRef.current?.play();
     swirlOpacity.value = withTiming(1, { duration: motion.duration.fast });
 
+    // Both legs land on a multiple of 360 in total so the character rests
+    // upright, not mid-turn: 1.5 turns accelerating in (swap happens here,
+    // hidden by the motion blur of a fast spin), then another 1.5 turns
+    // decelerating back out — 3 full turns altogether.
     const spinUp = rotation.value + 540;
-    const spinDown = rotation.value + 900;
+    const spinDown = rotation.value + 1080;
 
     spinScale.value = withSequence(
       withTiming(0.82, { duration: 420, easing: Easing.in(Easing.cubic) }),
@@ -97,7 +101,7 @@ export function TransformingMascot({ form, size = 96 }: TransformingMascotProps)
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      <Animated.View style={[StyleSheet.absoluteFill, styles.swirl, swirlStyle]} pointerEvents="none">
+      <Animated.View style={[StyleSheet.absoluteFill, styles.swirl, swirlStyle, styles.noPointerEvents]}>
         <LottieView ref={swirlRef} source={SWIRL_SOURCE} loop style={StyleSheet.absoluteFill} />
       </Animated.View>
       <Animated.View style={characterStyle}>
@@ -120,4 +124,5 @@ export function TransformingMascot({ form, size = 96 }: TransformingMascotProps)
 const styles = StyleSheet.create({
   container: { alignItems: 'center', justifyContent: 'center' },
   swirl: { transform: [{ scale: 1.7 }] },
+  noPointerEvents: { pointerEvents: 'none' },
 });
