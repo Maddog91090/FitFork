@@ -254,10 +254,10 @@ export default function HomeScreen() {
           <PressableScale
             onPress={() => router.push('/progression')}
             accessibilityRole="button"
-            style={[styles.heroCard, styles.gamificationTouchable]}
+            style={[styles.heroCard, styles.progressionCard, styles.gamificationTouchable]}
           >
             <>
-              <Text style={styles.sectionLabel}>Progression</Text>
+              <Text style={styles.progressionLabel}>Progression</Text>
               <View style={styles.gamificationRow}>
                 <View style={styles.gamificationItem}>
                   <Text style={styles.gamificationValue}>🔥 {gamification.streak}</Text>
@@ -403,6 +403,12 @@ function createStyles(colors: ThemeColors) {
     },
     statValue: { ...typography.title },
     statLabel: { ...typography.overline, color: colors.textSecondary },
+    // Indigo/lavender variant of heroCard, reserved for Progression — same
+    // premium card language, domain-tinted (sport/streak) instead of the
+    // bronze nutrition hero. Overrides just the border; layered after
+    // heroCard in the style array.
+    progressionCard: { borderColor: colors.premiumIndigoSoft },
+    progressionLabel: { ...typography.overline, color: colors.premiumIndigo },
     gamificationTouchable: { borderRadius: radius.lg, marginBottom: spacing.lg },
     gamificationRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm, alignSelf: 'stretch' },
     gamificationItem: { alignItems: 'center', flex: 1 },

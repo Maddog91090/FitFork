@@ -83,6 +83,14 @@ export const lightColors = {
   // icons, not just decoration. `BronzeSoft` is a tint only, for chip fills.
   premiumBronze: '#8A6432',
   premiumBronzeSoft: '#F2E4CC',
+
+  // Second premium accent — indigo/lavender, reserved for the
+  // Progression/streak card (sport-adjacent) to distinguish it from the
+  // bronze nutrition hero card, same premium language, domain-tinted. Palette
+  // lifted from a Canva-generated reference site's gradient (deep indigo →
+  // lavender-blue, pale lilac tint). `Indigo` clears ~12.8:1 on bgSurface.
+  premiumIndigo: '#282E5E',
+  premiumIndigoSoft: '#DECCE3',
 } as const;
 
 export const colors = lightColors;
