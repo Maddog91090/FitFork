@@ -3,6 +3,7 @@ import { View, Text, ScrollView, ActivityIndicator, StyleSheet, Switch } from 'r
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import LottieView from 'lottie-react-native';
 import { useAuth } from '../../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
@@ -26,6 +27,12 @@ import {
   useThemeColors,
   type ThemeColors,
 } from '../../theme/tokens';
+
+// LottieFiles "Gradient aura" (community asset), recolored to the app's
+// premiumBronze/premiumBronzeSoft palette — the animated, breathing glow
+// behind the hero-card number, replacing an earlier static shadow-circle
+// approximation.
+const HERO_GLOW_SOURCE = require('../../../assets/images/mascot/hero-glow.json');
 
 type PremiumButtonProps = { title: string; onPress: () => void; variant?: 'primary' | 'secondary' };
 
@@ -213,7 +220,9 @@ export default function HomeScreen() {
       {macros && (
         <Animated.View entering={FadeInDown.duration(motion.duration.base)}>
           <View style={styles.heroCard}>
-            <View style={styles.heroGlow} pointerEvents="none" />
+            <View style={styles.heroGlow}>
+              <LottieView source={HERO_GLOW_SOURCE} autoPlay loop style={styles.heroGlowLottie} />
+            </View>
             <Text style={styles.heroLabel}>Objectifs du jour</Text>
             <View style={styles.heroValueRow}>
               <Text style={styles.heroValue}>{macros.calories}</Text>
@@ -363,19 +372,18 @@ function createStyles(colors: ThemeColors) {
     // edges and centered behind the text via absolute positioning.
     heroGlow: {
       position: 'absolute',
-      top: '50%',
+      top: '68%',
       left: '50%',
-      width: 220,
-      height: 220,
-      marginLeft: -110,
-      marginTop: -110,
-      borderRadius: 110,
-      backgroundColor: colors.premiumBronzeSoft,
-      opacity: 0.55,
-      shadowColor: colors.premiumBronze,
-      shadowOpacity: 0.35,
-      shadowRadius: 40,
-      shadowOffset: { width: 0, height: 0 },
+      width: 260,
+      height: 260,
+      marginLeft: -130,
+      marginTop: -130,
+      opacity: 0.6,
+      pointerEvents: 'none',
+    },
+    heroGlowLottie: {
+      width: '100%',
+      height: '100%',
     },
     heroLabel: { ...typography.overline, color: colors.premiumBronze },
     heroValueRow: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.xs, marginTop: spacing.sm },
