@@ -1,10 +1,11 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { useMaterialColors } from '../../theme/tokens';
 
-export type TabIconName = 'home' | 'plan' | 'recipes' | 'workout' | 'grocery' | 'weight';
+export type TabIconName = 'home' | 'journal' | 'plan' | 'recipes' | 'workout' | 'grocery' | 'weight';
 
 const TAB_ICON_NAMES: Record<TabIconName, React.ComponentProps<typeof MaterialIcons>['name']> = {
   home: 'home',
+  journal: 'local-fire-department',
   plan: 'event',
   recipes: 'restaurant-menu',
   workout: 'fitness-center',

@@ -11,7 +11,7 @@ import { StyleSheet } from 'react-native';
 import { TabIcon, type TabIconName } from '../components/icons/TabIcon';
 import { lightMaterialColors } from '../theme/tokens';
 
-const NAMES: TabIconName[] = ['home', 'plan', 'recipes', 'workout', 'grocery', 'weight'];
+const NAMES: TabIconName[] = ['home', 'journal', 'plan', 'recipes', 'workout', 'grocery', 'weight'];
 
 describe('TabIcon', () => {
   it.each(NAMES)('renders an icon for %s', async (name) => {

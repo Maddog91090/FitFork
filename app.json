@@ -34,7 +34,13 @@
         }
       ],
       "expo-audio",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "FitFork a besoin de l'appareil photo pour scanner le code-barres d'un produit."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
