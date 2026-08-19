@@ -11,8 +11,6 @@ import { fetchMyCompletions } from '../../lib/workoutCompletionsData';
 import { getNotificationStatus, enableNotifications, disableNotifications } from '../../lib/pushNotifications';
 import { computeStats, type GamificationStats } from '../../lib/workoutGamification';
 import { todayDayIndex, type MealType } from '../../lib/mealPlan';
-import { ClayCard } from '../../components/ui/ClayCard';
-import { ClayButton } from '../../components/ui/ClayButton';
 import { PressableScale } from '../../components/ui/PressableScale';
 import { TransformingMascot, type MascotForm } from '../../components/ui/TransformingMascot';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
@@ -21,11 +19,52 @@ import {
   centeredContent,
   motion,
   radius,
+  shadow,
   spacing,
+  state,
   typography,
   useThemeColors,
   type ThemeColors,
 } from '../../theme/tokens';
+
+type PremiumButtonProps = { title: string; onPress: () => void; variant?: 'primary' | 'secondary' };
+
+/**
+ * The premium-direction button: flat bronze fill (primary) or a bronze-bordered
+ * surface (secondary) instead of ClayButton's domain-colored clay bounce —
+ * scoped to Home's premium hero-card treatment, not a replacement for
+ * ClayButton elsewhere.
+ */
+function PremiumButton({ title, onPress, variant = 'primary' }: PremiumButtonProps) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createPremiumButtonStyles(colors, variant), [colors, variant]);
+  return (
+    <PressableScale onPress={onPress} accessibilityRole="button" style={styles.base}>
+      <Text style={styles.label}>{title}</Text>
+    </PressableScale>
+  );
+}
+
+function createPremiumButtonStyles(colors: ThemeColors, variant: 'primary' | 'secondary') {
+  return StyleSheet.create({
+    base: {
+      minHeight: state.minTouchSize,
+      borderRadius: radius.lg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      backgroundColor: variant === 'primary' ? colors.premiumBronze : colors.bgSurface,
+      borderWidth: variant === 'secondary' ? 1 : 0,
+      borderColor: colors.premiumBronzeSoft,
+      ...shadow.subtle,
+    },
+    label: {
+      ...typography.label,
+      color: variant === 'primary' ? colors.textOnAccent : colors.premiumBronze,
+    },
+  });
+}
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
   breakfast: 'Petit-déj',
@@ -173,36 +212,31 @@ export default function HomeScreen() {
 
       {macros && (
         <Animated.View entering={FadeInDown.duration(motion.duration.base)}>
-          <ClayCard style={styles.macroCard}>
-            <Text style={styles.sectionLabel}>Objectifs du jour</Text>
-            <View style={styles.macroRow}>
-              <View style={styles.macroItem}>
-                <Text style={styles.macroValue}>{macros.calories}</Text>
-                <Text style={styles.macroLabel}>kcal</Text>
-              </View>
-              <View style={styles.macroItem}>
-                <View style={styles.macroValueRow}>
-                  <MacroIcon name="protein" size={16} />
-                  <Text style={[styles.macroValue, styles.macroProtein]}>{macros.proteinG}g</Text>
-                </View>
-                <Text style={styles.macroLabel}>Prot</Text>
-              </View>
-              <View style={styles.macroItem}>
-                <View style={styles.macroValueRow}>
-                  <MacroIcon name="fat" size={16} />
-                  <Text style={[styles.macroValue, styles.macroFat]}>{macros.fatG}g</Text>
-                </View>
-                <Text style={styles.macroLabel}>Lip</Text>
-              </View>
-              <View style={styles.macroItem}>
-                <View style={styles.macroValueRow}>
-                  <MacroIcon name="carbs" size={16} />
-                  <Text style={[styles.macroValue, styles.macroCarbs]}>{macros.carbsG}g</Text>
-                </View>
-                <Text style={styles.macroLabel}>Gluc</Text>
-              </View>
+          <View style={styles.heroCard}>
+            <View style={styles.heroGlow} pointerEvents="none" />
+            <Text style={styles.heroLabel}>Objectifs du jour</Text>
+            <View style={styles.heroValueRow}>
+              <Text style={styles.heroValue}>{macros.calories}</Text>
+              <Text style={styles.heroUnit}>kcal</Text>
             </View>
-          </ClayCard>
+          </View>
+          <View style={styles.statsRow}>
+            <View style={styles.statCard}>
+              <MacroIcon name="protein" size={20} />
+              <Text style={[styles.statValue, styles.macroProtein]}>{macros.proteinG}g</Text>
+              <Text style={styles.statLabel}>Prot</Text>
+            </View>
+            <View style={styles.statCard}>
+              <MacroIcon name="fat" size={20} />
+              <Text style={[styles.statValue, styles.macroFat]}>{macros.fatG}g</Text>
+              <Text style={styles.statLabel}>Lip</Text>
+            </View>
+            <View style={styles.statCard}>
+              <MacroIcon name="carbs" size={20} />
+              <Text style={[styles.statValue, styles.macroCarbs]}>{macros.carbsG}g</Text>
+              <Text style={styles.statLabel}>Gluc</Text>
+            </View>
+          </View>
         </Animated.View>
       )}
 
@@ -211,9 +245,9 @@ export default function HomeScreen() {
           <PressableScale
             onPress={() => router.push('/progression')}
             accessibilityRole="button"
-            style={styles.gamificationTouchable}
+            style={[styles.heroCard, styles.gamificationTouchable]}
           >
-            <ClayCard>
+            <>
               <Text style={styles.sectionLabel}>Progression</Text>
               <View style={styles.gamificationRow}>
                 <View style={styles.gamificationItem}>
@@ -229,7 +263,7 @@ export default function HomeScreen() {
                   <Text style={styles.macroLabel}>Cette semaine</Text>
                 </View>
               </View>
-            </ClayCard>
+            </>
           </PressableScale>
         </Animated.View>
       )}
@@ -237,19 +271,19 @@ export default function HomeScreen() {
       <Text style={styles.sectionLabel}>Actions rapides</Text>
       <View style={styles.actionsRow}>
         <View style={styles.actionButton}>
-          <ClayButton title="Voir mon plan" variant="secondary" onPress={() => router.push('/plan')} />
+          <PremiumButton title="Voir mon plan" variant="secondary" onPress={() => router.push('/plan')} />
         </View>
         <View style={styles.actionButton}>
-          <ClayButton title="Générer" onPress={() => router.push('/generate-plan')} domain="nutrition" />
+          <PremiumButton title="Générer" onPress={() => router.push('/generate-plan')} />
         </View>
       </View>
       <View style={styles.actionsRowSecondary}>
-        <ClayButton title="Suivre mon poids" variant="secondary" onPress={() => router.push('/weight-log')} domain="neutral" />
+        <PremiumButton title="Suivre mon poids" variant="secondary" onPress={() => router.push('/weight-log')} />
       </View>
 
       <Text style={styles.sectionLabel}>Repas du jour</Text>
       {todayMeals.length > 0 ? (
-        <ClayCard style={styles.mealsCard}>
+        <View style={[styles.heroCard, styles.mealsCard]}>
           {todayMeals.map((entry, index) => {
             const recipe = recipesById.get(entry.recipeId);
             return (
@@ -271,13 +305,13 @@ export default function HomeScreen() {
               </PressableScale>
             );
           })}
-        </ClayCard>
+        </View>
       ) : (
-        <ClayCard style={styles.mealsCard}>
+        <View style={[styles.heroCard, styles.mealsCard]}>
           <Text style={styles.mealsEmptyText}>
             Pas de plan pour aujourd'hui. Génère ton plan de la semaine pour voir tes repas ici.
           </Text>
-        </ClayCard>
+        </View>
       )}
 
       <View style={styles.notificationsRow}>
@@ -286,14 +320,14 @@ export default function HomeScreen() {
           value={notificationsEnabled}
           onValueChange={handleToggleNotifications}
           disabled={notificationsBusy}
-          trackColor={{ true: colors.domainNutrition, false: colors.border }}
+          trackColor={{ true: colors.premiumBronze, false: colors.border }}
           thumbColor={colors.bgSurface}
           accessibilityLabel="Notifications de rappel d'entraînement"
         />
       </View>
 
       <View style={styles.signOut}>
-        <ClayButton title="Se déconnecter" variant="secondary" onPress={signOut} />
+        <PremiumButton title="Se déconnecter" variant="secondary" onPress={signOut} />
       </View>
     </ScrollView>
   );
@@ -313,9 +347,56 @@ function createStyles(colors: ThemeColors) {
     headerText: { flexShrink: 1, paddingRight: spacing.sm },
     greeting: { ...typography.hero, color: colors.textPrimary },
     name: { ...typography.body, color: colors.textSecondary, textTransform: 'capitalize' },
-    macroCard: { marginBottom: spacing.lg },
+    heroCard: {
+      borderRadius: radius.xl,
+      paddingVertical: spacing.xxxl,
+      paddingHorizontal: spacing.xl,
+      marginBottom: spacing.sm,
+      backgroundColor: colors.bgSurface,
+      borderWidth: 1,
+      borderColor: colors.premiumBronzeSoft,
+      alignItems: 'center',
+      ...shadow.card,
+    },
+    // Fakes a soft radial glow behind the hero number — RN has no radial
+    // gradient, so this is a big soft-shadowed circle sized past the card's
+    // edges and centered behind the text via absolute positioning.
+    heroGlow: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      width: 220,
+      height: 220,
+      marginLeft: -110,
+      marginTop: -110,
+      borderRadius: 110,
+      backgroundColor: colors.premiumBronzeSoft,
+      opacity: 0.55,
+      shadowColor: colors.premiumBronze,
+      shadowOpacity: 0.35,
+      shadowRadius: 40,
+      shadowOffset: { width: 0, height: 0 },
+    },
+    heroLabel: { ...typography.overline, color: colors.premiumBronze },
+    heroValueRow: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.xs, marginTop: spacing.sm },
+    heroValue: { ...typography.heroNumeral, color: colors.textPrimary },
+    heroUnit: { ...typography.label, color: colors.textSecondary, marginBottom: spacing.sm },
+    statsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
+    statCard: {
+      flex: 1,
+      alignItems: 'center',
+      gap: spacing.xs,
+      backgroundColor: colors.bgSurface,
+      borderWidth: 1,
+      borderColor: colors.premiumBronzeSoft,
+      borderRadius: radius.lg,
+      paddingVertical: spacing.lg,
+      ...shadow.subtle,
+    },
+    statValue: { ...typography.title },
+    statLabel: { ...typography.overline, color: colors.textSecondary },
     gamificationTouchable: { borderRadius: radius.lg, marginBottom: spacing.lg },
-    gamificationRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
+    gamificationRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm, alignSelf: 'stretch' },
     gamificationItem: { alignItems: 'center', flex: 1 },
     gamificationValue: { ...typography.title, color: colors.textPrimary },
     sectionLabel: {
@@ -323,18 +404,14 @@ function createStyles(colors: ThemeColors) {
       color: colors.textSecondary,
       marginBottom: spacing.sm,
     },
-    macroRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
-    macroItem: { alignItems: 'center', flex: 1 },
-    macroValue: { ...typography.title, color: colors.textPrimary },
     macroProtein: { color: colors.macroProtein },
     macroFat: { color: colors.macroFat },
     macroCarbs: { color: colors.macroCarbs },
     macroLabel: { ...typography.overline, color: colors.textSecondary, marginTop: spacing.xs },
-    macroValueRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
     actionsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
     actionButton: { flex: 1 },
     actionsRowSecondary: { marginBottom: spacing.lg },
-    mealsCard: { marginBottom: spacing.lg },
+    mealsCard: { marginBottom: spacing.lg, padding: spacing.md },
     mealRow: {
       borderBottomWidth: 1,
       borderBottomColor: colors.divider,

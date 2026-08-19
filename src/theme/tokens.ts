@@ -76,6 +76,13 @@ export const lightColors = {
   rest: '#0369A1',
 
   overlay: 'rgba(46, 36, 24, 0.45)',
+
+  // Premium direction — scoped to the light-bronze hero treatment the user
+  // picked over the claymorphic domain colors for Home's hero card. `Bronze`
+  // clears 4.5:1 on bgBase/bgSurface (~5.2:1) so it's safe for small text and
+  // icons, not just decoration. `BronzeSoft` is a tint only, for chip fills.
+  premiumBronze: '#8A6432',
+  premiumBronzeSoft: '#F2E4CC',
 } as const;
 
 export const colors = lightColors;
@@ -95,8 +102,13 @@ export function useThemeColors(): ThemeColors {
  * Custom fonts are loaded in `src/app/_layout.tsx`. React Native does not
  * synthesize weights for custom fonts, so weight lives in the family name —
  * never pair these with `fontWeight`. Fredoka carries everything — titles,
- * hero text, numbers, body, labels — there is no second family in this
- * design system.
+ * hero text, numbers, body, labels.
+ *
+ * `heroSerif` is a deliberate, scoped exception: the premium-direction hero
+ * stat (see `typography.heroSerif`) pairs a refined serif numeral against
+ * Fredoka's rounded body text, the same contrast that reads as "premium" in
+ * the reference direction the user picked. Reach for it only on that one
+ * hero-number role — not a second general-purpose family.
  */
 export const fontFamily = {
   displaySemiBold: 'Fredoka_600SemiBold',
@@ -105,6 +117,7 @@ export const fontFamily = {
   bodyMedium: 'Fredoka_500Medium',
   bodySemiBold: 'Fredoka_600SemiBold',
   bodyBold: 'Fredoka_700Bold',
+  heroSerif: 'Fraunces_600SemiBold',
 } as const;
 
 /**
@@ -119,6 +132,16 @@ export const typography = {
     fontSize: 32,
     lineHeight: 38,
     letterSpacing: -0.6,
+  },
+  /** The premium-direction hero stat only (e.g. Home's daily-target number) —
+   *  a large serif numeral, deliberately bigger than `hero` so it reads as
+   *  the one expensive-feeling focal point on the screen. Not for headlines
+   *  or body copy, which stay on Fredoka. */
+  heroNumeral: {
+    fontFamily: fontFamily.heroSerif,
+    fontSize: 56,
+    lineHeight: 60,
+    letterSpacing: -1,
   },
   display: {
     fontFamily: fontFamily.displayBold,

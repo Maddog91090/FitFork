@@ -9,6 +9,7 @@ import { Fredoka_400Regular } from '@expo-google-fonts/fredoka/400Regular';
 import { Fredoka_500Medium } from '@expo-google-fonts/fredoka/500Medium';
 import { Fredoka_600SemiBold } from '@expo-google-fonts/fredoka/600SemiBold';
 import { Fredoka_700Bold } from '@expo-google-fonts/fredoka/700Bold';
+import { Fraunces_600SemiBold } from '@expo-google-fonts/fraunces/600SemiBold';
 import { AuthProvider } from '../lib/auth-context';
 import { useMaterialColors } from '../theme/tokens';
 
@@ -27,6 +28,7 @@ export default function RootLayout() {
   const colors = useMaterialColors();
   const [fontsLoaded, fontError] = useFonts({
     Fredoka_400Regular, Fredoka_500Medium, Fredoka_600SemiBold, Fredoka_700Bold,
+    Fraunces_600SemiBold,
   });
 
   useEffect(() => {

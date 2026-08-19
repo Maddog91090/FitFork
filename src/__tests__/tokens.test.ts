@@ -73,10 +73,19 @@ describe('fontFamily', () => {
     expect(fontFamily.bodyBold).toBe('Fredoka_700Bold');
   });
 
-  it('has no leftover Fraunces or Plus Jakarta Sans reference', () => {
+  it('has no leftover Plus Jakarta Sans reference', () => {
     const values = Object.values(fontFamily);
-    expect(values.some((v) => v.includes('Fraunces'))).toBe(false);
     expect(values.some((v) => v.includes('PlusJakartaSans'))).toBe(false);
+  });
+
+  it('scopes Fraunces to the premium hero-numeral role only, not body or display', () => {
+    expect(fontFamily.heroSerif).toBe('Fraunces_600SemiBold');
+    expect(fontFamily.displayBold.includes('Fraunces')).toBe(false);
+    expect(fontFamily.displaySemiBold.includes('Fraunces')).toBe(false);
+    expect(fontFamily.bodyRegular.includes('Fraunces')).toBe(false);
+    expect(fontFamily.bodyMedium.includes('Fraunces')).toBe(false);
+    expect(fontFamily.bodySemiBold.includes('Fraunces')).toBe(false);
+    expect(fontFamily.bodyBold.includes('Fraunces')).toBe(false);
   });
 });
 
