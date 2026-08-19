@@ -8,10 +8,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../lib/auth-context';
 import type { ExperienceLevel } from '../lib/profile';
 import { getLevelProgram } from '../lib/homeWorkoutProgram';
+import { getExercise } from '../lib/exercises';
 import { buildSessionSteps, type SessionStep } from '../lib/sessionSteps';
 import { useStepTimer } from '../lib/useStepTimer';
 import { logSessionCompletion } from '../lib/workoutCompletionsData';
 import { Button } from '../components/ui/Button';
+import { ExercisePhotoPair } from '../components/ui/ExercisePhotoPair';
 import {
   centeredContent,
   materialTypography,
@@ -134,6 +136,18 @@ export default function WorkoutSessionScreen() {
     return <View style={styles.screen} />;
   }
 
+  const activeExercise =
+    currentStep.kind === 'manual' || currentStep.kind === 'work' ? getExercise(currentStep.exerciseId) : undefined;
+
+  const photoPair = activeExercise ? (
+    <ExercisePhotoPair
+      imageStart={activeExercise.imageStart}
+      imageEnd={activeExercise.imageEnd}
+      showLabels={false}
+      style={styles.photoRowSpacing}
+    />
+  ) : null;
+
   return (
     <View style={styles.screen}>
       <View style={[styles.exitRow, { paddingTop: spacing.lg + insets.top }]}>
@@ -150,6 +164,7 @@ export default function WorkoutSessionScreen() {
       {currentStep.kind === 'manual' ? (
         <View style={styles.stepContainer}>
           <Text style={styles.exerciseName}>{currentStep.exerciseName}</Text>
+          {photoPair}
           <Text style={styles.detail}>{currentStep.detail}</Text>
           <Button title="Terminé" onPress={advance} />
         </View>
@@ -157,6 +172,7 @@ export default function WorkoutSessionScreen() {
         <View style={styles.stepContainer}>
           <Text style={styles.stepKindLabel}>{stepKindLabel(currentStep)}</Text>
           <Text style={styles.exerciseName}>{stepHeadline(currentStep)}</Text>
+          {photoPair}
           <Text style={styles.countdown}>{timer.remainingSeconds}</Text>
           <View style={styles.controlsRow}>
             <Button
@@ -201,6 +217,7 @@ function createStyles(colors: MaterialColorScheme, sport: MaterialTertiary) {
       textAlign: 'center',
       marginBottom: spacing.lg,
     },
+    photoRowSpacing: { alignSelf: 'stretch', marginBottom: spacing.lg },
     detail: { ...materialTypography.titleLarge, color: colors.onSurfaceVariant, textAlign: 'center', marginBottom: spacing.xl },
     countdown: { ...materialTypography.displayLarge, color: sport.tertiary, marginBottom: spacing.xl },
     controlsRow: { flexDirection: 'row', gap: spacing.md },

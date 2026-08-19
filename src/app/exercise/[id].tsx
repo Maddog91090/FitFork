@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { getExercise } from '../../lib/exercises';
 import { BackLink } from '../../components/ui/BackLink';
+import { ExercisePhotoPair } from '../../components/ui/ExercisePhotoPair';
 import {
   centeredContent,
   materialTypography,
-  radius,
   spacing,
   useMaterialColors,
   useMaterialTertiary,
@@ -37,20 +37,11 @@ export default function ExerciseDetailScreen() {
       <BackLink />
       <Text style={styles.title}>{exercise.name}</Text>
 
-      <View style={styles.photoRow}>
-        <View style={styles.photoColumn}>
-          <View style={styles.photoFrame}>
-            <Image source={exercise.imageStart} style={styles.photo} />
-          </View>
-          <Text style={styles.photoLabel}>Position de départ</Text>
-        </View>
-        <View style={styles.photoColumn}>
-          <View style={styles.photoFrame}>
-            <Image source={exercise.imageEnd} style={styles.photo} />
-          </View>
-          <Text style={styles.photoLabel}>Position finale</Text>
-        </View>
-      </View>
+      <ExercisePhotoPair
+        imageStart={exercise.imageStart}
+        imageEnd={exercise.imageEnd}
+        style={styles.photoRowSpacing}
+      />
 
       <Text style={styles.sectionTitle}>Comment faire</Text>
       {exercise.instructions.map((step, index) => (
@@ -77,22 +68,7 @@ function createStyles(colors: MaterialColorScheme, sport: MaterialTertiary) {
     },
     container: { padding: spacing.lg, ...centeredContent },
     title: { ...materialTypography.displayMedium, color: colors.onSurface, marginBottom: spacing.lg },
-    photoRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
-    photoColumn: { flex: 1 },
-    photoFrame: {
-      width: '100%',
-      aspectRatio: 4 / 3,
-      borderRadius: radius.md,
-      backgroundColor: colors.surfaceVariant,
-      overflow: 'hidden',
-    },
-    photo: { width: '100%', height: '100%' },
-    photoLabel: {
-      ...materialTypography.labelMedium,
-      color: colors.onSurfaceVariant,
-      textAlign: 'center',
-      marginTop: spacing.xs,
-    },
+    photoRowSpacing: { marginBottom: spacing.lg },
     sectionTitle: {
       ...materialTypography.overline,
       color: colors.onSurfaceVariant,
