@@ -4,7 +4,6 @@ import {
   materialElevation,
   materialTypography,
   radius,
-  smokedGlass,
   spacing,
   useMaterialColors,
   useMaterialTertiary,
@@ -15,17 +14,12 @@ type TextFieldProps = {
   label?: string; value: string; onChangeText: (value: string) => void;
   placeholder?: string; keyboardType?: TextInputProps['keyboardType'];
   secureTextEntry?: boolean; autoCapitalize?: TextInputProps['autoCapitalize']; testID?: string;
-  /** Set when the field sits on a `smokedGlass` well (see tokens.ts) instead
-   *  of the screen's normal light background — flips the overline label to
-   *  `smokedGlass.text` so it stays readable. The input pill itself stays
-   *  opaque/light either way, for typing legibility. */
-  onDark?: boolean;
 };
 
-export function TextField({ label, value, onChangeText, placeholder, keyboardType, secureTextEntry, autoCapitalize, testID, onDark }: TextFieldProps) {
+export function TextField({ label, value, onChangeText, placeholder, keyboardType, secureTextEntry, autoCapitalize, testID }: TextFieldProps) {
   const colors = useMaterialColors();
   const focus = useMaterialTertiary('progress');
-  const styles = useMemo(() => createStyles(colors, focus.tertiary, onDark ?? false), [colors, focus, onDark]);
+  const styles = useMemo(() => createStyles(colors, focus.tertiary), [colors, focus]);
   const [focused, setFocused] = useState(false);
 
   return (
@@ -43,15 +37,10 @@ export function TextField({ label, value, onChangeText, placeholder, keyboardTyp
   );
 }
 
-function createStyles(colors: MaterialColorScheme, focusColor: string, onDark: boolean) {
+function createStyles(colors: MaterialColorScheme, focusColor: string) {
   return StyleSheet.create({
     container: { marginBottom: spacing.md },
-    label: {
-      ...materialTypography.overline,
-      color: onDark ? smokedGlass.text : colors.onSurfaceVariant,
-      marginBottom: spacing.xs,
-      ...(onDark ? smokedGlass.textShadow : null),
-    },
+    label: { ...materialTypography.overline, color: colors.onSurfaceVariant, marginBottom: spacing.xs },
     input: {
       ...materialTypography.bodyLarge, backgroundColor: colors.surface, borderRadius: radius.sm,
       paddingVertical: spacing.md, paddingHorizontal: spacing.md,

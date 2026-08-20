@@ -309,58 +309,6 @@ export const clayOverlay = {
 } as const;
 
 /**
- * Smoked-glass panel — a bounded dark/grey *frosted* accent, not a
- * screen-wide dark theme (the app is light-only by decision; a previous
- * fully-dark *login screen* was tried and rejected on-device — see the
- * design skill's "dark mode reverted" history). Reserved for two small
- * wells behind a screen's focal content: the auth-field well on login, and
- * the numeral backdrop on Home's hero stat. A flat tinted `View` reads as a
- * plain dark box, not glass — the actual fog comes from `expo-blur`'s
- * `BlurView` (`tint="dark"`, `intensity: blurIntensity`) blurring whatever
- * sits behind the panel; `tint` is layered on top of the BlurView (a plain
- * `View` with this as `backgroundColor`) only to neutralize BlurView's
- * platform-default tint color into this consistent charcoal. `bevel` (same
- * shape as `clayOverlay`, see `ClayCard.tsx` for the rendering pattern —
- * an `expo-linear-gradient` layered on top, matching `borderRadius`, no
- * `overflow:'hidden'` needed since each layer self-clips to its own
- * radius) fakes the edge of a *thick* pane of glass: a bright highlight
- * catching light top-left, fading to a darker shadow bottom-right — pair
- * it with `shadow.raised` on the outermost view for the "sitting above
- * the surface" depth cue. A literal 3D tilt (`transform: [{ perspective },
- * { rotateX }]`) is fine on a purely decorative well (Home's numeral
- * backdrop) but never on the login well — it has real `TextInput`s inside
- * it, and tilting interactive controls in 3D space is bad UX, not a look.
- * `fill` is not used as a flat background by itself — see `home.tsx`/
- * `login.tsx` for the BlurView + tint + bevel layering in place. Text
- * drawn over the panel is too low-contrast to guarantee AA by fill
- * darkness alone (deliberately — a heavier fill would fight the frosted
- * look), so pair `text` with `textShadow` (spread into a `Text` style) for
- * legibility instead of `textPrimary`/`textSecondary`. Always pair with
- * `border` too (the thin light edge that reads as a glass pane, not a flat
- * box). Android without the extra `BlurTargetView` wiring `expo-blur`
- * needs there falls back to a plain semi-transparent tint (no true blur)
- * — acceptable degrade, not a blocker, since it still reads as a dark
- * glass well, just not foggy.
- */
-export const smokedGlass = {
-  tint: 'rgba(30, 32, 38, 0.4)',
-  blurIntensity: 60,
-  border: 'rgba(255, 255, 255, 0.24)',
-  bevel: {
-    colors: ['rgba(255,255,255,0.5)', 'rgba(255,255,255,0.04)', 'rgba(0,0,0,0.28)'],
-    locations: [0, 0.5, 1],
-    start: { x: 0, y: 0 },
-    end: { x: 1, y: 1 },
-  },
-  text: '#FFFFFF',
-  textShadow: {
-    textShadowColor: 'rgba(0, 0, 0, 0.55)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 6,
-  },
-} as const;
-
-/**
  * Motion. Curves are plain cubic-bezier control points so this file stays
  * dependency-free (and importable from tests); build the Reanimated value at
  * the call site with `Easing.bezier(...motion.curve.standard)`.

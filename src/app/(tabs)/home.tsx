@@ -4,8 +4,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import LottieView from 'lottie-react-native';
-import { BlurView } from 'expo-blur';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
@@ -23,7 +21,6 @@ import {
   motion,
   radius,
   shadow,
-  smokedGlass,
   spacing,
   state,
   typography,
@@ -228,17 +225,6 @@ export default function HomeScreen() {
             </View>
             <Text style={styles.heroLabel}>Objectifs du jour</Text>
             <View style={styles.heroValueRow}>
-              <View style={styles.heroGlassSquare} pointerEvents="none">
-                <BlurView intensity={smokedGlass.blurIntensity} tint="dark" style={[StyleSheet.absoluteFill, styles.heroGlassRadius]} />
-                <View style={[styles.heroGlassTint, styles.heroGlassRadius]} />
-                <LinearGradient
-                  colors={smokedGlass.bevel.colors}
-                  locations={smokedGlass.bevel.locations}
-                  start={smokedGlass.bevel.start}
-                  end={smokedGlass.bevel.end}
-                  style={[StyleSheet.absoluteFill, styles.heroGlassRadius]}
-                />
-              </View>
               <Text style={styles.heroValue}>{macros.calories}</Text>
               <Text style={styles.heroUnit}>kcal</Text>
             </View>
@@ -400,37 +386,9 @@ function createStyles(colors: ThemeColors) {
       height: '100%',
     },
     heroLabel: { ...typography.overline, color: colors.premiumBronze },
-    heroValueRow: {
-      flexDirection: 'row',
-      alignItems: 'flex-end',
-      gap: spacing.xs,
-      marginTop: spacing.sm,
-      paddingHorizontal: spacing.lg,
-      paddingVertical: spacing.sm,
-    },
-    // Smoked-glass plaque behind the kcal number — see tokens.ts's
-    // `smokedGlass` doc comment. Overshoots heroValueRow via negative insets
-    // so it reads as a snug rounded backdrop rather than a fixed square that
-    // would clip or float depending on the number's digit count. Purely
-    // decorative (the number/unit are separate sibling Text nodes, not
-    // children of this tilted view), so unlike the login well it can carry
-    // a real 3D tilt for the "thick pane viewed at an angle" read.
-    heroGlassSquare: {
-      position: 'absolute',
-      top: -spacing.sm,
-      bottom: -spacing.sm,
-      left: 0,
-      right: 0,
-      borderRadius: radius.lg,
-      borderWidth: 1,
-      borderColor: smokedGlass.border,
-      transform: [{ perspective: 500 }, { rotateX: '10deg' }],
-      ...shadow.raised,
-    },
-    heroGlassRadius: { borderRadius: radius.lg },
-    heroGlassTint: { ...StyleSheet.absoluteFill, backgroundColor: smokedGlass.tint },
-    heroValue: { ...typography.heroNumeral, color: smokedGlass.text, ...smokedGlass.textShadow },
-    heroUnit: { ...typography.label, color: smokedGlass.text, marginBottom: spacing.sm, opacity: 0.82, ...smokedGlass.textShadow },
+    heroValueRow: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.xs, marginTop: spacing.sm },
+    heroValue: { ...typography.heroNumeral, color: colors.textPrimary },
+    heroUnit: { ...typography.label, color: colors.textSecondary, marginBottom: spacing.sm },
     statsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
     statCard: {
       flex: 1,
