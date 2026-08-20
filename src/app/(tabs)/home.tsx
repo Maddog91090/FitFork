@@ -5,6 +5,7 @@ import { router, useFocusEffect } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import LottieView from 'lottie-react-native';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
@@ -228,8 +229,15 @@ export default function HomeScreen() {
             <Text style={styles.heroLabel}>Objectifs du jour</Text>
             <View style={styles.heroValueRow}>
               <View style={styles.heroGlassSquare} pointerEvents="none">
-                <BlurView intensity={smokedGlass.blurIntensity} tint="dark" style={StyleSheet.absoluteFill} />
-                <View style={styles.heroGlassTint} />
+                <BlurView intensity={smokedGlass.blurIntensity} tint="dark" style={[StyleSheet.absoluteFill, styles.heroGlassRadius]} />
+                <View style={[styles.heroGlassTint, styles.heroGlassRadius]} />
+                <LinearGradient
+                  colors={smokedGlass.bevel.colors}
+                  locations={smokedGlass.bevel.locations}
+                  start={smokedGlass.bevel.start}
+                  end={smokedGlass.bevel.end}
+                  style={[StyleSheet.absoluteFill, styles.heroGlassRadius]}
+                />
               </View>
               <Text style={styles.heroValue}>{macros.calories}</Text>
               <Text style={styles.heroUnit}>kcal</Text>
@@ -403,7 +411,10 @@ function createStyles(colors: ThemeColors) {
     // Smoked-glass plaque behind the kcal number — see tokens.ts's
     // `smokedGlass` doc comment. Overshoots heroValueRow via negative insets
     // so it reads as a snug rounded backdrop rather than a fixed square that
-    // would clip or float depending on the number's digit count.
+    // would clip or float depending on the number's digit count. Purely
+    // decorative (the number/unit are separate sibling Text nodes, not
+    // children of this tilted view), so unlike the login well it can carry
+    // a real 3D tilt for the "thick pane viewed at an angle" read.
     heroGlassSquare: {
       position: 'absolute',
       top: -spacing.sm,
@@ -413,8 +424,10 @@ function createStyles(colors: ThemeColors) {
       borderRadius: radius.lg,
       borderWidth: 1,
       borderColor: smokedGlass.border,
-      overflow: 'hidden',
+      transform: [{ perspective: 500 }, { rotateX: '10deg' }],
+      ...shadow.raised,
     },
+    heroGlassRadius: { borderRadius: radius.lg },
     heroGlassTint: { ...StyleSheet.absoluteFill, backgroundColor: smokedGlass.tint },
     heroValue: { ...typography.heroNumeral, color: smokedGlass.text, ...smokedGlass.textShadow },
     heroUnit: { ...typography.label, color: smokedGlass.text, marginBottom: spacing.sm, opacity: 0.82, ...smokedGlass.textShadow },

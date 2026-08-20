@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
@@ -14,6 +15,7 @@ import {
   materialElevation,
   materialTypography,
   radius,
+  shadow,
   smokedGlass,
   spacing,
   useMaterialColors,
@@ -67,8 +69,16 @@ export default function LoginScreen() {
           <View style={styles.glowBronze} pointerEvents="none" />
           <View style={styles.glowIndigo} pointerEvents="none" />
           <View style={styles.authWell}>
-            <BlurView intensity={smokedGlass.blurIntensity} tint="dark" style={StyleSheet.absoluteFill} />
-            <View style={styles.authWellTint} pointerEvents="none" />
+            <BlurView intensity={smokedGlass.blurIntensity} tint="dark" style={[StyleSheet.absoluteFill, styles.authWellRadius]} />
+            <View style={[styles.authWellTint, styles.authWellRadius]} pointerEvents="none" />
+            <LinearGradient
+              colors={smokedGlass.bevel.colors}
+              locations={smokedGlass.bevel.locations}
+              start={smokedGlass.bevel.start}
+              end={smokedGlass.bevel.end}
+              style={[StyleSheet.absoluteFill, styles.authWellRadius]}
+              pointerEvents="none"
+            />
             <View style={styles.authWellContent}>
               <TextField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" onDark />
               <TextField label="Mot de passe" value={password} onChangeText={setPassword} secureTextEntry onDark />
@@ -127,13 +137,16 @@ function createStyles(colors: MaterialColorScheme, accentDeep: string, themeColo
       backgroundColor: themeColors.premiumIndigoSoft,
     },
     // Smoked-glass well behind the email/password fields and the
-    // forgot-password link — see tokens.ts's `smokedGlass` doc comment.
+    // forgot-password link — see tokens.ts's `smokedGlass` doc comment. No
+    // 3D tilt here (unlike Home's decorative plaque) — this well contains
+    // real TextInputs, and tilting interactive controls is bad UX.
     authWell: {
       borderRadius: radius.lg,
       borderWidth: 1,
       borderColor: smokedGlass.border,
-      overflow: 'hidden',
+      ...shadow.raised,
     },
+    authWellRadius: { borderRadius: radius.lg },
     authWellTint: { ...StyleSheet.absoluteFill, backgroundColor: smokedGlass.tint },
     authWellContent: { padding: spacing.lg },
     forgotLink: { marginTop: spacing.sm, textAlign: 'center' },
