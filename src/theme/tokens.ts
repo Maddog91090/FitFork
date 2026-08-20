@@ -321,6 +321,11 @@ export const motion = {
     slow: 360,
     /** One full cycle of the mascot's idle breathing loop (see Mascot.tsx). */
     idle: 2400,
+    /** Minimum time the splash screen (src/app/index.tsx) stays up before
+     *  redirecting, even when the auth check resolves instantly (e.g. a
+     *  cached web session) — otherwise the ripple animation never has time
+     *  to be seen. */
+    splashHold: 1400,
   },
   curve: {
     /** Default for anything already on screen moving or resizing. */
