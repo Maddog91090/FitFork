@@ -46,7 +46,12 @@ export function TextField({ label, value, onChangeText, placeholder, keyboardTyp
 function createStyles(colors: MaterialColorScheme, focusColor: string, onDark: boolean) {
   return StyleSheet.create({
     container: { marginBottom: spacing.md },
-    label: { ...materialTypography.overline, color: onDark ? smokedGlass.text : colors.onSurfaceVariant, marginBottom: spacing.xs },
+    label: {
+      ...materialTypography.overline,
+      color: onDark ? smokedGlass.text : colors.onSurfaceVariant,
+      marginBottom: spacing.xs,
+      ...(onDark ? smokedGlass.textShadow : null),
+    },
     input: {
       ...materialTypography.bodyLarge, backgroundColor: colors.surface, borderRadius: radius.sm,
       paddingVertical: spacing.md, paddingHorizontal: spacing.md,

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
+import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
@@ -17,13 +18,16 @@ import {
   spacing,
   useMaterialColors,
   useMaterialTertiary,
+  useThemeColors,
   type MaterialColorScheme,
+  type ThemeColors,
 } from '../theme/tokens';
 
 export default function LoginScreen() {
   const colors = useMaterialColors();
   const accent = useMaterialTertiary('progress');
-  const styles = useMemo(() => createStyles(colors, accent.tertiaryContainer), [colors, accent]);
+  const themeColors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors, accent.tertiaryContainer, themeColors), [colors, accent, themeColors]);
   const insets = useSafeAreaInsets();
   const { session, signIn } = useAuth();
   const [email, setEmail] = useState('');
@@ -55,15 +59,27 @@ export default function LoginScreen() {
         </View>
         <Text style={styles.brand}>FitPro</Text>
 
-        <View style={styles.authWell}>
-          <TextField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" onDark />
-          <TextField label="Mot de passe" value={password} onChangeText={setPassword} secureTextEntry onDark />
+        <View style={styles.authWellWrap}>
+          {/* Soft ambient color behind the well, so the BlurView actually
+              has something to diffuse — a blur over a flat background is
+              indistinguishable from a flat tint. Reuses the app's two
+              premium accent softs (bronze/indigo) rather than new colors. */}
+          <View style={styles.glowBronze} pointerEvents="none" />
+          <View style={styles.glowIndigo} pointerEvents="none" />
+          <View style={styles.authWell}>
+            <BlurView intensity={smokedGlass.blurIntensity} tint="dark" style={StyleSheet.absoluteFill} />
+            <View style={styles.authWellTint} pointerEvents="none" />
+            <View style={styles.authWellContent}>
+              <TextField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" onDark />
+              <TextField label="Mot de passe" value={password} onChangeText={setPassword} secureTextEntry onDark />
 
-          <Link href="/forgot-password" style={styles.forgotLink}>
-            <Text style={styles.wellText}>
-              Mot de passe oublié ? <Text style={styles.wellTextAccent}>Réinitialiser</Text>
-            </Text>
-          </Link>
+              <Link href="/forgot-password" style={styles.forgotLink}>
+                <Text style={styles.wellText}>
+                  Mot de passe oublié ? <Text style={styles.wellTextAccent}>Réinitialiser</Text>
+                </Text>
+              </Link>
+            </View>
+          </View>
         </View>
 
         {error && <Text style={styles.error}>{error}</Text>}
@@ -80,7 +96,7 @@ export default function LoginScreen() {
   );
 }
 
-function createStyles(colors: MaterialColorScheme, accentDeep: string) {
+function createStyles(colors: MaterialColorScheme, accentDeep: string, themeColors: ThemeColors) {
   return StyleSheet.create({
     screen: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: colors.background },
     content: { ...centeredContent },
@@ -91,19 +107,38 @@ function createStyles(colors: MaterialColorScheme, accentDeep: string) {
     },
     logo: { width: '100%', height: '100%' },
     brand: { ...materialTypography.displayMedium, textAlign: 'center', color: colors.onSurface, marginBottom: spacing.xl },
+    authWellWrap: { marginBottom: spacing.md },
+    glowBronze: {
+      position: 'absolute',
+      width: 190,
+      height: 190,
+      borderRadius: radius.full,
+      top: -50,
+      left: -30,
+      backgroundColor: themeColors.premiumBronzeSoft,
+    },
+    glowIndigo: {
+      position: 'absolute',
+      width: 170,
+      height: 170,
+      borderRadius: radius.full,
+      bottom: -40,
+      right: -20,
+      backgroundColor: themeColors.premiumIndigoSoft,
+    },
     // Smoked-glass well behind the email/password fields and the
     // forgot-password link — see tokens.ts's `smokedGlass` doc comment.
     authWell: {
       borderRadius: radius.lg,
       borderWidth: 1,
       borderColor: smokedGlass.border,
-      backgroundColor: smokedGlass.fill,
-      padding: spacing.lg,
-      marginBottom: spacing.md,
+      overflow: 'hidden',
     },
+    authWellTint: { ...StyleSheet.absoluteFill, backgroundColor: smokedGlass.tint },
+    authWellContent: { padding: spacing.lg },
     forgotLink: { marginTop: spacing.sm, textAlign: 'center' },
-    wellText: { ...materialTypography.labelMedium, textAlign: 'center', color: smokedGlass.text, opacity: 0.85 },
-    wellTextAccent: { ...materialTypography.labelSmall, color: smokedGlass.text },
+    wellText: { ...materialTypography.labelMedium, textAlign: 'center', color: smokedGlass.text, opacity: 0.85, ...smokedGlass.textShadow },
+    wellTextAccent: { ...materialTypography.labelSmall, color: smokedGlass.text, ...smokedGlass.textShadow },
     error: { ...materialTypography.bodyLarge, color: colors.error, marginTop: spacing.md, marginBottom: spacing.md, textAlign: 'center' },
     switchLink: { marginTop: spacing.lg, textAlign: 'center' },
     switchText: { ...materialTypography.labelMedium, textAlign: 'center', color: colors.onSurfaceVariant },

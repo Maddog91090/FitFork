@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import LottieView from 'lottie-react-native';
+import { BlurView } from 'expo-blur';
 import { useAuth } from '../../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../../lib/profile';
 import { computeTargetsFromProfile, type MacroTargets } from '../../lib/targets';
@@ -226,7 +227,10 @@ export default function HomeScreen() {
             </View>
             <Text style={styles.heroLabel}>Objectifs du jour</Text>
             <View style={styles.heroValueRow}>
-              <View style={styles.heroGlassSquare} pointerEvents="none" />
+              <View style={styles.heroGlassSquare} pointerEvents="none">
+                <BlurView intensity={smokedGlass.blurIntensity} tint="dark" style={StyleSheet.absoluteFill} />
+                <View style={styles.heroGlassTint} />
+              </View>
               <Text style={styles.heroValue}>{macros.calories}</Text>
               <Text style={styles.heroUnit}>kcal</Text>
             </View>
@@ -407,12 +411,13 @@ function createStyles(colors: ThemeColors) {
       left: 0,
       right: 0,
       borderRadius: radius.lg,
-      backgroundColor: smokedGlass.fill,
       borderWidth: 1,
       borderColor: smokedGlass.border,
+      overflow: 'hidden',
     },
-    heroValue: { ...typography.heroNumeral, color: smokedGlass.text },
-    heroUnit: { ...typography.label, color: smokedGlass.text, marginBottom: spacing.sm, opacity: 0.82 },
+    heroGlassTint: { ...StyleSheet.absoluteFill, backgroundColor: smokedGlass.tint },
+    heroValue: { ...typography.heroNumeral, color: smokedGlass.text, ...smokedGlass.textShadow },
+    heroUnit: { ...typography.label, color: smokedGlass.text, marginBottom: spacing.sm, opacity: 0.82, ...smokedGlass.textShadow },
     statsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
     statCard: {
       flex: 1,
