@@ -56,7 +56,7 @@ function createStyles(colors: ThemeColors) {
     rippleWrap: { width: 220, height: 220, alignItems: 'center', justifyContent: 'center' },
     ripple: { position: 'absolute', width: 220, height: 220, pointerEvents: 'none' },
     rippleLottie: { width: '100%', height: '100%' },
-    mascot: { width: 120, height: 120 },
+    mascot: { width: 84, height: 84 },
     title: { ...typography.hero, color: colors.textPrimary, marginTop: spacing.xl },
   });
 }
