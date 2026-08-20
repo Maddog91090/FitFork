@@ -21,6 +21,7 @@ import {
   motion,
   radius,
   shadow,
+  smokedGlass,
   spacing,
   state,
   typography,
@@ -225,6 +226,7 @@ export default function HomeScreen() {
             </View>
             <Text style={styles.heroLabel}>Objectifs du jour</Text>
             <View style={styles.heroValueRow}>
+              <View style={styles.heroGlassSquare} pointerEvents="none" />
               <Text style={styles.heroValue}>{macros.calories}</Text>
               <Text style={styles.heroUnit}>kcal</Text>
             </View>
@@ -386,9 +388,31 @@ function createStyles(colors: ThemeColors) {
       height: '100%',
     },
     heroLabel: { ...typography.overline, color: colors.premiumBronze },
-    heroValueRow: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.xs, marginTop: spacing.sm },
-    heroValue: { ...typography.heroNumeral, color: colors.textPrimary },
-    heroUnit: { ...typography.label, color: colors.textSecondary, marginBottom: spacing.sm },
+    heroValueRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: spacing.xs,
+      marginTop: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+    },
+    // Smoked-glass plaque behind the kcal number — see tokens.ts's
+    // `smokedGlass` doc comment. Overshoots heroValueRow via negative insets
+    // so it reads as a snug rounded backdrop rather than a fixed square that
+    // would clip or float depending on the number's digit count.
+    heroGlassSquare: {
+      position: 'absolute',
+      top: -spacing.sm,
+      bottom: -spacing.sm,
+      left: 0,
+      right: 0,
+      borderRadius: radius.lg,
+      backgroundColor: smokedGlass.fill,
+      borderWidth: 1,
+      borderColor: smokedGlass.border,
+    },
+    heroValue: { ...typography.heroNumeral, color: smokedGlass.text },
+    heroUnit: { ...typography.label, color: smokedGlass.text, marginBottom: spacing.sm, opacity: 0.82 },
     statsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
     statCard: {
       flex: 1,

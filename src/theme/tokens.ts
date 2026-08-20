@@ -309,6 +309,24 @@ export const clayOverlay = {
 } as const;
 
 /**
+ * Smoked-glass panel — a bounded dark/grey translucent accent, not a
+ * screen-wide dark theme (the app is light-only by decision; a previous
+ * fully-dark *login screen* was tried and rejected on-device — see the
+ * design skill's "dark mode reverted" history). Reserved for two small
+ * wells behind a screen's focal content: the auth-field well on login, and
+ * the numeral backdrop on Home's hero stat. `fill`'s 0.72 alpha over the
+ * app's near-white surfaces verifies ~6:1 contrast for `text` (white) —
+ * always pair `fill` with `border` (the thin light edge that reads as glass
+ * rather than a flat dark box) and `text` for anything drawn on top of it;
+ * never reuse plain `textPrimary`/`textSecondary` there.
+ */
+export const smokedGlass = {
+  fill: 'rgba(36, 38, 44, 0.72)',
+  border: 'rgba(255, 255, 255, 0.18)',
+  text: '#FFFFFF',
+} as const;
+
+/**
  * Motion. Curves are plain cubic-bezier control points so this file stays
  * dependency-free (and importable from tests); build the Reanimated value at
  * the call site with `Easing.bezier(...motion.curve.standard)`.

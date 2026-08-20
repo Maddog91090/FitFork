@@ -13,6 +13,7 @@ import {
   materialElevation,
   materialTypography,
   radius,
+  smokedGlass,
   spacing,
   useMaterialColors,
   useMaterialTertiary,
@@ -54,8 +55,16 @@ export default function LoginScreen() {
         </View>
         <Text style={styles.brand}>FitPro</Text>
 
-        <TextField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
-        <TextField label="Mot de passe" value={password} onChangeText={setPassword} secureTextEntry />
+        <View style={styles.authWell}>
+          <TextField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" onDark />
+          <TextField label="Mot de passe" value={password} onChangeText={setPassword} secureTextEntry onDark />
+
+          <Link href="/forgot-password" style={styles.forgotLink}>
+            <Text style={styles.wellText}>
+              Mot de passe oublié ? <Text style={styles.wellTextAccent}>Réinitialiser</Text>
+            </Text>
+          </Link>
+        </View>
 
         {error && <Text style={styles.error}>{error}</Text>}
 
@@ -64,12 +73,6 @@ export default function LoginScreen() {
         <Link href="/signup" style={styles.switchLink}>
           <Text style={styles.switchText}>
             Pas de compte ? <Text style={styles.switchTextAccent}>Créer un compte</Text>
-          </Text>
-        </Link>
-
-        <Link href="/forgot-password" style={styles.forgotLink}>
-          <Text style={styles.switchText}>
-            Mot de passe oublié ? <Text style={styles.switchTextAccent}>Réinitialiser</Text>
           </Text>
         </Link>
       </View>
@@ -88,7 +91,19 @@ function createStyles(colors: MaterialColorScheme, accentDeep: string) {
     },
     logo: { width: '100%', height: '100%' },
     brand: { ...materialTypography.displayMedium, textAlign: 'center', color: colors.onSurface, marginBottom: spacing.xl },
+    // Smoked-glass well behind the email/password fields and the
+    // forgot-password link — see tokens.ts's `smokedGlass` doc comment.
+    authWell: {
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: smokedGlass.border,
+      backgroundColor: smokedGlass.fill,
+      padding: spacing.lg,
+      marginBottom: spacing.md,
+    },
     forgotLink: { marginTop: spacing.sm, textAlign: 'center' },
+    wellText: { ...materialTypography.labelMedium, textAlign: 'center', color: smokedGlass.text, opacity: 0.85 },
+    wellTextAccent: { ...materialTypography.labelSmall, color: smokedGlass.text },
     error: { ...materialTypography.bodyLarge, color: colors.error, marginTop: spacing.md, marginBottom: spacing.md, textAlign: 'center' },
     switchLink: { marginTop: spacing.lg, textAlign: 'center' },
     switchText: { ...materialTypography.labelMedium, textAlign: 'center', color: colors.onSurfaceVariant },
