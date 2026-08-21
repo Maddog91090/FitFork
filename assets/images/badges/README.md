@@ -1,10 +1,9 @@
 # Badges
 
-Médailles illustrant chaque badge de la gamification sportive. Direction
-et palette d'origine : rouge/blanc/marine, relief 3D ciblé, fond
-transparent — même traitement que les trois illustrations de marque et le
-logo (génération antérieure à la migration Material 3 ; voir `DESIGN.md`
-à la racine pour le système de design actuel).
+Médailles illustrant chaque badge de la gamification sportive. Fond
+transparent, générées avant que le système de design ne soit remis à
+plat — ne pas les traiter comme une référence de direction visuelle pour
+de nouveaux assets.
 
 | File | Size | Badge |
 | --- | --- | --- |
