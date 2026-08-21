@@ -170,64 +170,69 @@ components:
 
 # Design System: FitFork
 
-## Overview
+*Stitch generation reference — refreshed 2026-08-21, ground-truthed against `src/theme/tokens.ts`, `app.json`, `PRODUCT.md`, and the current screens under `src/app`. `.claude/skills/fitfork-design/SKILL.md` still describes the earlier claymorphic system and is stale against this file — it's a historical record, not current guidance.*
 
-FitFork is a Material 3 fitness and nutrition app. Its identity comes from four domain accent colors — nutrition, sport, progress, neutral — carried through Material's role system rather than a single fixed brand color, layered onto Material's standard components: filled/outlined buttons, elevated cards, filter chips, native ripple feedback on every touchable.
+## 1. Visual Theme & Atmosphere
 
-The interaction philosophy is native-first: press feedback is the platform's own ripple (`android_ripple`), not a custom spring or scale animation. Shape and elevation follow Material's conventions directly — generous but not exaggerated corner radii, a single neutral elevation tier for raised surfaces, no colored shadows, no decorative overlays.
+FitFork is a **warm, native-Material home-fitness coach app** — not a cold SaaS dashboard, and not a candy-colored lifestyle app either. The mood is "a friendly coach's notebook, built on solid platform furniture": a cream-and-cocoa neutral base (never gray, never Zinc/Slate — warmth is the point) carries one rounded, friendly display face (Fredoka) and Material 3's own components, shapes, and native ripple feedback, so nothing fights the platform. Personality comes from **content and color, not chrome** — real food photography, real at-home workout photography, and one accent hue per screen selected by *what the content is* (nutrition, sport, progress, or neutral), never applied as decoration.
 
-The color system is built for both light and dark schemes — every screen and component genuinely switches via `useColorScheme()`, and both schemes carry the same four domain accents, each independently tuned per scheme via Material's tonal-inversion method so neither scheme reads as an afterthought. `userInterfaceStyle` is `"automatic"` in `app.json` — the dark scheme is reachable end-to-end on-device.
+- **Density:** Daily App Balanced (5/10) — comfortable card and list rhythm for a phone screen; not gallery-airy, not cockpit-dense.
+- **Variance:** Balanced (4/10) — screens are single-column, content-led layouts (a native mobile app, not a marketing site chasing hero drama). What asymmetry exists is functional — a domain photo above a title, a chip row breaking the grid — never decorative.
+- **Motion:** Restrained (3/10) — feedback is the platform's own ripple, not custom spring choreography (§9). This is a deliberate, confirmed reversal of an earlier bouncier direction — don't reintroduce spring/scale press animation.
 
-**Key Characteristics:**
-- Four domain colors (nutrition, sport, progress, neutral), expressed through Material's `tertiary`/`onTertiary`/`tertiaryContainer` role triplet — the one role that changes per screen
-- Full light + dark support, WCAG AA-verified in both schemes for every role
-- Standard Material components: Filled/Outlined buttons, elevated Cards, filter chips — native `android_ripple` press feedback throughout
-- One rounded typeface (Fredoka) themed through Material's type scale, per `android.md`'s explicit allowance for a themed brand face
-- The mascot survives as the app's icon and splash screen identity only — it is not part of the functional UI's visual system
+**Key characteristics:**
+- Four domain colors (nutrition, sport, progress, neutral), expressed through Material's `tertiary`/`onTertiary`/`tertiaryContainer` role triplet — the one role that changes per screen.
+- Full light + dark support, WCAG AA-verified in both schemes for every role. `userInterfaceStyle: "automatic"` in `app.json`.
+- Standard Material components — Filled/Outlined buttons, elevated Cards, filter chips — native `android_ripple` press feedback throughout.
+- One rounded typeface (Fredoka) themed through Material's type scale.
+- Real, non-generic photography for every recipe, workout session, and exercise (§4) — never a stock-photo or illustration substitute.
+- A fully-built three-pose mascot (broccoli character) exists but today lives only as the app icon/splash — it is **not** placed inside any generated screen (§10).
 
-## Colors
+## 2. Colors
 
-Material's role system: a handful of **fixed roles** (background, surface, outline, primary, error) that never change per screen, plus one **swappable role** (`tertiary`) selected per screen by domain. Every role has an independently-tuned light and dark value — dark values are not simply the light values dimmed, they follow Material's tonal-inversion method (see below).
+Material's role system: a handful of **fixed roles** (background, surface, outline, primary, error) that never change per screen, plus one **swappable role** (`tertiary`) selected per screen by domain. Every role has an independently-tuned light and dark value — dark values are not simply the light values dimmed; they follow Material's tonal-inversion method (below).
 
 ### Fixed roles
 
-- **`background`/`onBackground`**: the screen's base fill and the text/icons directly on it. Light: `#FFFBF5`/`#2E2418`. Dark: `#17120C`/`#EEE6DD`.
+- **`background`/`onBackground`**: the screen's base fill and text/icons directly on it. Light: `#FFFBF5`/`#2E2418`. Dark: `#17120C`/`#EEE6DD`.
 - **`surface`/`onSurface`**: cards, inputs, anything raised off the background. Light: `#FFFFFF`/`#2E2418`. Dark: `#2C2217`/`#EEE6DD`.
 - **`surfaceVariant`/`onSurfaceVariant`**: recessed or secondary areas. Light: `#FFF3E0`/`#6B5A46`. Dark: `#433423`/`#D5C4AF`.
-- **`outline`/`outlineVariant`**: borders and dividers — `outline` is the stronger one, required to clear 3:1 for non-text UI (e.g. an Outlined button's border). Light: `#A67F4C`/`#F0D9B8`. Dark: `#A88357`/`#654F34`.
-- **`primary`/`onPrimary`**: structural chrome — active tab tint, focus rings. Derived from Cacao Chaud (`#7A5C34`), sharing its source hue with the neutral domain's `tertiary` on purpose — chrome and content harmonize on a neutral-domain screen instead of clashing. Light: `#7A5C34`/`#FFFFFF`. Dark: `#D4BC9B`/`#322615` (Material's dark scheme convention: `primary` becomes a *light* tone used as text/icon tint, not a filled surface).
-- **`error`/`onError`/`errorContainer`/`onErrorContainer`**: unchanged in hue from before this system, `#DC2626`-based; dark values follow the same tonal-inversion method as everything else. One value did change from the plan's original design during implementation: light-mode `onErrorContainer` is `lightColors.textPrimary` (`#2E2418`), not `lightColors.error` as originally planned — the error hue itself failed 4.5:1 against the light `errorContainer` fill (`#FBEAE7`), so it was repointed to the app's ink color, which clears it.
+- **`outline`/`outlineVariant`**: borders and dividers — `outline` is the stronger one, clears 3:1 for non-text UI (e.g. an Outlined button's border). Light: `#A67F4C`/`#F0D9B8`. Dark: `#A88357`/`#654F34`.
+- **`primary`/`onPrimary`**: structural chrome — active tab tint, focus rings. Derived from Cacao Chaud (`#7A5C34`), sharing its hue with the neutral domain's `tertiary` on purpose. Light: `#7A5C34`/`#FFFFFF`. Dark: `#D4BC9B`/`#322615` (Material's dark-scheme convention: `primary` becomes a *light* tone used as text/icon tint, not a filled surface).
+- **`error`/`onError`/`errorContainer`/`onErrorContainer`**: `#DC2626`-based; dark values follow the same tonal-inversion method as everything else. Light-mode `onErrorContainer` is the app's ink color (`#2E2418`), not the error hue itself — the error hue fails 4.5:1 against the light `errorContainer` fill (`#FBEAE7`).
 
 ### Swappable role: `tertiary` (selected per screen by domain)
 
-| Domain | `tertiary` (light) | `tertiary` (dark) |
-| --- | --- | --- |
-| nutrition | `#B25900` (Ambre Grillé) | `#FFB870` |
-| sport | `#187A57` (Vert Forêt) | `#88E8C5` |
-| progress | `#C2325A` (Rouge Baie) | `#E28DA5` |
-| neutral | `#7A5C34` (Cacao Chaud) | `#D4BC9B` |
+| Domain | `tertiary` (light) | `tertiary` (dark) | Used for |
+| --- | --- | --- | --- |
+| nutrition | `#B25900` (Ambre Grillé) | `#FFB870` | Meals, recipes, macros, grocery list, calorie/barcode logging |
+| sport | `#187A57` (Vert Forêt) | `#88E8C5` | Workouts, exercises, training sessions |
+| progress | `#C2325A` (Rouge Baie) | `#E28DA5` | Streaks, milestones, weight/progress tracking |
+| neutral | `#7A5C34` (Cacao Chaud) | `#D4BC9B` | Home, settings, auth, anything not domain-specific |
 
-A component reads `tertiary`/`onTertiary`/`tertiaryContainer` for whichever domain its screen belongs to — a `Button` on a nutrition screen fills with nutrition's `tertiary`, a filter chip on a sport screen selects with sport's `tertiary`, and so on. This is the same "one domain per screen" idea the previous claymorphic system used, carried into Material's role naming.
+A component reads `tertiary`/`onTertiary`/`tertiaryContainer` for whichever domain its screen belongs to — a Button on a nutrition screen fills with nutrition's `tertiary`, a filter chip on a sport screen selects with sport's `tertiary`. **This is the single most important rule for generating a new screen: pick the domain from the content, then use that domain's `tertiary` for every accent on the screen.**
 
 ### Dark scheme derivation
 
-Material inverts intensity between light and dark: in light mode a domain color fills a large surface with white text on top; in dark mode a dark-desaturated version of the same hue fills the surface, and the original saturated hue becomes the text/icon color on top instead (avoids large saturated fills "vibrating" against a dark background). Concretely: each dark `tertiaryContainer` is a ~20-25%-lightness version of the same hue as its light source color, and `onTertiaryContainer` is a ~80-85%-lightness version of that same hue — never a different hue, just a different point on the same hue's lightness ramp. Every pair clears WCAG AA (4.5:1 text-on-fill, 3:1 non-text) — verified by a permanent Jest test (`src/__tests__/materialColors.test.ts`), not eyeballed.
+Material inverts intensity between light and dark: in light mode a domain color fills a large surface with white text on top; in dark mode a dark-desaturated version of the hue fills the surface, and the original saturated hue becomes the text/icon color on top instead (avoids large saturated fills "vibrating" against a dark background). Every pair clears WCAG AA (4.5:1 text-on-fill, 3:1 non-text).
 
 ### Status and domain vocabulary (unchanged, not part of this system's scope)
 
-**Erreur** (`#DC2626`) / **Erreur Douce** (`#FBEAE7`), **Succès** (`#15803D`) / **Succès Douce** (`#E6F2EA`), **Attention** (`#B45309`) / **Attention Douce** (`#FBF0E2`); **Macro Protéine** (`#C2410C`), **Macro Glucides** (`#0F766E`), **Macro Lipides** (`#4338CA`); **Effort** (`#DC2626`), **Repos** (`#0369A1`).
+**Erreur** (`#DC2626`) / **Erreur Douce** (`#FBEAE7`), **Succès** (`#15803D`) / **Succès Douce** (`#E6F2EA`), **Attention** (`#B45309`) / **Attention Douce** (`#FBF0E2`); **Macro Protéine** (`#C2410C`), **Macro Glucides** (`#0F766E`), **Macro Lipides** (`#4338CA`).
 
-### Named Rules
+### Named rules
 
-**The One Domain Rule.** A screen fundamentally about nutrition uses nutrition's `tertiary` for its accents; a sport screen uses sport's. Don't mix two domains' `tertiary` as accents on the same screen without a specific reason.
+**The One Domain Rule.** A screen fundamentally about nutrition uses nutrition's `tertiary` for its accents; a sport screen uses sport's. Don't mix two domains' `tertiary` as accents on the same screen without a specific reason — this is the app's one-accent-per-screen discipline, just domain-selected rather than fixed.
 
 **The Fixed-Role Rule.** `background`/`surface`/`outline`/`primary`/`error` never change per screen or per domain — only `tertiary` (and its `onTertiary`/`tertiaryContainer` pair) is domain-aware.
 
-## Typography
+**No neutral-gray substitution.** Never draw the neutral base from a cool gray/Zinc/Slate ramp — `background`/`surface`/`surfaceVariant` are warm cream/cocoa tones, and that warmth is load-bearing to the brand, not an incidental choice to normalize away.
 
-**Display & Body Font:** Fredoka — one rounded, friendly sans family, themed through Material's type scale rather than swapped for Roboto (`android.md` explicitly allows theming a brand face through the type scale; changing font is not required for platform conformance).
+## 3. Typography
 
-**Character:** Weight lives entirely in which Fredoka cut is loaded (`Fredoka_400Regular` / `_500Medium` / `_600SemiBold` / `_700Bold`), never in a separate `fontWeight` — React Native does not synthesize weights for custom fonts.
+**Display & Body Font:** Fredoka — one rounded, friendly sans family, themed through Material's type scale rather than swapped for Roboto.
+
+**Weight:** lives entirely in which Fredoka cut is loaded (`Fredoka_400Regular` / `_500Medium` / `_600SemiBold` / `_700Bold`), never in a separate `fontWeight` property.
 
 ### Hierarchy (Material role names)
 
@@ -236,72 +241,135 @@ Material inverts intensity between light and dark: in light mode a domain color 
 - **titleLarge** (600, 20px/26px, −0.2px): card titles, weighty section headings.
 - **headlineLarge** (700, 28px/32px, −0.4px): a single big standalone number (calories, weight).
 - **titleMedium** / **titleSmall** (700/16px and 600/14px): headings inside content.
-- **bodyLarge** / **bodyMedium** (400/14px and 600/14px, 21px line height): running text.
+- **bodyLarge** / **bodyMedium** (400/14px and 600/14px, 21px line height): running text. Cap prose at ~40-50 characters per line on a phone-width column — this is a narrow mobile screen, not a 65ch web column.
 - **labelLarge** (700, 14px/18px, +0.1px): buttons, tabs, chips.
 - **labelMedium** / **labelSmall** (500/12px and 600/12px): metadata, secondary rows.
-- **overline** (700, 10px/14px, +1.2px, uppercase): eyebrows, field labels, step counters — a custom addition beyond Material's canonical 15 type roles, same as Material itself allows.
+- **overline** (700, 10px/14px, +1.2px, uppercase): eyebrows, field labels, step counters.
 
-### Named Rules
+### Named rule
 
-**The One Family Rule.** Fredoka carries every text role. Never spread `materialTypography.*` partially — spread the whole role object so family, size, leading, and tracking travel together.
+**The One Family Rule.** Fredoka carries every text role. Spread the whole role object (`materialTypography.titleLarge`, etc.) so family, size, leading, and tracking travel together — never assemble a text style from individual size/weight picks.
 
-## Layout
+**Banned:** Inter, system-default sans (San Francisco / Roboto swapped in place of Fredoka), any serif face — this is a rounded-sans-only system, no exceptions for "editorial" moments.
 
-Unchanged from before: screens pad horizontally by `spacing.lg` (16px), separate sections by `spacing.xl` (24px), content caps at 560px and centers (`centeredContent`). `app.json` sets no explicit `orientation` key (Expo's system-following default applies) — no adaptive tablet/landscape layout work has happened yet, so locking or unlocking orientation without that work behind it is deferred rather than half-done.
+## 4. Photography & Imagery
 
-## Elevation
+Real, specific, non-generic photography is a core brand asset — this is what actually differentiates FitFork's screens from a generic template, more than any color or shape choice. **Never fall back to stock photography, Unsplash-style imagery, broken image links, or illustration as a substitute for these.**
 
-Single-tier, neutral Material elevation — not the claymorphic three-tier warm-tinted system. `materialElevation`: `shadowColor: #000000, shadowOpacity: 0.16, shadowRadius: 6, shadowOffset: {0, 2}, elevation: 2`. Used by `Card` only; `Button` and filter chips are flat (no shadow), matching Material's own default elevation for filled buttons and chips.
+- **Recipes** (nutrition domain): one photorealistic 3/4-angle dish photo per recipe, shown under the title/macros. House style: casual, unpretentious home-cook plating — no ring molds, no architectural garnish, no sauce-dot drizzle art. Warm natural window light, shallow depth of field, plain wood-table background, no hands/people/text/logos. A home cook should look at it and believe they could make it themselves — never "restaurant kitchen."
+- **Workout sessions** (sport domain): one photo per session showing a normal, relatable person (not a fitness-model physique) performing the session's signature move in a plain home living room — mat or rug over a wood floor, natural window light, no gym equipment, no mirrors, no branding. Reads as "you could do this in your own living room."
+- **Exercises** (sport domain): two photos per exercise, side by side — start position and end position — same achievable-home-workout house style as sessions.
+- **Barcode/camera screens**: full-bleed live camera view (`CameraView`) with a thin scan-frame overlay and one line of instruction text — not a photo, a live capture surface. Keep chrome minimal: a back affordance and the frame only.
 
-### Named Rules
+## 5. Screens & Key Moments
 
-**The Flat-by-Default Rule.** Only `Card` carries elevation. Buttons, chips, and tab icons are flat — ripple, fill, and border carry the interaction feedback instead of a shadow.
+There is no marketing "hero section" in this app — every screen is a working screen a returning user opens daily. The closest equivalents, and how to treat them:
 
-## Shapes
+- **Home** (neutral domain): the day's summary — today's plan, workout, and progress at a glance. Leads with the day's most useful number or next action, not a headline.
+- **Onboarding**: a multi-step wizard capturing profile and goals before targets can be computed. Each step is single-purpose, one question or choice group per screen, progress communicated structurally (a step indicator), never by a filler "swipe to continue" cue.
+- **Generate-plan**: the app's confirmed differentiator — one action that computes targets and generates a full week's meal plan and workout program at once. This screen should read as consequential (a real generation happening) without resorting to a generic spinner; prefer a skeleton or a short, specific status line over a bare circular loader.
+- **Barcode scan → log product** (nutrition domain): scan is full-bleed camera; the following log-product screen is a standard form (fields, a meal-type chip row, a save action) — don't over-design the confirmation step just because the scan step was novel.
 
-Unchanged radius scale: `xs` (10px, unused), `sm` (16px, inputs), `md`/`lg` (20/26px, cards and buttons), `xl` (32px, largest surfaces), `pill` (28px, chips), `full` (999px, circles).
+**No filler UI text** ("Fais glisser pour continuer", scroll arrows, bouncing chevrons) anywhere. **No fabricated content** — no Lorem Ipsum, no placeholder names ("Jean Dupont", "Acme"), no fake testimonials or press. Real recipe/exercise data already exists in `src/lib/mealPlanData.ts` and `src/lib/exercises.ts`; generate from or alongside that, don't invent parallel placeholder data.
 
-## Components
+## 6. Layout
+
+- Screens pad horizontally by `spacing.lg` (16px), separate sections by `spacing.xl` (24px).
+- Content caps at 560px and centers (`centeredContent`) — this app also runs on web/tablet via Expo, so this stops inputs and cards from stretching edge-to-edge on a wide viewport. Below that cap (phone width) it's a no-op.
+- Single-column by default. A 3-up equal-card row is not this app's pattern — recipe/session lists are single-column cards with a photo, workout circuits use numbered exercise rows, the meal-plan grid is the one deliberate 2D grid (day × meal-type) and stays that way rather than being flattened.
+- `app.json` sets no explicit `orientation` key (Expo's system-following default applies) — no adaptive tablet/landscape layout exists yet; don't design a screen that depends on landscape space.
+- Safe-area insets (`useSafeAreaInsets`) are handled explicitly on full-bleed screens (e.g. the camera scan screen) rather than relying on a wrapping nav chrome.
+
+## 7. Elevation
+
+Single-tier, neutral Material elevation. `materialElevation`: `shadowColor: #000000, shadowOpacity: 0.16, shadowRadius: 6, shadowOffset: {0, 2}, elevation: 2`. Used by `Card` only; buttons and filter chips are flat (no shadow), matching Material's own default elevation for filled buttons and chips.
+
+**The Flat-by-Default Rule.** Only `Card` carries elevation. Buttons, chips, and tab icons are flat — ripple, fill, and border carry the interaction feedback instead of a shadow. Never add a colored/tinted shadow, a glow, or a second elevation tier.
+
+## 8. Shapes
+
+Radius scale: `xs` (10px, unused today), `sm` (16px, inputs), `md`/`lg` (20/26px, cards and buttons), `xl` (32px, largest surfaces), `pill` (28px, chips), `full` (999px, circles). Generous but not exaggerated — this is Material's own shape language, not the earlier claymorphic system's more extreme rounding.
+
+## 9. Motion & Interaction
+
+- **Press feedback is the platform's own ripple** (`android_ripple`) — not a custom spring, scale, or opacity animation. This is a deliberate, confirmed choice: an earlier "bouncy claymorphic" spring-press system (`PressableScale`) was fully removed when the app migrated to Material.
+- Ripple already respects the system's Remove Animations / Reduce Motion setting on its own — no separate `useReducedMotion` handling is needed for press feedback, unlike screen-level transitions (onboarding step transitions do check `useReducedMotion` explicitly).
+- No perpetual micro-loops, no idle breathing/pulse animation anywhere in the functional UI (the mascot's idle breathing loop, if it's ever wired in, is the one deliberate exception — see §10).
+- No parallax, no scroll-triggered choreography — this is a native list/card UI, not a scrolling marketing page.
+- If a loading state is needed, prefer a skeleton matching the layout's real dimensions over a generic spinner.
+
+## 10. Components
 
 ### Buttons
 - **Filled** (`variant="primary"`, default): fills with the screen domain's `tertiary`, `onTertiary` text, native ripple in `onTertiary` at ~12% opacity. No shadow, no gradient overlay.
 - **Outlined** (`variant="secondary"`): transparent fill, 1px `outline` border, `onSurface` text, ripple in the domain's `tertiary` at ~12% opacity.
 - **Disabled:** `surfaceVariant` fill (Filled) or transparent (Outlined), `onSurfaceVariant` label, border becomes `outlineVariant`.
-- **Press:** the platform's own ripple — no custom animation, no `useReducedMotion` dependency (ripple already respects the system's Remove Animations setting on its own).
+- **Press:** the platform's own ripple — no custom animation.
 
-### Filter Chips
+### Filter chips
 - **Style:** unselected = transparent fill, 1px border in the domain's `tertiary`, `tertiary`-colored label; selected = filled `tertiary`, `onTertiary` label.
 - **Press:** native ripple, same domain-tinted approach as buttons.
-- **Used by:** single-select (`ChoiceGroup`, `accessibilityRole="radio"`) and multi-select (`TagFilterGroup`, `accessibilityRole="checkbox"`) — same visual chip, different selection semantics.
+- **Used by:** single-select (radio semantics) and multi-select (checkbox semantics) — same visual chip, different selection semantics, both need the matching `accessibilityRole`.
 
 ### Cards
-- **Corner:** `rounded.lg` (26px).
-- **Background:** `surface`.
-- **Elevation:** `materialElevation` (single neutral tier).
-- **Border:** none.
-- **Padding:** `spacing.md` (12px).
+- **Corner:** `rounded.lg` (26px). **Background:** `surface`. **Elevation:** `materialElevation` (single neutral tier). **Border:** none. **Padding:** `spacing.md` (12px).
 
-### Empty States
-- Same structure as before (`illustration`/`icon`/`title`/`message`/`actionLabel`/`onAction`/`domain`) wrapped in a `Card`; `title` uses `titleLarge`/`onSurface`, `message` uses `bodyLarge`/`onSurfaceVariant`.
+### Inputs
+- Label above the input, helper text optional, error text below in `error`/`errorContainer`. Focused inputs thicken their border; compensate padding so the box doesn't visibly jump.
+
+### Empty states
+- Structure: optional `illustration` (a brand illustration on the surface color) or `icon` fallback, `title` (`titleLarge`/`onSurface`), `message` (`bodyLarge`/`onSurfaceVariant`), optional `actionLabel`/`onAction`, all tinted by the screen's `domain`. Name the benefit of acting, not the emptiness itself.
+
+### Camera / scan screens
+- Full-bleed `CameraView` behind a thin overlay: back affordance top-left, a scan-frame outline, one line of instruction text. Permission-not-granted state is a normal centered screen (title, message, one filled button) — not a custom illustration.
 
 ### Navigation (bottom tab bar)
-- **Style:** `MaterialIcons` from `@expo/vector-icons`, tinted per-icon from its own `focused` prop — `primary` when active, `onSurfaceVariant` when inactive. No opacity trick; a genuine tint swap, same mechanism Material's own tab bars use.
-- Still 6 destinations as of this phase — the restructuring to 5 is Phase 5 scope, not a Phase 4 change.
+- **Destinations today: 5** — Accueil, Plan, Recettes, Entraînement, Courses. (Journal and Progression are pushed screens, not tabs.)
+- **Style:** `MaterialIcons`, tinted per-icon from its own `focused` prop — `primary` when active, `onSurfaceVariant` when inactive. A genuine tint swap, not an opacity trick.
 
-### Mascot
-Present only as the app's icon, splash screen, and Android adaptive icon — not part of the functional UI's component system as of this phase. Its removal from screens (header placements, empty states, celebration/encouragement moments) is Phase 5 scope; the `Mascot.tsx` component itself is untouched by this phase and still renders in every screen that hasn't migrated yet.
+## 11. Mascot
 
-## Do's and Don'ts
+A three-pose broccoli character (`idle`, `celebrating`, `encouraging` — Pixar-style shading, big expressive eyes, coral-orange sneakers) is fully built (`src/components/ui/Mascot.tsx`, `assets/images/mascot/`) and used as the app icon, splash screen, and Android adaptive icon. **It is not currently placed inside any functional screen** — no screen imports or renders `Mascot`. When generating a new screen, do not add the mascot unless the brief explicitly asks for it; if it does, keep it to the celebration/encouragement use case it was built for (a milestone, a completed session, a setback), never as decorative filler on a routine screen.
 
-### Do:
-- **Do** pull every color, size, radius, spacing, and typography value from `src/theme/tokens.ts`'s Material exports (`useMaterialColors`, `useMaterialTertiary`, `materialTypography`, `materialElevation`) — no inline hex or magic numbers in new/touched code.
-- **Do** give every domain-aware component an explicit `domain` prop matching the screen's content rather than relying on the `'progress'` default.
-- **Do** give every tappable element `android_ripple`, a minimum 48dp touch size, and an explicit `accessibilityRole`.
-- **Do** verify any new color role's contrast against `src/__tests__/materialColors.test.ts`'s pattern — extend that file rather than eyeballing a new pair.
+## 12. Copy & Tone (French)
 
-### Don't:
-- **Don't** reach for the legacy claymorphic tokens (`lightColors`, `useThemeColors`, `typography`, `shadow`, `clayOverlay`) in new code — the Material migration is complete; no screen imports them anymore, and they exist in `tokens.ts` only as dead exports pending removal. `PressableScale` is gone entirely (the component file was deleted once its last consumer migrated).
-- **Don't** mix two domains' `tertiary` as accents on one screen without a specific reason.
-- **Don't** use `fontWeight` anywhere, or pair `fontFamily` with `fontWeight`.
-- **Don't** add a custom spring/scale press animation to a new component — the native ripple is the interaction feedback, full stop.
-- **Don't** add elevation/shadow to anything but `Card` without a specific reason — flat is the default.
+The app tutoies the user and speaks like a coach who respects their time: "Choisis les repas à générer", "Ton profil", "Session expirée, reconnecte-toi."
+
+- Second person singular, always. Never "vous".
+- Short, concrete, no exclamation marks, no hype ("Boom !", "Incroyable !"), no guilt ("Tu as encore raté...") — for all functional copy (labels, errors, buttons, informational content).
+- Energy and exclamation marks are reserved for the mascot's own lines, if and when it's placed on a screen — not for body copy.
+- Errors say what happened and what to do next, in that order, and stay factual.
+- Empty states name the benefit of acting, not the emptiness itself.
+- Labels are nouns ("Poids", "Objectif"), buttons are verbs ("Générer le plan").
+- Banned regardless of language: "Elevate", "Seamless", "Unleash", "Next-Gen" and their French equivalents ("Boostez", "Sans effort", "Révolutionnez") — this is sober functional copy, not ad copy.
+
+## 13. Anti-Patterns (Banned)
+
+- No neutral-gray/Zinc/Slate base — the neutral base is warm cream/cocoa, always.
+- No custom spring/scale/opacity press animation on any new component — native ripple only (§9).
+- No `fontWeight` anywhere, and never `fontFamily` paired with `fontWeight`.
+- No mixing two domains' `tertiary` as accents on one screen without a specific reason.
+- No pure black (`#000000`) — the darkest surface in the system is `#17120C`.
+- No stock photography, Unsplash-style filler, or broken image links — use the established recipe/workout/exercise photography house styles (§4), or a real Material icon, never a placeholder.
+- No fabricated testimonials, benchmarks, press mentions, or placeholder names ("Jean Dupont", "Acme").
+- No filler UI text ("Fais glisser pour continuer", scroll arrows, bouncing chevrons).
+- No generic circular spinner where a skeleton matching the real layout is possible.
+- No emojis as UI iconography in new screens — use `MaterialIcons`.
+- No adding the mascot to a routine screen (§11).
+- No 3-up equal-card marketing-style row — this app's lists are single-column cards or the one deliberate day×meal-type grid (§6).
+- No AI copywriting clichés, in English or French (§12).
+
+## 14. Do's and Don'ts (engineering discipline)
+
+### Do
+- Pull every color, size, radius, spacing, and typography value from `src/theme/tokens.ts`'s Material exports (`useMaterialColors`, `useMaterialTertiary`, `materialTypography`, `materialElevation`) — no inline hex or magic numbers.
+- Give every domain-aware component an explicit `domain` prop matching the screen's content rather than relying on a default.
+- Give every tappable element `android_ripple`, a minimum 48dp touch size, and an explicit `accessibilityRole`.
+- Verify any new color role's contrast against `src/__tests__/materialColors.test.ts`'s pattern.
+
+### Don't
+- Don't reach for the legacy claymorphic tokens (`lightColors`, `useThemeColors`, `typography`, `shadow`, `clayOverlay`) — the Material migration is complete; nothing in `src/app` imports them. `PressableScale` no longer exists as a file.
+- Don't mix two domains' `tertiary` as accents on one screen without a specific reason.
+- Don't use `fontWeight` anywhere, or pair `fontFamily` with `fontWeight`.
+- Don't add a custom spring/scale press animation to a new component — the native ripple is the interaction feedback, full stop.
+- Don't add elevation/shadow to anything but `Card` without a specific reason — flat is the default.
