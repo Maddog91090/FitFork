@@ -44,7 +44,7 @@ The confirmed differentiator: automatic, one-click generation of a full weekly m
 - Color: four domain-based accent colors (nutrition = amber, sport = green, progress = rose, neutral = brown) replace a single brand accent, applied by what the content *is* rather than as flat decoration — expressed via Material's swappable `tertiary` role.
 - Light and dark, both first-class: dark mode was built, tested on-device, reverted once, then deliberately rebuilt and reactivated (`userInterfaceStyle: "automatic"`) once every screen had a scheme-aware Material equivalent. Both schemes are WCAG AA-verified (`src/__tests__/materialColors.test.ts`).
 - Tone: French, tutoiement, sober functional copy — no exclamation marks, no hype. Energy is reserved for the mascot's celebration/encouragement moments only, never for body copy.
-- Full design-system documentation lives in `.claude/skills/fitfork-design/SKILL.md`.
+- Full design-system documentation lives in the root `DESIGN.md`.
 
 ## Evidence on Hand
 

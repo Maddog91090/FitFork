@@ -170,7 +170,7 @@ components:
 
 # Design System: FitFork
 
-*Stitch generation reference — refreshed 2026-08-21, ground-truthed against `src/theme/tokens.ts`, `app.json`, `PRODUCT.md`, and the current screens under `src/app`. `.claude/skills/fitfork-design/SKILL.md` still describes the earlier claymorphic system and is stale against this file — it's a historical record, not current guidance.*
+*Stitch generation reference — refreshed 2026-08-21, ground-truthed against `src/theme/tokens.ts`, `app.json`, `PRODUCT.md`, and the current screens under `src/app`. This is now the single source of truth for FitFork's design system — the earlier `.claude/skills/fitfork-design/SKILL.md`, which described the pre-Material-3 claymorphic system, has been removed.*
 
 ## 1. Visual Theme & Atmosphere
 
