@@ -259,7 +259,12 @@ export default function HomeScreen() {
         </View>
       </View>
       <View style={styles.actionsRowSecondary}>
-        <Button title="Suivre mon poids" variant="secondary" onPress={() => router.push('/weight-log')} domain="neutral" />
+        <View style={styles.actionButton}>
+          <Button title="S'entraîner" onPress={() => router.push('/workout')} domain="sport" />
+        </View>
+        <View style={styles.actionButton}>
+          <Button title="Suivre mon poids" variant="secondary" onPress={() => router.push('/weight-log')} domain="neutral" />
+        </View>
       </View>
 
       <Text style={styles.sectionLabel}>Repas du jour</Text>
@@ -340,7 +345,7 @@ function createStyles(colors: MaterialColorScheme) {
     macroValueRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
     actionsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
     actionButton: { flex: 1 },
-    actionsRowSecondary: { marginBottom: spacing.lg },
+    actionsRowSecondary: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
     mealsCard: { marginBottom: spacing.lg },
     mealRow: {
       flexDirection: 'row',

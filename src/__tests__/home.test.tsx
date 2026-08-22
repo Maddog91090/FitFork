@@ -8,6 +8,7 @@ import { getCurrentPlan, fetchRecipes } from '../lib/mealPlanData';
 import { fetchMyCompletions } from '../lib/workoutCompletionsData';
 import { computeStats } from '../lib/workoutGamification';
 import { getNotificationStatus, enableNotifications, disableNotifications } from '../lib/pushNotifications';
+import { router } from 'expo-router';
 
 jest.mock('../lib/auth-context', () => ({
   useAuth: jest.fn(),
@@ -159,6 +160,15 @@ describe('HomeScreen notifications toggle', () => {
     const { findByText } = await render(<HomeScreen />);
 
     expect(await findByText('Série de 3 semaines — continue comme ça.')).toBeTruthy();
+  });
+
+  it('offers a sport entry point that navigates to the workout tab', async () => {
+    (getNotificationStatus as jest.Mock).mockResolvedValue({ enabled: false, canAskAgain: true });
+    const { findByText } = await render(<HomeScreen />);
+
+    await fireEvent.press(await findByText("S'entraîner"));
+
+    expect(router.push).toHaveBeenCalledWith('/workout');
   });
 
   it('asks for confirmation before signing out, and only signs out on confirm', async () => {
