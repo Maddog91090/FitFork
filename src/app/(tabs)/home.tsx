@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet, Pressable, Switch } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet, Pressable, Switch, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';
@@ -123,6 +123,17 @@ export default function HomeScreen() {
       load();
     }, [load])
   );
+
+  // Sign-out is irreversible from the user's point of view (they land back on
+  // /login and must re-enter credentials), sitting at the bottom of a long
+  // scroll next to otherwise-benign secondary buttons — a distracted tap is
+  // plausible. A confirmation is the smallest fix that prevents it outright.
+  const handleSignOutPress = () => {
+    Alert.alert('Se déconnecter ?', 'Tu devras te reconnecter pour retrouver ton plan.', [
+      { text: 'Annuler', style: 'cancel' },
+      { text: 'Se déconnecter', style: 'destructive', onPress: signOut },
+    ]);
+  };
 
   const handleToggleNotifications = async (value: boolean) => {
     if (!session) return;
@@ -295,7 +306,7 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.signOut}>
-        <Button title="Se déconnecter" variant="secondary" onPress={signOut} />
+        <Button title="Se déconnecter" variant="secondary" onPress={handleSignOutPress} />
       </View>
     </ScrollView>
   );

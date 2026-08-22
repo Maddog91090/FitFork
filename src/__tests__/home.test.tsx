@@ -1,4 +1,5 @@
 import React from 'react';
+import { Alert } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import HomeScreen from '../app/(tabs)/home';
 import { useAuth } from '../lib/auth-context';
@@ -158,5 +159,30 @@ describe('HomeScreen notifications toggle', () => {
     const { findByText } = await render(<HomeScreen />);
 
     expect(await findByText('Série de 3 semaines — continue comme ça.')).toBeTruthy();
+  });
+
+  it('asks for confirmation before signing out, and only signs out on confirm', async () => {
+    (getNotificationStatus as jest.Mock).mockResolvedValue({ enabled: false, canAskAgain: true });
+    const signOut = jest.fn();
+    (useAuth as jest.Mock).mockReturnValue({
+      session: { user: { id: 'user-1', email: 'test@example.com' } },
+      loading: false,
+      signOut,
+    });
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+
+    const { findByText } = await render(<HomeScreen />);
+    await fireEvent.press(await findByText('Se déconnecter'));
+
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    expect(signOut).not.toHaveBeenCalled();
+
+    // Simulate the user tapping the destructive "Se déconnecter" button in the alert.
+    const buttons = alertSpy.mock.calls[0][2] as { text: string; onPress?: () => void }[];
+    const confirmButton = buttons.find((b) => b.text === 'Se déconnecter');
+    confirmButton?.onPress?.();
+
+    expect(signOut).toHaveBeenCalledTimes(1);
+    alertSpy.mockRestore();
   });
 });
