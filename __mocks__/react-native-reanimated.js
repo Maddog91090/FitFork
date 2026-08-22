@@ -6,7 +6,7 @@
 // resolving animations to their target value synchronously — enough for tests
 // to assert on the committed output.
 const React = require('react');
-const { View, Text, ScrollView } = require('react-native');
+const { View, Text, ScrollView, Image } = require('react-native');
 
 // Strip animation-only props so they never reach the host component.
 function stripAnimatedProps({ entering, exiting, layout, ...rest }) {
@@ -22,11 +22,15 @@ const AnimatedText = React.forwardRef((props, ref) =>
 const AnimatedScrollView = React.forwardRef((props, ref) =>
   React.createElement(ScrollView, { ref, ...stripAnimatedProps(props) })
 );
+const AnimatedImage = React.forwardRef((props, ref) =>
+  React.createElement(Image, { ref, ...stripAnimatedProps(props) })
+);
 
 const Animated = {
   View: AnimatedView,
   Text: AnimatedText,
   ScrollView: AnimatedScrollView,
+  Image: AnimatedImage,
   createAnimatedComponent: (Component) =>
     React.forwardRef((props, ref) =>
       React.createElement(Component, { ref, ...stripAnimatedProps(props) })
