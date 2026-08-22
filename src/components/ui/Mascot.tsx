@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Image, type ImageProps } from 'expo-image';
+import { Pressable } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -9,87 +9,120 @@ import Animated, {
   withSpring,
   Easing,
 } from 'react-native-reanimated';
-import type { ImageStyle, StyleProp } from 'react-native';
-import { motion } from '../../theme/tokens';
 import { useReducedMotion } from '../../lib/useReducedMotion';
-
-export type MascotPose = 'idle' | 'celebrating' | 'encouraging';
-
-const MASCOT_SOURCES: Record<MascotPose, ImageProps['source']> = {
-  idle: require('../../../assets/images/mascot/mascot-idle.png'),
-  celebrating: require('../../../assets/images/mascot/mascot-celebrating.png'),
-  encouraging: require('../../../assets/images/mascot/mascot-encouraging.png'),
-};
+import { state } from '../../theme/tokens';
 
 type MascotProps = {
-  /** Which moment this appearance is for — see assets/images/mascot/README.md. */
-  pose: MascotPose;
-  /** Square side in px, used only when `style` is omitted. */
   size?: number;
-  style?: StyleProp<ImageStyle>;
+  /** Optional tap handler. The mascot always reacts to its own tap regardless of whether this is set. */
+  onPress?: () => void;
+  /**
+   * Bump this to a new number (e.g. a counter) to trigger the celebration
+   * reaction programmatically, without the user tapping the mascot directly —
+   * e.g. when a workout or streak milestone completes.
+   */
+  celebrateTrigger?: number;
 };
 
+const IDLE_HALF_CYCLE_MS = 1300;
+
 /**
- * The FitPro mascot. `idle` breathes continuously (a slow scale pulse) so it
- * reads as alive even when nothing is happening — the design spec's
- * "présence continue" requirement. `celebrating` bounces in once with an
- * overshooting spring instead. `encouraging` (reassurance after a setback)
- * shares `idle`'s calm breathing rather than bouncing — a triumphant
- * entrance would read as discordant on a setback moment. `style` fully
- * replaces the default size-based sizing when given, so a caller that needs
- * responsive sizing (percentage width, aspectRatio) doesn't fight a
- * baked-in width/height.
+ * Dualo, the app's mascot: a continuous idle float/sway, plus a bigger
+ * one-shot "celebrate" bounce layered on top — either from a direct tap or
+ * from `celebrateTrigger` changing. The two layers are separate shared
+ * values summed in the style so they never fight each other; see
+ * `creating-reanimated-animations` skill notes on combining animations.
  */
-export function Mascot({ pose, size = 160, style }: MascotProps) {
-  const scale = useSharedValue(pose === 'celebrating' ? 0.5 : 1);
+export function Mascot({ size = 96, onPress, celebrateTrigger }: MascotProps) {
   const reducedMotion = useReducedMotion();
+
+  const idleY = useSharedValue(0);
+  const idleRotate = useSharedValue(0);
+  const reactY = useSharedValue(0);
+  const reactScale = useSharedValue(1);
+  const reactRotate = useSharedValue(0);
 
   useEffect(() => {
     if (reducedMotion) {
-      // The breathing loop is a nonessential, indefinitely-looping
-      // animation, and the celebration bounce is a spring overshoot —
-      // both are exactly what Reduce Motion asks apps to stop. Settle on
-      // the resting pose with no animation at all rather than a reduced
-      // version of either.
-      scale.value = 1;
+      idleY.value = 0;
+      idleRotate.value = 0;
       return;
     }
-    if (pose === 'celebrating') {
-      // Reset to the pre-bounce starting point before springing back to 1.
-      // Without this, a long-lived Mascot that switches from `idle` (where
-      // scale is already ~1, oscillating from the breathing loop) to
-      // `celebrating` would spring from ~1 to 1 — a no-op with no visible
-      // bounce. Setting `.value` twice synchronously is a standard
-      // Reanimated idiom: the first assignment commits immediately, and the
-      // `withSpring` animation then starts from that committed value.
-      scale.value = 0.5;
-      scale.value = withSpring(1, motion.spring.celebrate);
-    } else {
-      // `idle` and `encouraging` both breathe calmly — a triumphant bounce
-      // would feel discordant on `encouraging`'s reassure-after-a-setback
-      // moment.
-      scale.value = withRepeat(
-        withSequence(
-          withTiming(1.04, { duration: motion.duration.idle / 2, easing: Easing.inOut(Easing.sin) }),
-          withTiming(1, { duration: motion.duration.idle / 2, easing: Easing.inOut(Easing.sin) })
-        ),
-        -1,
-        false
-      );
-    }
-  }, [pose, scale, reducedMotion]);
+    idleY.value = withRepeat(
+      withSequence(
+        withTiming(-7, { duration: IDLE_HALF_CYCLE_MS, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0, { duration: IDLE_HALF_CYCLE_MS, easing: Easing.inOut(Easing.sin) })
+      ),
+      0,
+      false
+    );
+    idleRotate.value = withRepeat(
+      withSequence(
+        withTiming(2, { duration: IDLE_HALF_CYCLE_MS, easing: Easing.inOut(Easing.sin) }),
+        withTiming(-2, { duration: IDLE_HALF_CYCLE_MS, easing: Easing.inOut(Easing.sin) })
+      ),
+      0,
+      false
+    );
+  }, [reducedMotion, idleY, idleRotate]);
 
-  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const celebrate = () => {
+    if (reducedMotion) return;
+    reactY.value = withSequence(
+      withTiming(-22, { duration: 260, easing: Easing.out(Easing.quad) }),
+      withSpring(0, { damping: 5, stiffness: 220 })
+    );
+    reactScale.value = withSequence(
+      withTiming(1.14, { duration: 260 }),
+      withSpring(1, { damping: 5, stiffness: 220 })
+    );
+    reactRotate.value = withSequence(
+      withTiming(-10, { duration: 130 }),
+      withTiming(9, { duration: 130 }),
+      withSpring(0, { damping: 6, stiffness: 200 })
+    );
+  };
+
+  useEffect(() => {
+    if (celebrateTrigger === undefined) return;
+    celebrate();
+    // celebrate() is a stable local closure over shared values; only re-fire on the trigger itself.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [celebrateTrigger]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: idleY.value + reactY.value },
+      { rotate: `${idleRotate.value + reactRotate.value}deg` },
+      { scale: reactScale.value },
+    ],
+  }));
+
+  const image = (
+    <Animated.Image
+      testID="mascot-image"
+      source={require('../../../assets/images/mascot-dualo.png')}
+      style={[{ width: size, height: size }, animatedStyle]}
+      resizeMode="contain"
+    />
+  );
+
+  if (!onPress) {
+    return image;
+  }
 
   return (
-    <Animated.View style={animatedStyle}>
-      <Image
-        testID="mascot-image"
-        source={MASCOT_SOURCES[pose]}
-        style={style ?? { width: size, height: size }}
-        contentFit="contain"
-        accessibilityIgnoresInvertColors
-      />
-    </Animated.View>
+    <Pressable
+      testID="mascot-pressable"
+      onPress={() => {
+        celebrate();
+        onPress();
+      }}
+      hitSlop={state.hitSlop}
+      accessibilityRole="button"
+      accessibilityLabel="Dualo"
+    >
+      {image}
+    </Pressable>
   );
 }

@@ -4,7 +4,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAudioPlayer } from 'expo-audio';
 import { useKeepAwake } from 'expo-keep-awake';
-import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../lib/auth-context';
 import type { ExperienceLevel } from '../lib/profile';
 import { getLevelProgram } from '../lib/homeWorkoutProgram';
@@ -12,6 +11,8 @@ import { buildSessionSteps, type SessionStep } from '../lib/sessionSteps';
 import { useStepTimer } from '../lib/useStepTimer';
 import { logSessionCompletion } from '../lib/workoutCompletionsData';
 import { Button } from '../components/ui/Button';
+import { Mascot } from '../components/ui/Mascot';
+import { SpeechBubble } from '../components/ui/SpeechBubble';
 import {
   centeredContent,
   materialTypography,
@@ -115,13 +116,8 @@ export default function WorkoutSessionScreen() {
     return (
       <View style={styles.screen}>
         <View style={[styles.finishedContainer, { paddingTop: insets.top }]}>
-          <MaterialIcons
-            testID="celebration-icon"
-            name="celebration"
-            size={96}
-            color={sport.tertiary}
-            accessible={false}
-          />
+          <Mascot size={128} celebrateTrigger={1} />
+          <SpeechBubble message="Séance terminée, bien joué !" domain="sport" />
           <Text style={styles.finishedTitle}>Séance terminée</Text>
           {error && <Text style={styles.error}>{error}</Text>}
           <Button title="Marquer la séance comme terminée" onPress={handleFinish} loading={finishing} domain="sport" />

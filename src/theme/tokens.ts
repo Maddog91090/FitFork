@@ -288,7 +288,7 @@ export const motion = {
     fast: 160,
     base: 240,
     slow: 360,
-    /** One full cycle of the mascot's idle breathing loop (see Mascot.tsx). */
+    /** Unused since the old broccoli Mascot component was removed; kept in case a future mascot needs an idle-loop duration. */
     idle: 2400,
   },
   curve: {
@@ -399,17 +399,25 @@ export type MaterialTertiary = {
   onTertiaryContainer: string;
 };
 
-/** Same hex values as `domainX`/`domainXDeep` — a role rename, not new colors. */
+/**
+ * nutrition/sport retinted 2026-08-22 to match the Dualo mascot's honey/plum
+ * palette (was burnt-orange/forest-green) — see project memory for the
+ * mascot spec. The mascot's own bright illustration colors (#E3A83B honey,
+ * #7C2D6B plum) aren't WCAG-safe as flat UI fills/text, so these are darker,
+ * contrast-verified tones in the same hue family: a deep golden honey-amber
+ * and the plum itself (already compliant at its illustration value).
+ * progress/neutral untouched — no Dualo-confirmed equivalent for those yet.
+ */
 export const lightTertiaryByDomain: Record<MaterialDomain, MaterialTertiary> = {
-  nutrition: { tertiary: '#B25900', onTertiary: '#FFFFFF', tertiaryContainer: '#8A5200', onTertiaryContainer: '#FFFFFF' },
-  sport: { tertiary: '#187A57', onTertiary: '#FFFFFF', tertiaryContainer: '#0E4F38', onTertiaryContainer: '#FFFFFF' },
+  nutrition: { tertiary: '#8F6400', onTertiary: '#FFFFFF', tertiaryContainer: '#704F00', onTertiaryContainer: '#FFFFFF' },
+  sport: { tertiary: '#7C2D6B', onTertiary: '#FFFFFF', tertiaryContainer: '#591F4C', onTertiaryContainer: '#FFFFFF' },
   progress: { tertiary: '#C2325A', onTertiary: '#FFFFFF', tertiaryContainer: '#A31C42', onTertiaryContainer: '#FFFFFF' },
   neutral: { tertiary: '#7A5C34', onTertiary: '#FFFFFF', tertiaryContainer: '#6B4F26', onTertiaryContainer: '#FFFFFF' },
 };
 
 export const darkTertiaryByDomain: Record<MaterialDomain, MaterialTertiary> = {
-  nutrition: { tertiary: '#FFB870', onTertiary: '#472400', tertiaryContainer: '#703800', onTertiaryContainer: '#FFD9B3' },
-  sport: { tertiary: '#88E8C5', onTertiary: '#0C3C2B', tertiaryContainer: '#125E43', onTertiaryContainer: '#BFF2E0' },
+  nutrition: { tertiary: '#FFDD8F', onTertiary: '#4A3400', tertiaryContainer: '#6B4A00', onTertiaryContainer: '#FFE9C2' },
+  sport: { tertiary: '#EAB4DC', onTertiary: '#4A1440', tertiaryContainer: '#6E2D60', onTertiaryContainer: '#F7DEF1' },
   progress: { tertiary: '#E28DA5', onTertiary: '#390F1A', tertiaryContainer: '#591729', onTertiaryContainer: '#EFC2CF' },
   neutral: { tertiary: '#D4BC9B', onTertiary: '#322615', tertiaryContainer: '#4F3B22', onTertiaryContainer: '#E8DBC9' },
 };

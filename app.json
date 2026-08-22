@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "meal-workout-planner",
+    "name": "Dualo",
     "slug": "fitpro",
     "version": "1.0.0",
     "icon": "./assets/images/icon.png",
@@ -38,7 +38,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "FitFork a besoin de l'appareil photo pour scanner le code-barres d'un produit."
+          "cameraPermission": "Dualo a besoin de l'appareil photo pour scanner le code-barres d'un produit."
         }
       ]
     ],

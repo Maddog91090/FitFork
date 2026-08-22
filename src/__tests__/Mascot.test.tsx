@@ -1,34 +1,38 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
-import { Mascot, type MascotPose } from '../components/ui/Mascot';
-
-const POSES: MascotPose[] = ['idle', 'celebrating', 'encouraging'];
+import { fireEvent, render } from '@testing-library/react-native';
+import { Mascot } from '../components/ui/Mascot';
 
 describe('Mascot', () => {
-  it.each(POSES)('renders an image for the %s pose', async (pose) => {
-    const { getByTestId } = await render(<Mascot pose={pose} />);
-    expect(getByTestId('mascot-image')).toBeTruthy();
+  it('renders the Dualo image at the requested size', async () => {
+    const { getByTestId } = await render(<Mascot size={120} />);
+    const image = getByTestId('mascot-image');
+    const flatStyle = [].concat(image.props.style).reduce((acc, s) => ({ ...acc, ...s }), {});
+    expect(flatStyle.width).toBe(120);
+    expect(flatStyle.height).toBe(120);
   });
 
-  it('defaults to a size x size square when no style is given', async () => {
-    const { getByTestId } = await render(<Mascot pose="idle" size={96} />);
-    expect(getByTestId('mascot-image').props.style).toEqual({ width: 96, height: 96 });
+  it('is not pressable when no onPress is given', async () => {
+    const { queryByTestId } = await render(<Mascot />);
+    expect(queryByTestId('mascot-pressable')).toBeNull();
   });
 
-  it('lets an explicit style fully replace the default sizing', async () => {
-    const { getByTestId } = await render(
-      <Mascot pose="idle" style={{ width: '100%', aspectRatio: 1, maxHeight: 150 }} />
-    );
-    expect(getByTestId('mascot-image').props.style).toEqual({
-      width: '100%',
-      aspectRatio: 1,
-      maxHeight: 150,
-    });
+  it('calls onPress and reacts when tapped', async () => {
+    const onPress = jest.fn();
+    const { getByTestId } = await render(<Mascot onPress={onPress} />);
+    fireEvent.press(getByTestId('mascot-pressable'));
+    expect(onPress).toHaveBeenCalledTimes(1);
   });
 
-  it('resets and re-bounces when the pose changes from idle to celebrating', async () => {
-    const { rerender, getByTestId } = await render(<Mascot pose="idle" />);
-    rerender(<Mascot pose="celebrating" />);
-    expect(getByTestId('mascot-image')).toBeTruthy();
+  it('has an accessible role and label when pressable', async () => {
+    const { getByTestId } = await render(<Mascot onPress={() => {}} />);
+    const pressable = getByTestId('mascot-pressable');
+    expect(pressable.props.accessibilityRole).toBe('button');
+    expect(pressable.props.accessibilityLabel).toBe('Dualo');
+  });
+
+  it('re-renders without crashing when celebrateTrigger changes', async () => {
+    const { rerender } = await render(<Mascot celebrateTrigger={0} />);
+    await rerender(<Mascot celebrateTrigger={1} />);
+    await rerender(<Mascot celebrateTrigger={2} />);
   });
 });

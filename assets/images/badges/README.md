@@ -1,9 +1,9 @@
 # Badges
 
-Médailles illustrant chaque badge de la gamification sportive. Direction
-et palette : voir `.claude/skills/fitfork-design/SKILL.md` (rouge/blanc/
-marine, relief 3D ciblé, fond transparent — même traitement que les trois
-illustrations de marque et le logo).
+Médailles illustrant chaque badge de la gamification sportive. Fond
+transparent, générées avant que le système de design ne soit remis à
+plat — ne pas les traiter comme une référence de direction visuelle pour
+de nouveaux assets.
 
 | File | Size | Badge |
 | --- | --- | --- |
