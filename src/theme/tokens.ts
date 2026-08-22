@@ -288,7 +288,7 @@ export const motion = {
     fast: 160,
     base: 240,
     slow: 360,
-    /** One full cycle of the mascot's idle breathing loop (see Mascot.tsx). */
+    /** Unused since the old broccoli Mascot component was removed; kept in case a future mascot needs an idle-loop duration. */
     idle: 2400,
   },
   curve: {
