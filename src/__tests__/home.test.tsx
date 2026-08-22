@@ -5,10 +5,15 @@ import { useAuth } from '../lib/auth-context';
 import { getProfile, getTrainingProfile } from '../lib/profile';
 import { getCurrentPlan, fetchRecipes } from '../lib/mealPlanData';
 import { fetchMyCompletions } from '../lib/workoutCompletionsData';
+import { computeStats } from '../lib/workoutGamification';
 import { getNotificationStatus, enableNotifications, disableNotifications } from '../lib/pushNotifications';
 
 jest.mock('../lib/auth-context', () => ({
   useAuth: jest.fn(),
+}));
+
+jest.mock('../lib/workoutGamification', () => ({
+  computeStats: jest.fn(),
 }));
 
 jest.mock('../lib/profile', () => ({
@@ -59,6 +64,15 @@ describe('HomeScreen notifications toggle', () => {
     (getCurrentPlan as jest.Mock).mockResolvedValue(null);
     (fetchRecipes as jest.Mock).mockResolvedValue([]);
     (fetchMyCompletions as jest.Mock).mockResolvedValue([]);
+    (computeStats as jest.Mock).mockReturnValue({
+      totalCompletions: 0,
+      streak: 0,
+      thisWeekDays: 0,
+      totalPoints: 0,
+      level: 1,
+      teamBonusCount: 0,
+      teamBonusStreak: 0,
+    });
   });
 
   it('shows the toggle off when notifications are disabled', async () => {
@@ -97,5 +111,52 @@ describe('HomeScreen notifications toggle', () => {
     await fireEvent(toggle, 'valueChange', false);
 
     await waitFor(() => expect(disableNotifications).toHaveBeenCalledWith('user-1'));
+  });
+
+  it("renders Dualo and a state-aware line instead of the raw email", async () => {
+    (getNotificationStatus as jest.Mock).mockResolvedValue({ enabled: false, canAskAgain: true });
+    const { getByTestId, queryByText } = await render(<HomeScreen />);
+
+    await waitFor(() => expect(getByTestId('mascot-image')).toBeTruthy());
+    expect(queryByText('test@example.com')).toBeNull();
+  });
+
+  it('leads with a plan-ready line when today has meals', async () => {
+    (getNotificationStatus as jest.Mock).mockResolvedValue({ enabled: false, canAskAgain: true });
+    (getCurrentPlan as jest.Mock).mockResolvedValue({
+      id: 'plan-1',
+      targetCalories: 2000,
+      entries: [
+        {
+          id: 'entry-1',
+          dayIndex: (new Date().getDay() + 6) % 7, // app's Monday=0 convention, see lib/mealPlan.ts todayDayIndex()
+          mealType: 'lunch',
+          recipeId: 'r1',
+          portionMultiplier: 1,
+        },
+      ],
+    });
+    (fetchRecipes as jest.Mock).mockResolvedValue([{ id: 'r1', name: 'Poulet' } as any]);
+
+    const { findByText } = await render(<HomeScreen />);
+
+    expect(await findByText('Ton programme du jour est prêt.')).toBeTruthy();
+  });
+
+  it('leads with a streak line when the user has an active streak', async () => {
+    (getNotificationStatus as jest.Mock).mockResolvedValue({ enabled: false, canAskAgain: true });
+    (computeStats as jest.Mock).mockReturnValue({
+      totalCompletions: 5,
+      streak: 3,
+      thisWeekDays: 2,
+      totalPoints: 50,
+      level: 2,
+      teamBonusCount: 0,
+      teamBonusStreak: 0,
+    });
+
+    const { findByText } = await render(<HomeScreen />);
+
+    expect(await findByText('Série de 3 semaines — continue comme ça.')).toBeTruthy();
   });
 });

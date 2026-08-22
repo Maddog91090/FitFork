@@ -13,6 +13,8 @@ import { todayDayIndex, type MealType } from '../../lib/mealPlan';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { ErrorNotice } from '../../components/ui/ErrorNotice';
+import { Mascot } from '../../components/ui/Mascot';
+import { SpeechBubble } from '../../components/ui/SpeechBubble';
 import { MacroIcon } from '../../components/icons/MacroIcon';
 import {
   centeredContent,
@@ -24,6 +26,7 @@ import {
   useMaterialTertiary,
   withRippleAlpha,
   type MaterialColorScheme,
+  type MaterialDomain,
 } from '../../theme/tokens';
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -139,6 +142,24 @@ export default function HomeScreen() {
     }
   };
 
+  // One line from Dualo, chosen from whatever state is already loaded — never
+  // a big celebration here: this fires on every app open, so intensity stays
+  // low and steady (see impeccable delight.md's "repeated interaction" rule).
+  // Real celebration is reserved for genuine milestones (workout completion).
+  const heroLine = useMemo((): { message: string; domain: MaterialDomain } => {
+    if (gamification && gamification.streak >= 1) {
+      const weeks = gamification.streak;
+      return {
+        message: `Série de ${weeks} semaine${weeks > 1 ? 's' : ''} — continue comme ça.`,
+        domain: 'sport',
+      };
+    }
+    if (todayMeals.length > 0) {
+      return { message: 'Ton programme du jour est prêt.', domain: 'nutrition' };
+    }
+    return { message: "Pas encore de plan pour aujourd'hui — je peux t'aider à en générer un.", domain: 'neutral' };
+  }, [gamification, todayMeals]);
+
   if (loading || !session || checkingProfile) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
@@ -149,10 +170,11 @@ export default function HomeScreen() {
 
   return (
     <ScrollView style={[styles.screen, { paddingTop: insets.top }]} contentContainerStyle={styles.container}>
-      <Text style={styles.greeting}>Bonjour</Text>
-      <Text style={styles.name} numberOfLines={1}>
-        {session.user.email}
-      </Text>
+      <View style={styles.hero}>
+        <Mascot size={64} />
+        <Text style={styles.greeting}>Bonjour</Text>
+      </View>
+      <SpeechBubble message={heroLine.message} domain={heroLine.domain} />
 
       {loadError && <ErrorNotice message={loadError} onRetry={load} />}
 
@@ -284,9 +306,9 @@ function createStyles(colors: MaterialColorScheme) {
     screen: { flex: 1, backgroundColor: colors.background },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
     container: { padding: spacing.lg, ...centeredContent },
-    greeting: { ...materialTypography.displayLarge, color: colors.onSurface },
-    name: { ...materialTypography.labelMedium, color: colors.onSurfaceVariant, marginBottom: spacing.lg },
-    macroCard: { marginBottom: spacing.lg },
+    hero: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.md },
+    greeting: { ...materialTypography.titleLarge, color: colors.onSurface },
+    macroCard: { marginTop: spacing.lg, marginBottom: spacing.lg },
     gamificationTouchable: { borderRadius: radius.lg, overflow: 'hidden', marginBottom: spacing.lg },
     gamificationPressed: { opacity: 0.85 },
     gamificationRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
