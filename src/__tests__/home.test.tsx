@@ -140,9 +140,10 @@ describe('HomeScreen notifications toggle', () => {
     });
     (fetchRecipes as jest.Mock).mockResolvedValue([{ id: 'r1', name: 'Poulet' } as any]);
 
-    const { findByText } = await render(<HomeScreen />);
+    const { findByText, findByLabelText } = await render(<HomeScreen />);
 
     expect(await findByText('Ton programme du jour est prêt.')).toBeTruthy();
+    expect(await findByLabelText('Déjeuner : Poulet')).toBeTruthy();
   });
 
   it('leads with a streak line when the user has an active streak', async () => {
@@ -157,9 +158,10 @@ describe('HomeScreen notifications toggle', () => {
       teamBonusStreak: 0,
     });
 
-    const { findByText } = await render(<HomeScreen />);
+    const { findByText, findByLabelText } = await render(<HomeScreen />);
 
     expect(await findByText('Série de 3 semaines — continue comme ça.')).toBeTruthy();
+    expect(await findByLabelText('Progression : série de 3, niveau 2, 2 sur 3 jours cette semaine')).toBeTruthy();
   });
 
   it('offers a sport entry point that navigates to the workout tab', async () => {

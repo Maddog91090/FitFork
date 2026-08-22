@@ -104,6 +104,8 @@ export function Mascot({ size = 96, onPress, celebrateTrigger }: MascotProps) {
       source={require('../../../assets/images/mascot-dualo.png')}
       style={[{ width: size, height: size }, animatedStyle]}
       resizeMode="contain"
+      accessible={false}
+      importantForAccessibility="no"
     />
   );
 

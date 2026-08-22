@@ -226,6 +226,7 @@ export default function HomeScreen() {
         <Pressable
           onPress={() => router.push('/progression')}
           accessibilityRole="button"
+          accessibilityLabel={`Progression : série de ${gamification.streak}, niveau ${gamification.level}, ${gamification.thisWeekDays} sur 3 jours cette semaine`}
           android_ripple={{ color: withRippleAlpha(colors.onSurfaceVariant), foreground: true }}
           style={({ pressed }) => [styles.gamificationTouchable, pressed && styles.gamificationPressed]}
         >
@@ -282,6 +283,7 @@ export default function HomeScreen() {
                   })
                 }
                 accessibilityRole="button"
+                accessibilityLabel={`${MEAL_TYPE_LABELS[entry.mealType]} : ${recipe ? recipe.name : entry.recipeId}`}
                 style={[styles.mealRow, index === todayMeals.length - 1 && styles.mealRowLast]}
               >
                 <Text style={styles.mealTypeLabel}>{MEAL_TYPE_LABELS[entry.mealType]}</Text>
