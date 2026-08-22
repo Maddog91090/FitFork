@@ -12,7 +12,7 @@ Primary: everyday people pursuing weight loss or getting back into shape at home
 
 ## Product Purpose
 
-FitFork (Android package `com.maddog91steam.fitpro`) is a home fitness + nutrition planning app. It computes calorie/macro targets from the user's profile, generates a personalized weekly meal plan and a home-workout program in one action, and tracks adherence over time (weight log, workout completions, streaks).
+Dualo (Android package `com.maddog91steam.fitpro`) is a home fitness + nutrition planning app. It computes calorie/macro targets from the user's profile, generates a personalized weekly meal plan and a home-workout program in one action, and tracks adherence over time (weight log, workout completions, streaks).
 
 ## Positioning
 
@@ -38,13 +38,14 @@ The confirmed differentiator: automatic, one-click generation of a full weekly m
 
 ## Brand
 
-- User-facing product name: **FitFork**. (`app.json`'s `name`/`slug` still read `meal-workout-planner`/`fitpro` — legacy scaffold values from project creation, not the brand name.)
+- User-facing product name: **Dualo** (renamed from FitFork). `app.json`'s `name` is now `"Dualo"`; `slug` (`fitpro`), the URL `scheme` (`mealworkoutplanner`), and the Android `package` (`com.maddog91steam.fitpro`) are untouched legacy scaffold identifiers — left as-is since changing them is a separate, higher-risk decision (Android package name is effectively permanent once published) not part of this rename.
+- Dualo is also the name of the app's mascot character — a rounded seed-shaped creature whose color splits left/right between the nutrition and sport domains (honey yellow / plum purple). Current app icon, favicon, and splash screen use it; full design spec is tracked outside this repo (session memory), not yet written back into a project doc.
 - No visual design system is currently mandated. The app has carried two incompatible ones in short succession (a custom "claymorphic" system, then a Material 3 migration — see git history on `src/theme/tokens.ts` if archaeology is ever needed), and the direction is being reconsidered from scratch rather than extending either. Don't treat any existing screen's current look, or any doc describing a past direction, as the target to match until a new direction is chosen and documented.
 
 ## Evidence on Hand
 
 - Real recipe and exercise content already in the codebase (`src/lib/mealPlanData.ts`, `src/lib/exercises.ts`) — no placeholder or lorem content.
-- Mascot poses `idle`/`celebrating`/`encouraging` (transparent PNGs, `assets/images/mascot/`) generated from one validated shared prompt.
+- `assets/images/mascot/` holds the old broccoli-character poses (`idle`/`celebrating`/`encouraging`) — superseded by the Dualo character (see Brand above) and not currently used anywhere; not yet cleaned up.
 - No user testimonials, benchmarks, or press exist — none should be fabricated.
 
 ## Product Principles

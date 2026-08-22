@@ -34,7 +34,7 @@ export default function ScanBarcodeScreen() {
         <BackLink />
         <Text style={styles.permissionTitle}>Accès à l'appareil photo</Text>
         <Text style={styles.permissionMessage}>
-          FitFork a besoin de l'appareil photo pour scanner le code-barres d'un produit.
+          Dualo a besoin de l'appareil photo pour scanner le code-barres d'un produit.
         </Text>
         <Button title="Autoriser l'appareil photo" onPress={requestPermission} domain="nutrition" />
       </View>
